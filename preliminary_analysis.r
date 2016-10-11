@@ -3,11 +3,11 @@
 #This code contains plots for visualizing root biomass data
 
 #set working director
-setwd("c:\\Users\\hkropp\\Google Drive\\root_16")
+setwd("c:\\Users\\hkropp\\Google Drive\\viper_energy\\Root\\root_bio")
 
 #read in data set
 datr<-read.csv("compiled_data.csv")
-
+datr1<-read.csv("August_16.csv")
 #make plots to look at the data across the soil profile for each sample date
 #and site
 #there will be 2 sample dates for the low density site
@@ -15,6 +15,12 @@ datr<-read.csv("compiled_data.csv")
 
 #check all sample dates for each site
 sampleN<-unique(data.frame(doy=datr$DOY, site=datr$site))
+
+#check that there are no duplicates in aug 16
+A.check<-aggregate(datr1$bio.v,
+			by=list(datr1$site,datr1$loc,datr1$rep,datr1$type,datr1$depth.midpoint),
+			FUN="length")
+
 
 #doy 188 and 184 for the low density will be considered the same sampling
 #period since we had to go back to finish up deeper roots
