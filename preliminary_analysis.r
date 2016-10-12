@@ -1,12 +1,14 @@
 ###########################################################
 ###########################################################
-#This code contains plots for visualizing root biomass data
-
+#########This code contains plots for visualizing root biomass data#########
+#########It was used to look at data before roots were thrown away ##########
+######### To identify if any samples should be re-weighted or have #########
+######### any issues                                               #########
 #set working director
 setwd("c:\\Users\\hkropp\\Google Drive\\viper_energy\\Root\\root_bio")
 
 #read in data set
-datr<-read.csv("compiled_data.csv")
+datr<-read.csv("compiled data.csv")
 datr1<-read.csv("August_16.csv")
 #make plots to look at the data across the soil profile for each sample date
 #and site
@@ -18,7 +20,10 @@ sampleN<-unique(data.frame(doy=datr$DOY, site=datr$site))
 
 #check that there are no duplicates in aug 16
 A.check<-aggregate(datr1$bio.v,
-			by=list(datr1$site,datr1$loc,datr1$rep,datr1$type,datr1$depth.midpoint),
+			by=list(datr1$depth.midpoint,datr1$type,datr1$rep,datr1$loc,datr1$site),
+			FUN="length")
+JJ.check<-aggregate(datr$bio.v,
+			by=list(datr$depth.midpoint,datr$status,datr$type,datr$rep,datr$loc,datr$DOY,datr$site),
 			FUN="length")
 
 
