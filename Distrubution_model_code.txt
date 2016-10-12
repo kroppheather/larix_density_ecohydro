@@ -1,0 +1,37 @@
+#A model for quantifying root distributions across the active layer profile
+#This model is set up to run in BUGS
+#This model version looks at the shape of the root distribution
+Model{
+	for(i in 1:Nobs){
+		#likelihood model
+		r.bio[i]~dnorm(mu.bio[i],tau.bio)
+		#likelihood mean
+		#based on beta shape and total root biomass
+		mu.bio[i]<-r.tot[loc.period[i]]*exp(Rbeta[i])
+		Rbeta[i]<-exp(log.beta[i])
+		log.beta[i]<-(log(depth[i])*(alpha[Day[i]]-1))+log(1-depth[i])
+
+	}
+	
+	#priors
+	#variance for mean root biomass
+	tau.bio<-pow(sig.bio,-2)
+	sig.bio~dunif(0,20)
+	#priors for beta shape function
+	for(i in 1:Nday){
+	#start with priors that result in realistic shapes
+		alpha[i]~dunif(1,5)
+		beta[i]~dunif(3,30)
+	}
+
+
+
+}
+
+#data variables:
+#Nobs: number of observations of root biomass
+#r.bio: root biomass observation at each depth
+#r.tot: total root biomass in the profile (sum of r.bio for each loc and sample depth)
+#Day index for sample period varies by root biomass observations
+#depth: relative depth in the active layer for each root biomass observation
+#Nday: number of sample periods
