@@ -8,7 +8,7 @@ Root.shape1<-function(sh,Rtot){exp(sh)*Rtot}
 #make a plot on the back transformed scale
 Xs<-seq(0,.99, by=0.01)
 
-plot(Xs,Root.shape1(log.beta(Xs,2,5),30), type="l", lwd=2)
+plot(Xs,Root.shape1(log.beta(Xs,16,17),10.46), type="l", lwd=2)
 
 #try with the beta constant
 
