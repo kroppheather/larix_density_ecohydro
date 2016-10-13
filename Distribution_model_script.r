@@ -57,6 +57,12 @@ p.mode$low<-p.mode$x-p.modesd$x
 p.mode$high<-p.mode$x+p.mode$x
 
 p.mode$high<-ifelse(p.mode$high>1,.999,p.mode$high)
+
+#get the average depth of the active layer for each site and depth
+datA<-read.csv("active_depth.csv")
+datA$siteid<-ifelse(datA$Site=="l",2,1)
+Dave<-aggregate(datA$Frozen.Depth, by=list(datA$period,datA$siteid), FUN="mean")
+colnames(Dave)<-c("period","siteid","Ave.deepest")
 #set up datalist for the model
 #data variables:
 #Nobs: number of observations of root biomass
@@ -67,15 +73,36 @@ p.mode$high<-ifelse(p.mode$high>1,.999,p.mode$high)
 #Nday: number of sample periods
 Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3,r.tot=rootT$root, 
 				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=p.mode$low, Dhigh=p.mode$high,
-				DaySite=datR$DaySite, Ndaysite=7)
+				DaySite=datR$DaySite, Ndaysite=7, Adeep=Dave$Ave.deepest)
 				
-initslist<-list(list(beta=c(2,2,2,2,2,2,2),Dmode=c(.63,.38,.19,.27,.11,.11,.08), sig.bio=3), 
-				list(beta=c(3,3,3,33,3,3),Dmode=c(.64,.39,.2,.28,.12,.12,.09), sig.bio=1),
-				list(beta=c(2.5,2.5,2.5,2.5,2.5,2.5,2.5),Dmode=c(.60,.35,.16,.26,.10,.10,.05), sig.bio=2))
+initlist<-list(list(
+					Dmode = c(
+					0.9936,0.6018,0.2041,0.3438,0.05979,
+					0.104,0.1277),
+					beta = c(
+					1.004,1.257,2.7,1.911,4.934,
+					4.644,4.531),
+					sig.bio = 1.563),
+					list(
+					Dmode = c(
+					0.8974,0.5002,0.3488,0.2259,0.05694,
+					0.07278,0.06833),
+					beta = c(
+					1.112,1.321,2.065,2.118,4.459,
+					4.869,6.078),
+					sig.bio = 1.439),
+					list(
+					Dmode = c(
+					0.9814,0.3516,0.2427,0.1938,0.05526,
+					0.1764,0.08517),
+					beta = c(
+					1.012,1.532,2.431,2.598,5.045,
+					3.31,4.971),
+					sig.bio = 1.414))
 				
 				
 initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\Siberia_root_profile\\Distrubution_model_code.txt",
-				inits=initslist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "Rbeta"),
-				n.iter=4000,n.chains=3,n.burnin=1000,n.thin=1,
+				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "Rbeta","Dmed", "Dmean", "r.rep"),
+				n.iter=3000,n.chains=3,n.burnin=2000,n.thin=25,
 				working.directory="c:\\Users\\hkropp\\Google Drive\\root_analysis",
 				debug=TRUE, codaPkg=TRUE)
