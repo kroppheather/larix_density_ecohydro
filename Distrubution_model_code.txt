@@ -9,7 +9,7 @@ Model{
 		#based on beta shape and total root biomass
 		mu.bio[i]<-r.tot[loc.period[i]]*exp(Rbeta[i])
 		Rbeta[i]<-exp(log.beta[i])
-		log.beta[i]<-(log(depth[i])*(alpha[Day[i]]-1))+log(1-depth[i])
+		log.beta[i]<-(log(depth[i])*(alpha[Day[i]]-1))+(log(1-depth[i])*beta[Day[i]])
 
 	}
 	
