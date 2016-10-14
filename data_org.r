@@ -32,8 +32,11 @@ fine.ch[fine.ch$x>1,]
 #it is not possible to distinguish issues
 fine.list<-fine.ch[fine.ch$x==1,]			
 colnames(fine.list)<-c("depth.midpoint", "status", "type", "rep", "loc", "DOY", "site", "length")
+#add a biomass per cm2
+area.all<-ifelse(is.na(datr$A.area),datr$B.area,datr$A.area)
+datr$biomass.mg.cm2<-(datr$Biomass.g*1000)/area.all
 #now need to pull out data for these values from orignal
-datr.sub<-data.frame(datr[,1:7], datr[,16:17])
+datr.sub<-data.frame(datr[,1:9], datr[,15:18])
 fr.df<-join(fine.list,datr.sub, by=c("DOY", "site", "status", "loc","rep","type","depth.midpoint"),type="left")
 
 #set up a sample time frame index for the four sampling periods
