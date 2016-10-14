@@ -9,7 +9,7 @@ Model{
 		r.rep[i]~dnorm(mu.bio[i],tau.bio)
 		#likelihood mean
 		#based on beta shape and total root biomass
-		mu.bio[i]<-r.tot[loc.period[i]]*Rbeta[i]
+		mu.bio[i]<-r.tot[DaySite[i]]*Rbeta[i]
 		Rbeta[i]<-exp(log.beta[i])
 		log.beta[i]<-(log(depth[i])*(alpha[DaySite[i]]-1))+(log(1-depth[i])*beta[DaySite[i]])
 
@@ -32,6 +32,8 @@ Model{
 			#add in some summary stats
 			Dmed[i]<-(alpha[i]-(1/3))/(alpha[i]+beta[i]-(2/3))*Adeep[i]
 			Dmean[i]<-alpha[i]/(alpha[i]+beta[i])*Adeep[i]
+			#give r.tot a noninformative prior
+			r.tot[i]~dnorm(0,.001)I(0,)
 	}
 	
 

@@ -71,7 +71,15 @@ colnames(Dave)<-c("period","siteid","Ave.deepest")
 #loc.period: Day index for sample period varies by root biomass observations
 #depth: relative depth in the active layer for each root biomass observation
 #Nday: number of sample periods
-Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3,r.tot=rootT$root, 
+
+
+####get a better idea of starting values for root tot
+#set up site for root tot
+rootT$site<-ifelse(rootT$loc<=6,1,2)
+Rdaysite<-aggregate(rootT$root, by=list(rootT$period,rootT$site), FUN="mean")
+
+
+Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3, 
 				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=p.mode$low, Dhigh=p.mode$high,
 				DaySite=datR$DaySite, Ndaysite=7, Adeep=Dave$Ave.deepest)
 				
@@ -81,7 +89,7 @@ initlist<-list(list(
 					0.104,0.1277),
 					beta = c(
 					1.004,1.257,2.7,1.911,4.934,
-					4.644,4.531),
+					4.644,4.531),r.tot=c(10,8,9,9,14,8,11),
 					sig.bio = 1.563),
 					list(
 					Dmode = c(
@@ -89,12 +97,12 @@ initlist<-list(list(
 					0.07278,0.06833),
 					beta = c(
 					1.112,1.321,2.065,2.118,4.459,
-					4.869,6.078),
+					4.869,6.078),r.tot=c(11,9,10,10,15,9,12),
 					sig.bio = 1.439),
 					list(
 					Dmode = c(
 					0.9814,0.3516,0.2427,0.1938,0.05526,
-					0.1764,0.08517),
+					0.1764,0.08517),r.tot=c(9,7,8,8,13,7,10),
 					beta = c(
 					1.012,1.532,2.431,2.598,5.045,
 					3.31,4.971),
@@ -102,7 +110,7 @@ initlist<-list(list(
 				
 				
 initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\Siberia_root_profile\\Distrubution_model_code.txt",
-				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "Rbeta","Dmed", "Dmean", "r.rep"),
-				n.iter=3000,n.chains=3,n.burnin=2000,n.thin=25,
+				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "Rbeta","Dmed", "Dmean", "r.tot","r.rep"),
+				n.iter=4000,n.chains=3,n.burnin=2000,n.thin=25,
 				working.directory="c:\\Users\\hkropp\\Google Drive\\root_analysis",
 				debug=TRUE, codaPkg=TRUE)
