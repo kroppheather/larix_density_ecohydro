@@ -10,6 +10,7 @@ datR<-read.csv("fine_root_out.csv")
 rootT<-aggregate(datR$bio.mg.cm3, by=list(datR$loc.id, datR$period), FUN="sum")
 colnames(rootT)<-c("loc", "period","root")
 #need a location index for period and loc because is a sparse array
+#this location index preserves both rep and location type
 rootT$loc.period<-seq(1,42)
 #create loc.period index for the biomass obs
 for(i in 1:dim(datR)[1]){
@@ -33,6 +34,27 @@ for(i in 1:dim(datR)[1]){
 	}
 
 }
+#create an index that varies by  period,site, loc,
+#set up a table that varies by this
+#also look at how R tot varies within these groups
+#set up 
+rootT$loc.type<-ifelse(rootT$loc<=3,1,
+				ifelse(rootT$loc>3&rootT$loc<=6,2,
+				ifelse(rootT$loc>6&rootT$loc<=9,1,
+				ifelse(rootT$loc>9&rootT$loc<=12,2,NA))))
+rootT.spt<-aggregate(rootT$root, by=list(rootT$period, rootT$loc.type, rootT$site), FUN="mean")
+colnames(rootT.spt)<-c("period","location","site")
+datR$st.id<-ifelse(datR$loc=="s",1,2)
+rootT.spt$spt.id<-seq(1,dim(rootT.spt)[1])
+#set up the index for day and type and period
+for(i in 1:dim(datR)[1]){
+	for(j in 1:dim(rootT.spt)[1]){
+		if(rootT.spt$location[j]==datR$st.id[i]&rootT.spt$period[j]==datR$period[i]&rootT.spt$site[j]==datR$Site[i]){
+			datR$spt.id[i]<-rootT.spt$spt.id[j]
+	
+		}
+	}
+}
 
 #examine the depth that the mode occurs at for each sample point to 
 #help with an informative prior
@@ -46,6 +68,7 @@ for(i in 1:42){
 	lpm.row[i]<-lp.row[[i]][1]
 }
 
+
 depM.lp<-datR$mid.norm[lpm.row]
 site.lp<-datR$Site[lpm.row]
 lp.mode$depM<-depM.lp
@@ -57,6 +80,9 @@ p.mode$low<-p.mode$x-p.modesd$x
 p.mode$high<-p.mode$x+p.mode$x
 
 p.mode$high<-ifelse(p.mode$high>1,.999,p.mode$high)
+
+####Need to summarize p.mode for new index by location site and period
+
 
 #get the average depth of the active layer for each site and depth
 datA<-read.csv("active_depth.csv")
@@ -81,7 +107,7 @@ Rdaysite<-aggregate(rootT$root, by=list(rootT$period,rootT$site), FUN="mean")
 
 Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3, 
 				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=p.mode$low, Dhigh=p.mode$high,
-				DaySite=datR$DaySite, Ndaysite=7, Adeep=Dave$Ave.deepest)
+				DaySite=datR$DaySite, Ndaysite=7, Adeep=Dave$Ave.deepest,DaySiteLoc=datR$spt.id, Ndaysiteloc=dim(rootT.spt)[1])
 				
 initlist<-list(list(
 					Dmode = c(
