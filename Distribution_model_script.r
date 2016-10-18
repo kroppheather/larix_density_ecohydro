@@ -37,13 +37,15 @@ for(i in 1:dim(datR)[1]){
 #create an index that varies by  period,site, loc,
 #set up a table that varies by this
 #also look at how R tot varies within these groups
-#set up 
+#loc.type 1=shrub 2=tree
+#site 1 is high density and 2 is low density
+rootT$site<-ifelse(rootT$loc<=6,1,2)
 rootT$loc.type<-ifelse(rootT$loc<=3,1,
 				ifelse(rootT$loc>3&rootT$loc<=6,2,
 				ifelse(rootT$loc>6&rootT$loc<=9,1,
 				ifelse(rootT$loc>9&rootT$loc<=12,2,NA))))
 rootT.spt<-aggregate(rootT$root, by=list(rootT$period, rootT$loc.type, rootT$site), FUN="mean")
-colnames(rootT.spt)<-c("period","location","site")
+colnames(rootT.spt)<-c("period","location","site","Tot.bio")
 datR$st.id<-ifelse(datR$loc=="s",1,2)
 rootT.spt$spt.id<-seq(1,dim(rootT.spt)[1])
 #set up the index for day and type and period
@@ -68,12 +70,13 @@ for(i in 1:42){
 	lpm.row[i]<-lp.row[[i]][1]
 }
 
-
+#grab rows with the mode
 depM.lp<-datR$mid.norm[lpm.row]
 site.lp<-datR$Site[lpm.row]
+#add to data frame
 lp.mode$depM<-depM.lp
 lp.mode$site<-site.lp
-#get the average depth for each period
+#get the average depth for each period and site
 p.mode<-aggregate(lp.mode$depM, by=list(lp.mode$Group.2,lp.mode$site), FUN="mean")
 p.modesd<-aggregate(lp.mode$depM, by=list(lp.mode$Group.2,lp.mode$site), FUN="sd")
 p.mode$low<-p.mode$x-p.modesd$x
@@ -81,14 +84,38 @@ p.mode$high<-p.mode$x+p.mode$x
 
 p.mode$high<-ifelse(p.mode$high>1,.999,p.mode$high)
 
-####Need to summarize p.mode for new index by location site and period
+####Need to summarize p.mode for new index by location, site, and period
+#add site id and location id to lp.mode
+lp.mode$site<-ifelse(lp.mode$Group.1<=6,1,2)
+lp.mode$loc.type<-ifelse(lp.mode$Group.1<=3,1,
+				ifelse(lp.mode$Group.1>3&lp.mode$Group.1<=6,2,
+				ifelse(lp.mode$Group.1>6&lp.mode$Group.1<=9,1,
+				ifelse(lp.mode$Group.1>9&lp.mode$Group.1<=12,2,NA))))
+#now add spt id
+for(i in 1:dim(lp.mode)[1]){
+	for(j in 1:dim(rootT.spt)[1]){
+		if(rootT.spt$period[j]==lp.mode$Group.2[i]&rootT.spt$site[j]==lp.mode$site[i]&rootT.spt$location[j]==lp.mode$loc.type[i]){
+			lp.mode$spt.id[i]<-rootT.spt$spt.id[j]
+		}
+	}
+}
+#calculate mode at spt
+spt.mode<-aggregate(lp.mode$depM, by=list(lp.mode$spt.id), FUN="mean")
+spt.modesd<-aggregate(lp.mode$depM, by=list(lp.mode$spt.id), FUN="sd")
 
+spt.mode$low<-spt.mode$x-spt.modesd$x
+spt.mode$high<-spt.mode$x+spt.mode$x
+
+spt.mode$high<-ifelse(spt.mode$high>1,.999,spt.mode$high)
 
 #get the average depth of the active layer for each site and depth
 datA<-read.csv("active_depth.csv")
 datA$siteid<-ifelse(datA$Site=="l",2,1)
 Dave<-aggregate(datA$Frozen.Depth, by=list(datA$period,datA$siteid), FUN="mean")
 colnames(Dave)<-c("period","siteid","Ave.deepest")
+
+
+
 #set up datalist for the model
 #data variables:
 #Nobs: number of observations of root biomass
@@ -106,8 +133,8 @@ Rdaysite<-aggregate(rootT$root, by=list(rootT$period,rootT$site), FUN="mean")
 
 
 Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3, 
-				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=p.mode$low, Dhigh=p.mode$high,
-				DaySite=datR$DaySite, Ndaysite=7, Adeep=Dave$Ave.deepest,DaySiteLoc=datR$spt.id, Ndaysiteloc=dim(rootT.spt)[1])
+				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=spt.mode$low, Dhigh=spt.mode$high,
+				DaySite=datR$DaySite, Ndaysite=7, DaySiteLoc=datR$spt.id, Ndaysiteloc=dim(rootT.spt)[1])
 				
 initlist<-list(list(
 					Dmode = c(
