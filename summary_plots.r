@@ -181,8 +181,7 @@ legend(1,100, c("High density shrub", "High density tree", "Low density shrub","
 setwd("c:\\Users\\hkropp\\Google Drive\\root_analysis")
 #read in data
 datR<-read.csv("fine_root_out.csv")
-#read in median root profile estimate
-datM<-read.csv("rmed_3a407f3.csv")
+
 #read in index and depth info
 datD<-read.csv("total_root_loc_site_period.csv")
 #read in data for estimated depth increments
@@ -381,3 +380,28 @@ text(5,90,"Mid August", cex=2)
 legend(8,85,c("shrub","tree"), col=c("sienna3","sienna4"), pch=19, cex=2, bty="n")
 axis(1, seq(0,10, by=1), cex.axis=2)
 mtext(expression("Root Biomass (mg cm"^-3~")"), side=1, outer=TRUE, line=-1, cex=2)
+
+
+#######################################################################################
+#######################################################################################
+#plot the median depth of rooting according to the model estimates
+#read in median root profile estimate
+datM<-read.csv("rmed_3a407f3.csv")
+#read in index and depth info
+datD<-read.csv("total_root_loc_site_period.csv")
+
+head(datM)
+#find up what the max median depth could be
+max(datM$rmed.h)
+#max is 32.78
+#set up maximum to be at 35
+yH<-35
+
+#set up a plot for looking at median depth
+bcH<-20
+bcW<-40
+bc<-layout(matrix(c(1), ncol=1), width=c(lcm(bcW)), height=c(lcm(bcH)))
+layout.show(bc)
+
+
+
