@@ -132,8 +132,8 @@ for(i in 1:dim(datA)[1]){
 AD.spt<-aggregate(datA$Frozen.Depth,by=list(datA$spt.id), FUN="mean")
 colnames(AD.spt)<-c("spt.id", "A.depth")
 #add A.depth to root.spt and output for plotting use
-root.spt$A.depth<-AD.spt$A.depth
-
+rootT.spt$A.depth<-AD.spt$A.depth
+write.table(rootT.spt, "total_root_loc_site_period.csv", sep=",", row.names=FALSE)
 
 #set up datalist for the model
 #data variables:
@@ -202,7 +202,7 @@ initlist<-list(list(
 				
 initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\Siberia_root_profile\\Distrubution_model_code.txt",
 				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", 
-													"Rbeta","r.med", "r.mean", "r.mode","r.tot","r.rep"),
+													"Rbeta","r.med", "r.mean", "r.mode","r.tot","r.rep", "med.diff"),
 				n.iter=4000,n.chains=3,n.burnin=2000,n.thin=25,
 				working.directory="c:\\Users\\hkropp\\Google Drive\\root_analysis",
 				debug=TRUE, codaPkg=TRUE)
