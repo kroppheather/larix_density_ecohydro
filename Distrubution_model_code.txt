@@ -67,6 +67,15 @@ Model{
 	med.diff[25]<-r.med[9]-r.med[11]
 	med.diff[26]<-r.med[12]-r.med[13]
 	med.diff[27]<-r.med[12]-r.med[14]
+	
+	#calculate predicted root biomass at specific depth increments from parameters
+	for(z in 1:100){
+		for(i in 1:Ndaysiteloc){
+			bio.est[z,i]<-r.tot[i]*Rbeta.est[z,i]
+			Rbeta.est[z,i]<-exp(log.beta.est[z,i])
+			log.beta.est[z,i]<-(log(depth.est[z,i])*(alpha[i]-1))+(log(1-depth.est[z,i])*beta[i])
+		}
+	}
 }
 
 #data variables:

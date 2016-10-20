@@ -135,6 +135,13 @@ colnames(AD.spt)<-c("spt.id", "A.depth")
 rootT.spt$A.depth<-AD.spt$A.depth
 write.table(rootT.spt, "total_root_loc_site_period.csv", sep=",", row.names=FALSE)
 
+D.seq<-matrix(rep(0,100*14), ncol=14)
+D.seqUN<-matrix(rep(0,100*14), ncol=14)
+for(i in 1:14){
+	D.seq[,i]<-seq(.1,rootT.spt$A.depth[i],length.out=100)/rootT.spt$A.depth[i]
+	D.seqUN[,i]<-seq(.1,rootT.spt$A.depth[i],length.out=100)
+}
+
 #set up datalist for the model
 #data variables:
 #Nobs: number of observations of root biomass
@@ -154,7 +161,7 @@ Rdaysite<-aggregate(rootT$root, by=list(rootT$period,rootT$site), FUN="mean")
 Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3, 
 				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=spt.mode$low, Dhigh=spt.mode$high,
 				DaySite=datR$DaySite, Ndaysite=7, DaySiteLoc=datR$spt.id, Ndaysiteloc=dim(rootT.spt)[1],
-				A.depth=AD.spt$A.depth)
+				A.depth=AD.spt$A.depth, depth.est=D.seq)
 				
 initlist<-list(list(
 	Dmode = c(
@@ -201,7 +208,7 @@ initlist<-list(list(
 				
 				
 initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\Siberia_root_profile\\Distrubution_model_code.txt",
-				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", 
+				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "bio.est",
 													"Rbeta","r.med", "r.mean", "r.mode","r.tot","r.rep", "med.diff"),
 				n.iter=4000,n.chains=3,n.burnin=2000,n.thin=25,
 				working.directory="c:\\Users\\hkropp\\Google Drive\\root_analysis",

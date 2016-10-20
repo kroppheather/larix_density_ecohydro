@@ -177,8 +177,60 @@ legend(1,100, c("High density shrub", "High density tree", "Low density shrub","
 #################Make a plot if the model results  #################
 #################and the root biomass across depth #################
 
+#set working directory
+setwd("c:\\Users\\hkropp\\Google Drive\\root_analysis")
+#read in data
+datR<-read.csv("fine_root_out.csv")
+#read in root profile parameters
+datP<-read.csv("parameters_3a407f3.csv")
+#read in median root profile estimate
+datM<-read.csv("rmed_3a407f3.csv")
+#read in index and depth info
+datD<-read.csv("total_root_loc_site_period.csv")
+#read in data for estimated depth increments
 
 
-	
 
 
+#run function on parameter values
+D.seq<-matrix(rep(0,100*14), ncol=14)
+D.seqUN<-matrix(rep(0,100*14), ncol=14)
+for(i in 1:14){
+	D.seq[,i]<-seq(.1,datD$A.depth[i],length.out=100)/datD$A.depth[i]
+	D.seqUN[,i]<-seq(.1,datD$A.depth[i],length.out=100)
+}
+
+
+
+#try an overlay plot where the root function 0-1 is plotted to the average active layer depth
+#and the root biomass is represented with points
+lw<-10
+lh<-11
+
+ab<-layout(matrix(seq(1,8), ncol=4, byrow=TRUE), width=c(lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw)),
+				height=c(lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh)))
+				
+layout.show(ab)
+#find the maximum measurement of roots
+depmax<-aggregate(datR$depth.midpoint, by=list(datR$period,datR$loc,datR$site), FUN="max")
+#look at diff between max and ave
+Ddiff<-depmax$x-datD$A.depth
+#see what the highest point is to make plots around
+Dhigh<-ifelse(depmax$x>=datD$A.depth,depmax$x,datD$A.depth)
+#highest in high density
+yuH<-max(Dhigh[1:8])+4
+yuL<-max(Dhigh[9:14])+2.5
+#make a plot of biomass for high density on period 1
+
+layout.show(ab)
+#start by doing all plots across the same depth range
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), type="n", xlim=c(0,12.5),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
+points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="s"&datR$period==1],datR$depth.midpoint[datR$site=="h"&datR$loc=="s"&datR$period==1], 
+		col="royalblue1", pch=19)
+points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="t"&datR$period==1],datR$depth.midpoint[datR$site=="h"&datR$loc=="t"&datR$period==1], 
+		col="royalblue4", pch=19)
+points(R.mean[,1],D.seqUN[,1], type="l", lwd=2, col="royalblue1")		
+polygon(c(R.low[,1],rev(R.high[,1])), c(D.seqUN[,1], rev(D.seqUN[,1])), col="lightskyblue1")
+
+head(R.low[,1])
