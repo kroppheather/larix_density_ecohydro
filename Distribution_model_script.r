@@ -114,6 +114,25 @@ datA$siteid<-ifelse(datA$Site=="l",2,1)
 Dave<-aggregate(datA$Frozen.Depth, by=list(datA$period,datA$siteid), FUN="mean")
 colnames(Dave)<-c("period","siteid","Ave.deepest")
 
+datA$locid<-ifelse(datA$Loc=="s",1,2)
+#set up spt id for active depth
+for(i in 1:dim(datA)[1]){
+	for(j in 1:dim(rootT.spt)[1]){
+		if(rootT.spt$period[j]==datA$period[i]&rootT.spt$location[j]==datA$locid[i]&rootT.spt$site[j]==datA$siteid[i]){
+			datA$spt.id[i]<-rootT.spt$spt.id[j]
+		
+		}
+	
+	
+	}
+
+}
+
+#aggregate the thaw depth by spt
+AD.spt<-aggregate(datA$Frozen.Depth,by=list(datA$spt.id), FUN="mean")
+colnames(AD.spt)<-c("spt.id", "A.depth")
+#add A.depth to root.spt and output for plotting use
+root.spt$A.depth<-AD.spt$A.depth
 
 
 #set up datalist for the model
@@ -134,36 +153,56 @@ Rdaysite<-aggregate(rootT$root, by=list(rootT$period,rootT$site), FUN="mean")
 
 Rdatalist<-list(Nobs=dim(datR)[1], r.bio=datR$bio.mg.cm3, 
 				loc.period=datR$loc.period,depth=datR$mid.norm,Nday=4, Day=datR$period, Dlow=spt.mode$low, Dhigh=spt.mode$high,
-				DaySite=datR$DaySite, Ndaysite=7, DaySiteLoc=datR$spt.id, Ndaysiteloc=dim(rootT.spt)[1])
+				DaySite=datR$DaySite, Ndaysite=7, DaySiteLoc=datR$spt.id, Ndaysiteloc=dim(rootT.spt)[1],
+				A.depth=AD.spt$A.depth)
 				
 initlist<-list(list(
-					Dmode = c(
-					0.9936,0.6018,0.2041,0.3438,0.05979,
-					0.104,0.1277),
-					beta = c(
-					1.004,1.257,2.7,1.911,4.934,
-					4.644,4.531),r.tot=c(10,8,9,9,14,8,11),
-					sig.bio = 1.563),
-					list(
-					Dmode = c(
-					0.8974,0.5002,0.3488,0.2259,0.05694,
-					0.07278,0.06833),
-					beta = c(
-					1.112,1.321,2.065,2.118,4.459,
-					4.869,6.078),r.tot=c(11,9,10,10,15,9,12),
-					sig.bio = 1.439),
-					list(
-					Dmode = c(
-					0.9814,0.3516,0.2427,0.1938,0.05526,
-					0.1764,0.08517),r.tot=c(9,7,8,8,13,7,10),
-					beta = c(
-					1.012,1.532,2.431,2.598,5.045,
-					3.31,4.971),
-					sig.bio = 1.414))
+	Dmode = c(
+	0.4971,0.4316,0.1409,0.289,0.9402,
+	0.3792,0.2955,0.4009,0.03711,0.08596,
+	0.01982,0.1294,0.05219,0.1008),
+	beta = c(
+	1.408,2.081,2.948,2.878,1.066,
+	1.527,3.078,18.76,5.493,2.47,
+	17.47,4.412,7.109,5.402),
+	r.tot = c(
+	7.22,15.89,10.64,16.22,29.05,
+	11.39,15.45,14.95,12.61,1.556,
+	6.858,27.37,10.29,20.35),
+	sig.bio = 1.603),
+	list(
+	Dmode = c(
+	0.3358,0.1366,0.2249,0.1618,0.9426,
+	0.5519,0.1454,0.6728,0.02984,0.09967,
+	0.03816,0.1173,0.1174,0.1295),
+	beta = c(
+	1.79,2.516,1.809,1.773,1.092,
+	1.273,1.669,1.487,7.682,5.184,
+	11.17,5.355,5.239,4.18),
+	r.tot = c(
+	12.91,10.29,6.6,5.657,29.14,
+	7.401,2.975,7.329,17.97,9.468,
+	9.644,23.09,18.03,16.88),
+	sig.bio = 1.728),
+	list(
+	Dmode = c(
+	0.8412,0.4699,0.1727,0.2418,0.9443,
+	0.4566,0.3141,0.5824,0.02884,0.08139,
+	0.05799,0.1445,0.06872,0.1481),
+	beta = c(
+	1.173,1.92,3.748,2.061,1.056,
+	1.734,3.637,12.48,9.566,4.281,
+	5.851,4.566,1.554,3.879),
+	r.tot = c(
+	8.461,13.41,16.42,9.697,25.63,
+	14.17,20.45,1.046,27.74,3.505,
+	9.974,26.71,2.017,16.3),
+	sig.bio = 1.522))
 				
 				
 initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\Siberia_root_profile\\Distrubution_model_code.txt",
-				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "Rbeta","Dmed", "Dmean", "r.tot","r.rep"),
+				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", 
+													"Rbeta","r.med", "r.mean", "r.mode","r.tot","r.rep"),
 				n.iter=4000,n.chains=3,n.burnin=2000,n.thin=25,
 				working.directory="c:\\Users\\hkropp\\Google Drive\\root_analysis",
 				debug=TRUE, codaPkg=TRUE)

@@ -34,6 +34,9 @@ Model{
 			#Dmean[i]<-alpha[i]/(alpha[i]+beta[i])*Adeep[i]
 			#give r.tot a noninformative prior
 			r.tot[i]~dnorm(0,.01)I(0,)
+			r.mode[i]<-Dmode[i]*A.depth[i]
+			r.mean[i]<-(alpha[i]/(alpha[i]+beta[i]))*A.depth[i]
+			r.med[i]<-(alpha[i]-(1/3))/(alpha[i]+beta[i]-(2/3))*A.depth[i]
 	}
 	
 

@@ -172,6 +172,13 @@ mtext("Type",  line=3, side=1, cex=2)
 
 legend(1,100, c("High density shrub", "High density tree", "Low density shrub","Low density tree"), 
 		fill=c("royalblue1","royalblue4","sienna3","sienna4"), bty="n", cex=1.5)
+		
+####################################################################
+#################Make a plot if the model results  #################
+#################and the root biomass across depth #################
+
+
+
 	
 
 
