@@ -385,6 +385,7 @@ mtext(expression("Root Biomass (mg cm"^-3~")"), side=1, outer=TRUE, line=-1, cex
 #######################################################################################
 #######################################################################################
 #plot the median depth of rooting according to the model estimates
+setwd("c:\\Users\\hkropp\\Google Drive\\root_analysis")
 #read in median root profile estimate
 datM<-read.csv("rmed_3a407f3.csv")
 #read in index and depth info
@@ -398,10 +399,61 @@ max(datM$rmed.h)
 yH<-35
 
 #set up a plot for looking at median depth
-bcH<-20
-bcW<-40
+bcH<-16
+bcW<-36
 bc<-layout(matrix(c(1), ncol=1), width=c(lcm(bcW)), height=c(lcm(bcH)))
 layout.show(bc)
+xseq1l<-seq(1,4)
+xseq1h<-seq(2,5)
+
+xseq2l<-seq(6,7)
+xseq2h<-seq(7,8)
+
+xseq3l<-seq(9,12)
+xseq3h<-seq(10,13)
+
+xseq4l<-seq(14,17)
+xseq4h<-seq(15,18)
+
+xu<-19
+
+colv<-c("royalblue1", "royalblue4", "sienna3", "sienna4")
+
+#make a barplot of the median depth 
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(0,xu),ylim=c(yH,0),type="n", 
+		xlab=" ", ylab=" ", xaxs="i", yaxs="i",axes=FALSE)
+for(i in 1:4){
+polygon(c(xseq1l[i],xseq1l[i],xseq1h[i],xseq1h[i]),
+		c(0,datM$rmed[datD$period==1][i],datM$rmed[datD$period==1][i],0),
+		col=colv[i])
+
+polygon(c(xseq2l[i],xseq2l[i],xseq2h[i],xseq2h[i]),
+		c(0,datM$rmed[datD$period==2][i],datM$rmed[datD$period==2][i],0),
+		col=colv[i])
+polygon(c(xseq3l[i],xseq3l[i],xseq3h[i],xseq3h[i]),
+		c(0,datM$rmed[datD$period==3][i],datM$rmed[datD$period==3][i],0),
+		col=colv[i])
+polygon(c(xseq4l[i],xseq4l[i],xseq4h[i],xseq4h[i]),
+		c(0,datM$rmed[datD$period==4][i],datM$rmed[datD$period==4][i],0),
+		col=colv[i])		
+		
+}
+
+arrows(xseq1l+.5,datM$rmed.l[datD$period==1],xseq1l+.5,datM$rmed.h[datD$period==1],code=0)
+arrows(xseq2l+.5,datM$rmed.l[datD$period==2],xseq2l+.5,datM$rmed.h[datD$period==2],code=0)
+arrows(xseq3l+.5,datM$rmed.l[datD$period==3],xseq3l+.5,datM$rmed.h[datD$period==3],code=0)
+arrows(xseq4l+.5,datM$rmed.l[datD$period==4],xseq4l+.5,datM$rmed.h[datD$period==4],code=0)
+
+axis(2, seq(0,35, by=5), cex.axis=2, las=2)
+axis(3, c(-5,4,7,11,16), c(" ","Early July", "Mid July", "End July", "Mid August"),
+		cex.axis=2)
 
 
+mtext("depth (cm)", side=2, cex=2, line=4)
+mtext("Time", side=3, cex=2, line=3)
 
+legend(1,25, c("high shrub", "high tree", "low shrub", "low tree"),
+		fill=colv, bty="n", cex=2)
+		
+		
