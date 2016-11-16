@@ -1,7 +1,8 @@
 #############################################
 ##########Soil Profile Data #################
 
-setwd("c:\\Users\\hkropp\\Google Drive\\root_analysis")
+#setwd("c:\\Users\\hkropp\\Google Drive\\root_analysis")
+setwd("c:\\Users\\kropp_000\\Google Drive\\root_analysis")
 #read in data describing the profile
 datP<-read.csv("soil_prof_desc.csv")
 
@@ -114,7 +115,7 @@ LowT$high<-LowT$depth+LowT$sd
 
 #make a barplot of the profiles
 
-a<-layout(matrix(c(1), ncol=1), width=c(lcm(40)), height=c(lcm(20)))
+a<-layout(matrix(c(1), ncol=1), width=c(lcm(35)), height=c(lcm(18)))
 layout.show(a)
 
 #set up plot variables

@@ -66,7 +66,8 @@ lp.mode<-aggregate(datR$bio.mg.cm3, by=list(datR$loc.id,datR$period), FUN="max")
 lp.row<-list()
 lpm.row<-numeric(0)
 for(i in 1:42){
-	lp.row[[i]]<-which(datR$bio.mg.cm3==lp.mode$x[i]&datR$loc.id==lp.mode$Group.1[i]&datR$period==lp.mode$Group.2[i])
+	lp.row[[i]]<-which(datR$bio.mg.cm3==lp.mode$x[i]&datR$loc.id==lp.mode$Group.1[i]
+				&datR$period==lp.mode$Group.2[i])
 	lpm.row[i]<-lp.row[[i]][1]
 }
 
