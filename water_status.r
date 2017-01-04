@@ -232,7 +232,7 @@ midgroup<-ifelse(datS$midpoint<=5,1,
 datS$midgroup<-midgroup
 datSn<-na.omit(datS)
 SWave<-aggregate(datSn$SWC,by=list(datSn$doy,datSn$midgroup,datSn$location,datSn$site), FUN="mean")
-
+colnames(SWave)<-c("doy", "depth", "location", "site","SWC")
 midcolor<-ifelse(SWave$depth==1,"cadetblue2",
 		ifelse(SWave$depth==2,"darkturquoise",
 		ifelse(SWave$depth==3,"royalblue2",
@@ -241,7 +241,7 @@ midcolor<-ifelse(SWave$depth==1,"cadetblue2",
 		ifelse(SWave$depth==6,"sienna2",
 		ifelse(SWave$depth==7,"tomato3",NA)))))))
 
-colnames(SWave)<-c("doy", "depth", "location", "site","SWC")
+
 SWave$midcolor<-midcolor
 
 #make a plot
@@ -253,10 +253,10 @@ points(Hswc$doy,Hswc$swc1, type="l", col="cadetblue3", lwd=2)
 points(Hswc$doy,Hswc$swc2,type="l", col="cadetblue4", lwd=2)
 points(Hswc$doy,Hswc$swc3,type="l", col="tomato4", lwd=2)
 
-		
+
 points(SWave$doy[SWave$location=="t"&SWave$site=="h"],SWave$SWC[SWave$location=="t"&SWave$site=="h"],
-		pch=19, col=SWave$midcolor[SWave$location=="t"&SWave$site=="h"])
-		
+		pch=19, col=SWave$midcolor[SWave$location=="t"&SWave$site=="h"], lwd=2)
+	
 points(SWave$doy[SWave$location=="s"&SWave$site=="h"]+.5,SWave$SWC[SWave$location=="s"&SWave$site=="h"],
 		pch=15, col=SWave$midcolor[SWave$location=="s"&SWave$site=="h"])
 		
@@ -281,4 +281,56 @@ points(SWave$doy[SWave$location=="s"&SWave$site=="l"]+.5,SWave$SWC[SWave$locatio
 				fill=c("cadetblue2","darkturquoise","royalblue2","seagreen3","springgreen4","sienna2","tomato3"), bty="n")
 		legend(220,.7, c("5 cm shrub", "5 cm tree", "50cm"), col=c("cadetblue3","cadetblue4", "tomato4"), lwd=2, bty="n")
 			
-		
+	
+##############################################################################
+##############################################################################
+library(plyr)
+###look at the porportion of roots in the green moss layer for each individual
+#add root data
+datR<-read.csv("fine_root_out.csv")
+
+datSP<-read.csv("soil_prof_desc.csv")
+
+#join the soil profile data to the root data
+colnames(datSP)<-c("DOY", "Year", "site","loc", "rep", "org", "green","brown")
+
+datR1<-join(datR,datSP,by=c("DOY","Year","site","loc","rep"), type="left")
+
+#now aggregate to get the total root biomass across the profile
+
+datRT<-aggregate(datR1$bio.mg.cm3, by=list(datR1$DOY,datR1$site,datR1$loc,datR1$rep), FUN="sum")
+colnames(datRT)<-c("DOY","site","loc","rep","Rtot")
+
+#now filter so that any observations below the green moss are filtered
+
+datR2<-datR1[is.na(datR1$green)==FALSE,]
+#join total root biomass
+datR3<-join(datR2,datRT,by=c("DOY","site","loc","rep"), type="left")
+
+#calculate the proportion of total for each midpoint
+datR3$propbio<-datR3$bio.mg.cm3/datR3$Rtot
+datR3$percbio<-(datR3$bio.mg.cm3/datR3$Rtot)*100
+
+#now look at layers completely in green moss
+datR4<-datR3[datR3$depth.midpoint<=datR3$green,]
+datR5<-datR3[datR3$depth_end<=datR3$green,]
+
+#now sum it up in case more than one midpoint is in the data
+datSP<-aggregate(datR4$percbio, by=list(datR4$DOY,datR4$site,datR4$loc,datR4$rep), FUN="sum")
+colnames(datSP)<-c("DOY","site","loc","rep","percbio")
+datSP[datSP$site=="h",]
+
+
+
+#take the average and see how many observations
+aveSP<-aggregate(datSP$percbio,by=list(datSP$site,datSP$DOY),FUN="mean")
+nSP<-aggregate(datSP$percbio,by=list(datSP$site,datSP$DOY),FUN="length")
+
+#look at more conservative metric
+datSP2<-aggregate(datR5$percbio, by=list(datR5$DOY,datR5$site,datR5$loc,datR5$rep), FUN="sum")
+colnames(datSP2)<-c("DOY","site","loc","rep","percbio")
+
+
+#take the average and see how many observations
+aveSP2<-aggregate(datSP2$percbio,by=list(datSP2$site,datSP2$DOY),FUN="mean")
+nSP2<-aggregate(datSP2$percbio,by=list(datSP2$site,datSP2$DOY),FUN="length")
