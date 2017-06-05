@@ -173,9 +173,9 @@ datS$b<-ifelse(SensDiff>0,SensDiff/datS$Sensor.length,0)
 datS$a<-1-datS$b
 
 
-datSH<-datS[datS$stand=="high",]
+
 datSL<- datS[datS$stand=="low",]
-datSH<-datSH[1:8,]
+
 
 ###################################################
 ###########corrected dT value with sapwood
@@ -189,11 +189,7 @@ for(i in 1:16){
 		dTcorrL[,i]<-(datAL[,i]-(datSL$b[i]*datAL[,16+i]))/datSL$a[i]
 	
 }
-for(i in 1:8){
 
-		dTcorrH[,i]<-(datAH[,i]-(datSH$b[i]*datAH[,9+i]))/datSH$a[i]
-	
-}
 
 
 #low
@@ -203,37 +199,21 @@ for(i in 1:16){
 			main=paste("sensor #", i), pch=19)
 	dev.off()
 }
-#high
-for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\cor_dT\\High\\corDT", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(dTcorrH)[1]), dTcorrH[,i], xlab="time", ylab="dT cor", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
+
 
 #T diff calculation
 KL<-matrix(rep(NA,dim(datAL)[1]*16), ncol=16)
-KH<-matrix(rep(NA,dim(datAH)[1]*8), ncol=8)
+
 for(i in 1:16){
 		KL[,i]<-(datAL[,16+i]-dTcorrL[,i])/dTcorrL[,i]
 	
 }
 
-for(i in 1:8){
-
-		KH[,i]<-(datAH[,9+i]-dTcorrH[,i])/dTcorrH[,i]
-	
-}
 
 
 
-#calculate velocity in cm/ s
-V.h<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
 V.l<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-for(i in 1:8){
 
-	V.h[,i]<-ifelse(KH[,i]>=0,0.0119*(KH[,i]^1.231),NA)
-}	
 for(i in 1:16){
 	V.l[,i]<-ifelse(KL[,i]>=0,0.0119*(KL[,i]^1.231),NA)
 }
@@ -247,11 +227,21 @@ for(i in 1:16){
  V.l1<-ifelse(V.l<0,NA,V.l)
  #filter any values above the 95% quantile for each sensor
  V.l2<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
+ V.l3<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
  for(i in 1:16){
  
 	V.l2[,i]<-ifelse(V.l1[,i]>quantile(V.l1[,i],probs=.9,na.rm=TRUE)|V.l1[,i]==Inf|V.l1[,i]==-Inf,NA,V.l1[,i])
- 
+	V.l3[,i]<-V.l2[,i]*datSL$sapA[i]
  }
+ 
+ #add time information to the velocity
+ Velocity<-data.frame(V.l3)
+Velocity$doy<-doyDL 
+Velocity$hour<-timeDL 
+
+#pull out seperate time df to match to met data
+TimeLow<-data.frame(doy=doyDL,hour=timeDL)
+
  
  #leaf area calc for larch
  leaf.bio<-function(DBH,a.leaf,b.leaf){a.leaf*(DBH^b.leaf)}
@@ -262,149 +252,35 @@ datSL$leafm2<-datSL$leaf*.0001
 #sensor 1 consistently has really unusually high values. Omitting becasue
 #cannot verify if these values are real or a result of sensor/installation error
 
-#now plot the velocity
-#low
-for(i in 1:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\velocity\\Low\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(V.l2)[1]), V.l2[,i], xlab="time", ylab="V (cm/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-#high
-for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\velocity\\High\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(V.h)[1]), V.h[,i], xlab="time", ylab="V (cm/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-
-
-
-
-#now calculate in g per s
-
-F.h<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-F.hf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-F.lf<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-F.l<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-for(i in 1:16){
-
-	F.l[,i]<-V.l[,i]*datSL$sapA[i]
-	F.lf[,i]<-ifelse(F.l[,i]<5,F.l[,i],NA)
-	
-}	
-for(i in 1:8){
-	F.h[,i]<-V.h[,i]*datSH$sapA[i]
-	F.hf[,i]<-ifelse(F.h[,i]<5,F.h[,i],NA)
-	}	
-	
-#now plot the flow in g/s
-#low
-for(i in 1:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\Flow\\Low\\flow", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(F.lf)[1]), F.lf[,i], xlab="time", ylab="Flow (g/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-#high
-for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\Flow\\High\\flow", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(F.hf)[1]), F.hf[,i], xlab="time", ylab="Flow (g/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-
-
-#now normalize by leaf area
-leaf.bio<-function(DBH,a.leaf,b.leaf){a.leaf*(DBH^b.leaf)}
-datSH$leafwt<-leaf.bio(datSH$DBH,40.5,1.41)	
-datSH$leaf<-datSH$leafwt*143
-datSH$leafm2<-datSH$leaf*.0001
-
-
-datSL$leafwt<-leaf.bio(datSL$DBH,40.5,1.41)	
-datSL$leaf<-datSL$leafwt*143
-datSL$leafm2<-datSL$leaf*.0001
-
-#now calculate in g m-2 s
-T.gL<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-T.gH<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-T.gLf<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-T.gLf2<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-T.gHf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-for(i in 1:8){
-	T.gH[,i]<-F.hf[,i]/datSH$leafm2[i]
-	T.gHf[,i]<-ifelse(T.gH[,i]<.01,T.gH[,i],NA)
-	
-}
-for(i in 1:16){
-	T.gL[,i]<-F.lf[,i]/datSL$leafm2[i]	
-	T.gLf[,i]<-ifelse(T.gL[,i]<1,T.gL[,i],NA)
-
-}
-
-#low
-for(i in 1:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\Tg\\Low\\sensor", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(T.gLf)[1]), T.gLf[,i], xlab="time", ylab="Flow (g/ m2 s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-#high
-for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\Tg\\High\\sensor", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(T.gH)[1]), T.gHf[,i], xlab="time", ylab="Flow (g/ m2 s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-
-datLc1<-data.frame(doy=doyDL,hour=timeDL,T.gLf/1000)
-datHc1<-data.frame(doy=doyDH,hour=timeDH,T.gHf/1000)
-
 datLmet<-read.csv("LowD_met.csv")
-datHmet<-read.csv("HighD_met.csv")
-#read in th
-datLtkg<-join(datLc1,datLmet, by=c("doy","hour"), type="left")
-datHtkg<-join(datHc1,datHmet, by=c("doy","hour"), type="left")
 
+metLow<-join(datLmet,TimeLow,by=c("doy","hour"), type="inner")
 
+#now need to create timestamp in sapfluxnet format
+#turn hour format into double digits
+hourLF<-formatC(floor(metLow$hour), width=2, flag="0" )
+minuteLF<-formatC((metLow$hour-floor(metLow$hour))*60, width=2, flag="0")
 
-Kg.coeff<-function(T){115.8+(.423*T)}
-datLtkg$Kg<-Kg.coeff(datLtkg$temp)
-datHtkg$Kg<-Kg.coeff(datHtkg$temp)
-#assuming a constate pressure for now needs to change
-Gs.convert1<-function(Kg,El,D){((Kg*El)/D)*100}
-unit.conv<-function(gs,T){gs*.446*(273/(T+273))*(100/101.3)}
+TimeFormat<-paste0(hourLF,":",minuteLF,":00")
 
-Gshigh<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-Gslow<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-Gshighmm<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-Gslowmm<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-Gshighf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-Gslowf<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
-for(i in 1:8){
-	Gshigh[,i]<-Gs.convert1(datHtkg$Kg,datHtkg[,i+2],datHtkg$D)
-	Gshighmm[,i]<-unit.conv(Gshigh[,i],datHtkg$temp)*1000
-	Gshighf[,i]<-ifelse(Gshighmm[,i]<300,Gshighmm[,i],NA)
-}	
-for(i in 1:16){	
-	Gslow[,i]<-Gs.convert1(datLtkg$Kg,datLtkg[,i+2],datLtkg$D)
-	Gslowmm[,i]<-unit.conv(Gslow[,i],datLtkg$temp)*1000
-	Gslowf[,i]<-ifelse(Gslowmm[,i]<300,Gslowmm[,i],NA)
-}
+dateCL<-as.Date(metLow$doy, format="%j", origin="1.1.2016")
 
+#get date formate
+dayCL<-formatC(day(dateCL),width=2, flag="0")
+monthCL<-formatC(month(dateCL),width=2, flag="0")
 
-#low
-for(i in 2:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\gsmm\\Low\\sensor", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(Gslowf)[1]), Gslowf[,i], xlab="time", ylab="gs (mmol m-2 s-1)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-#high
-for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\gsmm\\High\\sensor", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(Gshighf)[1]),Gshighf[,i], xlab="time", ylab="gs (mmol m-2 s-1)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
+dateFormat<-paste0(dayCL,"/",monthCL,"/2016 ", TimeFormat)
+
+Velocity$date<-dateFormat
+
+Vout<-data.frame(timestamp=dateFormat,V.l3[,1:16])
+sI<-seq(1,16)
+colnames(Vout)[2:17]<-paste0("plant",sI)
+
+metLow$date<-dateFormat
+
+mout<-data.frame(timestamp=dateFormat,ta=metLow$temp,rh=metLow$RH)
+
+write.table(mout,"metforFluxnet.csv",sep=",", row.names=FALSE )
+write.table(Vout,"VelocityforFluxnet.csv",sep=",", row.names=FALSE )
+write.table(datSL,"PlantforFluxnet.csv",sep=",", row.names=FALSE )
