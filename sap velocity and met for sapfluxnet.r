@@ -262,9 +262,10 @@ hourLF<-formatC(floor(metLow$hour), width=2, flag="0" )
 minuteLF<-formatC((metLow$hour-floor(metLow$hour))*60, width=2, flag="0")
 
 TimeFormat<-paste0(hourLF,":",minuteLF,":00")
-
-dateCL<-as.Date(metLow$doy, format="%j", origin="1.1.2016")
-
+#doesn't account for leap year so -1 to get the correct day
+#since all dates are post leap day
+dateCL<-as.Date(metLow$doy-1, origin="2016-01-01")
+d
 #get date formate
 dayCL<-formatC(day(dateCL),width=2, flag="0")
 monthCL<-formatC(month(dateCL),width=2, flag="0")
@@ -274,13 +275,18 @@ dateFormat<-paste0(dayCL,"/",monthCL,"/2016 ", TimeFormat)
 Velocity$date<-dateFormat
 
 Vout<-data.frame(timestamp=dateFormat,V.l3[,1:16])
-sI<-seq(1,16)
-colnames(Vout)[2:17]<-paste0("plant",sI)
+
 
 metLow$date<-dateFormat
 
 mout<-data.frame(timestamp=dateFormat,ta=metLow$temp,rh=metLow$RH)
 
+#don't includ plant 1 since abnormally high values that can't be verified
+Vout2<-data.frame(timestamp=Vout$timestamp,Vout[,3:17])
+sI<-seq(1,15)
+colnames(Vout2)[2:16]<-paste0("plant",sI)
+
+
 write.table(mout,"metforFluxnet.csv",sep=",", row.names=FALSE )
-write.table(Vout,"VelocityforFluxnet.csv",sep=",", row.names=FALSE )
+write.table(Vout2,"VelocityforFluxnet.csv",sep=",", row.names=FALSE )
 write.table(datSL,"PlantforFluxnet.csv",sep=",", row.names=FALSE )
