@@ -234,6 +234,16 @@ for(i in 1:16){
 	V.l3[,i]<-V.l2[,i]*datSL$sapA[i]
  }
  
+ #plot sensors with north and south
+ windows(16)
+ plot(c(V.l2[,5],V.l2[,8],V.l2[,11]),c(V.l2[,6],V.l2[,9],V.l2[,12]))
+ t1<-lm(c(V.l2[,5],V.l2[,8],V.l2[,11])~c(V.l2[,6],V.l2[,9],V.l2[,12]))
+	summary(t1)
+	abline(t1)
+	
+ #no linear relations slope is 0.03 and intercept=0.001
+ 
+
  #add time information to the velocity
  Velocity<-data.frame(V.l3)
 Velocity$doy<-doyDL 
@@ -282,9 +292,12 @@ metLow$date<-dateFormat
 mout<-data.frame(timestamp=dateFormat,ta=metLow$temp,rh=metLow$RH)
 
 #don't includ plant 1 since abnormally high values that can't be verified
-Vout2<-data.frame(timestamp=Vout$timestamp,Vout[,3:17])
-sI<-seq(1,15)
-colnames(Vout2)[2:16]<-paste0("plant",sI)
+#submit north only. No clear relationship between north and south
+#all velocities tend to vary around the intercept
+#6,9,12
+Vout2<-data.frame(timestamp=Vout$timestamp,Vout[,3:6],Vout[,8:9],Vout[,11:12],Vout[,14:17])
+sI<-seq(1,12)
+colnames(Vout2)[2:13]<-paste0("plant",sI)
 
 
 write.table(mout,"metforFluxnet.csv",sep=",", row.names=FALSE )
