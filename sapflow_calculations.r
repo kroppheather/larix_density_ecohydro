@@ -366,7 +366,16 @@ datHmet<-read.csv("HighD_met.csv")
 #read in th
 datLtkg<-join(datLc1,datLmet, by=c("doy","hour"), type="left")
 datHtkg<-join(datHc1,datHmet, by=c("doy","hour"), type="left")
+#calculate saturated vapor pressure
+datLe.sat<-0.611*exp((17.502*datLtkg$temp)/(datLtkg$temp+240.97))
+datHe.sat<-0.611*exp((17.502*datHtkg$temp)/(datHtkg$temp+240.97))
+#calculate vapor pressure deficit
+#here rh is is in decimal form 
+datLtkg$RHfix<-ifelse(datLtkg$RH>=1,.999,datLtkg$RH)
+datHtkg$RHfix<-ifelse(datHtkg$RH>=1,.999,datHtkg$RH)
 
+datLtkg$D<-(datLe.sat-(datLtkg$RHfix*datLe.sat))
+datHtkg$D<-(datHe.sat-(datHtkg$RHfix*datHe.sat))
 
 
 Kg.coeff<-function(T){115.8+(.423*T)}
@@ -385,14 +394,19 @@ Gslowf<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
 for(i in 1:8){
 	Gshigh[,i]<-Gs.convert1(datHtkg$Kg,datHtkg[,i+2],datHtkg$D)
 	Gshighmm[,i]<-unit.conv(Gshigh[,i],datHtkg$temp)*1000
-	Gshighf[,i]<-ifelse(Gshighmm[,i]<300,Gshighmm[,i],NA)
+	Gshighf[,i]<-ifelse(Gshighmm[,i]<400,Gshighmm[,i],NA)
 }	
 for(i in 1:16){	
 	Gslow[,i]<-Gs.convert1(datLtkg$Kg,datLtkg[,i+2],datLtkg$D)
 	Gslowmm[,i]<-unit.conv(Gslow[,i],datLtkg$temp)*1000
-	Gslowf[,i]<-ifelse(Gslowmm[,i]<300,Gslowmm[,i],NA)
+	Gslowf[,i]<-ifelse(Gslowmm[,i]<400,Gslowmm[,i],NA)
 }
-
+###initially tried filtering gs by quantile but the values
+###can be so extreme from numerical anomolies that even the 
+###90th quantile can result in gs in the millions
+###however, going lower can mean some sensors are capped at 80mmol
+###and others at 25000. It was better to stick to what is a realistic
+###threshold for these trees
 
 #low
 for(i in 2:16){
