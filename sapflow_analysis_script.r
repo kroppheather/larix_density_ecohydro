@@ -762,20 +762,148 @@ LEl17$El<-ifelse(LEl17$D<.3|LEl17$Pr.mm>1,NA, LEl17$El)
 
 ###############################################################################
 ###############################################################################
+############ seperate met calc for plot########################################
+###############################################################################
+datLmet$e.sat<-0.611*exp((17.502*datLmet$Temp)/(datLmet$Temp+240.97))
+datHmet$e.sat<-0.611*exp((17.502*datHmet$Ctemp)/(datHmet$Ctemp+240.97))
+
+#calculate vapor pressure deficit
+#here rh is is in decimal form 
+datLmet$RHfix<-ifelse(datLmet$RH>=1,.999,datLmet$RH)
+datHmet$RHfix<-ifelse(datHmet$RH>=1,.999,datHmet$RH)
+
+datLmet$D<-(datLmet$e.sat-(datLmet$RHfix*datLmet$e.sat))
+datHmet$D<-(datHmet$e.sat-(datHmet$RHfix*datHmet$e.sat))
+
+###############################################################################
+###############################################################################
 ############ Plots for comparision ############################################
 ###############################################################################
 
 #############################
 #####plot of daily met ######
 ##### El and gc        ######
+##### daysummary       ######
 #############################
+#make a decimal day observation
+datLmet$DD<-datLmet$doy+(datLmet$hour/24)
+datHmet$DD<-datHmet$doy+(datHmet$hour/24)
 
+Hgc$DD<-Hgc$doy+ (Hgc$hour/24)
+Lgc$DD<-Lgc$doy+ (Lgc$hour/24)
+Hgc17$DD<-Hgc17$doy+ (Hgc17$hour/24)
+Lgc17$DD<-Lgc17$doy+ (Lgc17$hour/24)
+
+HEl$DD<-HEl$doy + (HEl$hour/24)
+LEl$DD<-LEl$doy + (LEl$hour/24)
+
+HEl17$DD<-HEl17$doy + (HEl17$hour/24)
+LEl17$DD<-LEl17$doy + (LEl17$hour/24)
+
+#subset met to just be in 2016 summer
+metL16<-datLmet[datLmet$doy>=180&datLmet$year==2016&datLmet$doy<=245,]
+metH16<-datHmet[datHmet$doy>=180&datHmet$year==2016&datHmet$doy<=245,]
+
+Precip16<-PrecipDay[PrecipDay$doy>=180&PrecipDay$year==2016&PrecipDay$doy<=245,]
+
+
+####2016
 #precip, air temp and D
 #El 
 #gc
+wd<-20
+ld<-10
+xl<-180
+xh<-245
+yl1<-0
+yh1<-3.5
+yl2<-0
+yh2<-.04
+yl3<-0
+yh3<-170
 
 
 
+#do met cal
+jpeg(file="c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\day_summary16.jpg",
+			width=1500,height=1000, units="px")
+a<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(wd),6), 
+			height=rep(lcm(ld),6))
+#met low
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl1,yh1), axes=FALSE, xaxs="i",yaxs="i",
+		xlab=" ", ylab=" ", type="n")
+	for(i in 1:dim(Precip16)[1]){
+	polygon(c(Precip16$doy[i]-.5,Precip16$doy[i]-.5,Precip16$doy[i]+.5,Precip16$doy[i]+.5),
+			c(0,Precip16$Pr.mm[i]/10,Precip16$Pr.mm[i]/10,0), col="steelblue", lwd=2,
+			border=NA)
+	}	
+	mtext("Low Density", side=3, line=3, cex=3)
+	points(metL16$DD,metL16$D, type="l", col="tomato3", lwd=2)
+	mtext("VPD(KPa)", side=2, line=10, cex=3)
 
+	axis(2, seq(0,3.5,by=.5),las=2, cex.axis=2.5)
+	
+	legend(xl+3,yh1-.05,c("VPD","Precipitation"),lty=c(1,NA),
+			pch=c(NA,15), col=c("tomato3","steelblue"), bty="n", cex=2)
+box(which="plot")
+#met high
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl1,yh1), axes=FALSE, xaxs="i",yaxs="i",
+		xlab=" ", ylab=" ", type="n")
+	for(i in 1:dim(Precip16)[1]){
+	polygon(c(Precip16$doy[i]-.5,Precip16$doy[i]-.5,Precip16$doy[i]+.5,Precip16$doy[i]+.5),
+			c(0,Precip16$Pr.mm[i]/10,Precip16$Pr.mm[i]/10,0), col="steelblue", lwd=2,
+			border=NA)
+	}
+	
+	points(metH16$DD,metH16$D, type="l", col="tomato3", lwd=2)
 
+	mtext("Precipitation (mm)", side=4, line=10, cex=3)
+	axis(4, seq(0,35,by=5),las=2, cex.axis=2.5)
+	legend(xl+3,yh1-.05,c("VPD","Precipitation"),lty=c(1,NA),
+			pch=c(NA,15), col=c("tomato3","steelblue"), bty="n", cex=2)	
+	mtext("High Density", side=3, line=3, cex=3)
+box(which="plot")
 
+#El low
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl2,yh2), axes=FALSE, xaxs="i",yaxs="i",
+		xlab=" ", ylab=" ", type="n")
+	
+	points(LEl$DD, LEl$El, type="b", cex=2)
+	axis(2, seq(0,.03, by=.01), cex.axis=2.5, las=2)
+	mtext("Transpiration", side=2, line=10, cex=3)
+	mtext("(g m-2 s-1)", side=2, line=6, cex=3)
+box(which="plot")
+
+#El high
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl2,yh2), axes=FALSE, xaxs="i",yaxs="i",
+		xlab=" ", ylab=" ", type="n")
+	points(HEl$DD, HEl$El, type="b", cex=2, pch=19)
+	axis(4, seq(0,.03, by=.01), cex.axis=2.5, las=2)	
+box(which="plot")
+
+#gc low
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl3,yh3), axes=FALSE, xaxs="i",yaxs="i",
+		xlab=" ", ylab=" ", type="n")
+		
+	points(Lgc$DD, Lgc$gc, type="b", cex=2, pch=19)	
+	mtext("Canopy conductance", side=2, line=10, cex=3)
+	mtext("(mmol m-2 s-1)", side=2, line=6, cex=3)	
+	axis(2, seq(0,130, by=10), cex.axis=2, las=2)
+	axis(1, seq(180,240, by=5), cex.axis=2)
+	mtext("Day of Year", side=1, line=3, cex=3)
+box(which="plot")
+
+#gc high
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl3,yh3), axes=FALSE, xaxs="i",yaxs="i",
+		xlab=" ", ylab=" ", type="n")
+	points(Hgc$DD, Hgc$gc, type="b", cex=2, pch=19)	
+	axis(1, seq(180,240, by=5), cex.axis=2)
+box(which="plot")
+
+dev.off()
