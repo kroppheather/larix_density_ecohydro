@@ -7,6 +7,7 @@
 
 library(lubridate)
 library(plyr)
+library(caTools)
 
 setwd("c:\\Users\\hkropp\\Google Drive\\Viper_SF")
 
@@ -686,6 +687,9 @@ mgc.H$gc<-ifelse(gHflag==1,NA,mgc.H$gc)
 mgc.L17$gc<-ifelse(gLflag17==1,NA,mgc.L17$gc)
 mgc.H17$gc<-ifelse(gHflag17==1,NA,mgc.H17$gc)
 
+
+
+
 ###############################################################
 ###Filter for unreliable sap flow days ########################
 ###d
@@ -738,16 +742,16 @@ LEl<-join(mEl.L,PrecipDay, by=c("doy","year"), type="left")
 HEl17<-join(mEl.H17,PrecipDay, by=c("doy","year"), type="left")
 LEl17<-join(mEl.L17,PrecipDay, by=c("doy","year"), type="left")
 
-#exclude precip days over 1mm and when D<.3Kpa
-Hgc$gc<-ifelse(Hgc$D<.3|Hgc$Pr.mm>1,NA,Hgc$gc)
-Lgc$gc<-ifelse(Lgc$D<.3|Lgc$Pr.mm>1,NA,Lgc$gc)
-Hgc17$gc<-ifelse(Hgc17$D<.3|Hgc17$Pr.mm>1,NA,Hgc17$gc)
-Lgc17$gc<-ifelse(Lgc17$D<.3|Lgc17$Pr.mm>1,NA,Lgc17$gc)
+#exclude precip days over 1mm 
+Hgc$gc<-ifelse(Hgc$Pr.mm>1,NA,Hgc$gc)
+Lgc$gc<-ifelse(Lgc$Pr.mm>1,NA,Lgc$gc)
+Hgc17$gc<-ifelse(Hgc17$Pr.mm>1,NA,Hgc17$gc)
+Lgc17$gc<-ifelse(Lgc17$Pr.mm>1,NA,Lgc17$gc)
 
-HEl$El<-ifelse(HEl$D<.3|HEl$Pr.mm>1,NA, HEl$El)
-LEl$El<-ifelse(LEl$D<.3|LEl$Pr.mm>1,NA, LEl$El)
-HEl17$El<-ifelse(HEl17$D<.3|HEl17$Pr.mm>1,NA, HEl17$El)
-LEl17$El<-ifelse(LEl17$D<.3|LEl17$Pr.mm>1,NA, LEl17$El)
+HEl$El<-ifelse(HEl$Pr.mm>1,NA, HEl$El)
+LEl$El<-ifelse(LEl$Pr.mm>1,NA, LEl$El)
+HEl17$El<-ifelse(HEl17$Pr.mm>1,NA, HEl17$El)
+LEl17$El<-ifelse(LEl17$Pr.mm>1,NA, LEl17$El)
 
 ##### end filter  ######################
 
@@ -756,8 +760,43 @@ LEl17$El<-ifelse(LEl17$D<.3|LEl17$Pr.mm>1,NA, LEl17$El)
 ############ Calculate daily T from ###########################################
 ############ average across sensors ###########################################
 ###############################################################################
+#find number of observations 
+HEl.nn<-na.omit(HEl)
+LEl.nn<-na.omit(LEl)
+HEl17.nn<-na.omit(HEl17)
+LEl17.nn<-na.omit(LEl17)
+
+for(i in 1:8){
+	Hel.nn[[i]]<-na.omit(data.frame(doy=El.H$doy, El=El.H$[,i+2]))
+	Hel.len[[i]]<-aggregate(HEl.nn[[i]]$El,by=list(HEl.nn[[i]]$doy), FUN="length")
+	dayUse[[i]]<-Hel.len[[i]]$Group.1[Hel.len[[i]]$x==48]
+	Hel.toC[[i]]<-data.frame(doy=El.H$doy, El=El.H$[El.h[[i]]$dayUse[[i]],i+2])
+}
 
 
+for(i in 1:16){
+	
+
+}
+
+
+#number for each
+lengHEl<-aggregate(HEl.nn$El,by=list(HEl.nn$doy,HEl.nn$year), FUN="length")
+lengLEl<-aggregate(LEl.nn$El,by=list(LEl.nn$doy,LEl.nn$year), FUN="length")
+lengHEl17<-aggregate(HEl17.nn$El,by=list(HEl17.nn$doy,HEl17.nn$year), FUN="length")
+lengLEl17<-aggregate(LEl17.nn$El,by=list(LEl17.nn$doy,LEl17.nn$year), FUN="length")
+
+#grab only the days that have the full measurements
+dayuseH<-lengHEl$Group.1[lengHEl$x==48]
+dayuseL<-lengLEl$Group.1[lengLEl$x==48]
+dayuseH17<-lengHEl$Group.1[lengHEl17$x==48]
+dayuseL17<-lengLEl$Group.1[lengLEl17$x==48]
+
+#calculate T for each day
+for(i in 1:length(dayuseH)){
+	
+
+}
 
 
 ###############################################################################
@@ -806,104 +845,151 @@ metH16<-datHmet[datHmet$doy>=180&datHmet$year==2016&datHmet$doy<=245,]
 
 Precip16<-PrecipDay[PrecipDay$doy>=180&PrecipDay$year==2016&PrecipDay$doy<=245,]
 
+metL17<-datLmet[datLmet$doy>=158&datLmet$year==2017&datLmet$doy<=179,]
+metH17<-datHmet[datHmet$doy>=158&datHmet$year==2017&datHmet$doy<=179,]
 
-####2016
-#precip, air temp and D
-#El 
-#gc
-wd<-20
-ld<-10
-xl<-180
-xh<-245
-yl1<-0
-yh1<-3.5
-yl2<-0
-yh2<-.04
-yl3<-0
-yh3<-170
+Precip17<-PrecipDay[PrecipDay$doy>=158&PrecipDay$year==2017&PrecipDay$doy<=179,]
 
+############################################################
+#focus on making small single or double plots for comparision
+# Compare air temperature and D in high vs low density
 
+wd<-25
+ld<-15
 
-#do met cal
-jpeg(file="c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\day_summary16.jpg",
-			width=1500,height=1000, units="px")
-a<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(wd),6), 
-			height=rep(lcm(ld),6))
-#met low
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl1,yh1), axes=FALSE, xaxs="i",yaxs="i",
-		xlab=" ", ylab=" ", type="n")
+jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\metcomp.jpg", width=1700,height=1700)	
+	a<-layout(matrix(seq(1,6), nrow=3, byrow=TRUE), width=rep(lcm(wd),6), height=rep(lcm(ld),6))
+	layout.show(a)
+	#plot D and precip for 2016
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(180,245), ylim=c(0,3), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(metL16$DD, metL16$D, type="l", col="deepskyblue3",lwd=2)
+	points(metH16$DD, metH16$D, type="l", col="forestgreen",lwd=2)
+	legend(180,3,c("low density", "high density"), 
+			col=c("deepskyblue3","forestgreen"), lwd=2, cex=2, bty="n")
+	axis(2, seq(0,3), cex.axis=3, las=2)
+	mtext("VPD (KPa) 2016", side=2, line=7, cex=2)
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,3), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(metL17$DD, metL17$D, type="l", col="deepskyblue3",lwd=2)
+	points(metH17$DD, metH17$D, type="l", col="forestgreen",lwd=2)
+	mtext("VPD (KPa) 2017", side=4, line=7, cex=2)
+	axis(4, seq(0,3), cex.axis=3, las=2)
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(180,245), ylim=c(0,30), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(metL16$DD, metL16$Temp, type="l", col="deepskyblue3",lwd=2)
+	points(metH16$DD, metH16$Ctemp, type="l", col="forestgreen",lwd=2)	
+	axis(2, seq(0,25, by=5),cex.axis=3, las=2)
+	mtext("Air temp 2016", side=2, line=7, cex=2)
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,30), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(metL17$DD, metL17$Temp, type="l", col="deepskyblue3",lwd=2)
+	points(metH17$DD, metH17$Ctemp, type="l", col="forestgreen",lwd=2)				
+	axis(4, seq(0,25, by=5),cex.axis=3, las=2)
+	mtext("Air temp 2017", side=4, line=7, cex=2)
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(180,245), ylim=c(0,35), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
 	for(i in 1:dim(Precip16)[1]){
-	polygon(c(Precip16$doy[i]-.5,Precip16$doy[i]-.5,Precip16$doy[i]+.5,Precip16$doy[i]+.5),
-			c(0,Precip16$Pr.mm[i]/10,Precip16$Pr.mm[i]/10,0), col="steelblue", lwd=2,
-			border=NA)
+		polygon(c(Precip16$doy[i]-.5,Precip16$doy[i]-.5,Precip16$doy[i]+.5,Precip16$doy[i]+.5),
+				c(0,Precip16$Pr.mm[i],Precip16$Pr.mm[i],0), col="deepskyblue4", border=NA)
 	}	
-	mtext("Low Density", side=3, line=3, cex=3)
-	points(metL16$DD,metL16$D, type="l", col="tomato3", lwd=2)
-	mtext("VPD(KPa)", side=2, line=10, cex=3)
-
-	axis(2, seq(0,3.5,by=.5),las=2, cex.axis=2.5)
+	axis(2, seq(0,30, by=5),cex.axis=3, las=2)
+	mtext("Precip (mm) 2017", side=2, line=7, cex=2)
+	axis(1, seq(180,240, by=5),cex.axis=3)
+		mtext("Day of year", side=1, cex=2, line=4, lwd.ticks=2)
+	box(which="plot")
 	
-	legend(xl+3,yh1-.05,c("VPD","Precipitation"),lty=c(1,NA),
-			pch=c(NA,15), col=c("tomato3","steelblue"), bty="n", cex=2)
-box(which="plot")
-#met high
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl1,yh1), axes=FALSE, xaxs="i",yaxs="i",
-		xlab=" ", ylab=" ", type="n")
-	for(i in 1:dim(Precip16)[1]){
-	polygon(c(Precip16$doy[i]-.5,Precip16$doy[i]-.5,Precip16$doy[i]+.5,Precip16$doy[i]+.5),
-			c(0,Precip16$Pr.mm[i]/10,Precip16$Pr.mm[i]/10,0), col="steelblue", lwd=2,
-			border=NA)
-	}
-	
-	points(metH16$DD,metH16$D, type="l", col="tomato3", lwd=2)
-
-	mtext("Precipitation (mm)", side=4, line=10, cex=3)
-	axis(4, seq(0,35,by=5),las=2, cex.axis=2.5)
-	legend(xl+3,yh1-.05,c("VPD","Precipitation"),lty=c(1,NA),
-			pch=c(NA,15), col=c("tomato3","steelblue"), bty="n", cex=2)	
-	mtext("High Density", side=3, line=3, cex=3)
-box(which="plot")
-
-#El low
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl2,yh2), axes=FALSE, xaxs="i",yaxs="i",
-		xlab=" ", ylab=" ", type="n")
-	
-	points(LEl$DD, LEl$El, type="b", cex=2)
-	axis(2, seq(0,.03, by=.01), cex.axis=2.5, las=2)
-	mtext("Transpiration", side=2, line=10, cex=3)
-	mtext("(g m-2 s-1)", side=2, line=6, cex=3)
-box(which="plot")
-
-#El high
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl2,yh2), axes=FALSE, xaxs="i",yaxs="i",
-		xlab=" ", ylab=" ", type="n")
-	points(HEl$DD, HEl$El, type="b", cex=2, pch=19)
-	axis(4, seq(0,.03, by=.01), cex.axis=2.5, las=2)	
-box(which="plot")
-
-#gc low
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl3,yh3), axes=FALSE, xaxs="i",yaxs="i",
-		xlab=" ", ylab=" ", type="n")
-		
-	points(Lgc$DD, Lgc$gc, type="b", cex=2, pch=19)	
-	mtext("Canopy conductance", side=2, line=10, cex=3)
-	mtext("(mmol m-2 s-1)", side=2, line=6, cex=3)	
-	axis(2, seq(0,130, by=10), cex.axis=2, las=2)
-	axis(1, seq(180,240, by=5), cex.axis=2)
-	mtext("Day of Year", side=1, line=3, cex=3)
-box(which="plot")
-
-#gc high
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(xl,xh), ylim=c(yl3,yh3), axes=FALSE, xaxs="i",yaxs="i",
-		xlab=" ", ylab=" ", type="n")
-	points(Hgc$DD, Hgc$gc, type="b", cex=2, pch=19)	
-	axis(1, seq(180,240, by=5), cex.axis=2)
-box(which="plot")
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,35), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	for(i in 1:dim(Precip17)[1]){
+		polygon(c(Precip17$doy[i]-.5,Precip17$doy[i]-.5,Precip17$doy[i]+.5,Precip17$doy[i]+.5),
+				c(0,Precip17$Pr.mm[i],Precip17$Pr.mm[i],0), col="deepskyblue4", border=NA)
+	}	
+	axis(4, seq(0,30, by=5),cex.axis=2, las=2)
+	mtext("Precip (mm) 2017", side=4, line=7, cex=2)	
+		axis(1, seq(160,180, by=5),cex.axis=3, lwd.ticks=2)
+		mtext("Day of year", line=4, side=1, cex=2)		
+	box(which="plot")
 
 dev.off()
+
+
+############################################################
+# Compare El and gc in high vs low density
+
+
+wd<-30
+ld<-15
+
+jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\Tcomp.jpg", width=2200,height=2000)	
+	a<-layout(matrix(seq(1,4), nrow=2, byrow=TRUE), width=rep(lcm(wd),4), height=rep(lcm(ld),4))
+	layout.show(a)
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(180,245), ylim=c(0,0.04), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(HEl$DD, HEl$El, type="b", pch=19, col="forestgreen",cex=2)		
+	points(LEl$DD, LEl$El, type="b", pch=19, col="deepskyblue4",cex=2)	
+	axis(2,seq(0,.04,by=.01),las=2,cex.axis=2)
+	mtext("Transpiration", side=2, line=8, cex=2)
+	box(which="plot")
+	
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,0.03), xlab=" ",
+		ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(HEl17$DD, HEl17$El, type="b", pch=19, col="forestgreen",cex=2)		
+	points(LEl17$DD, LEl17$El, type="b", pch=19, col="deepskyblue4",cex=2)	
+	axis(4,seq(0,.03,by=.01),las=2,cex.axis=2)
+	mtext("Transpiration", side=4, line=8, cex=2)	
+	box(which="plot")	
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(180,245), ylim=c(0,250), xlab=" ",
+			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(Hgc$DD, Hgc$gc, type="b", pch=19, col="forestgreen",cex=2)		
+	points(Lgc$DD, Lgc$gc, type="b", pch=19, col="deepskyblue4",cex=2)		
+	axis(2,seq(0,240,by=20),las=2,cex.axis=2)
+	mtext("gc", side=2, line=8, cex=2)		
+	box(which="plot")
+	
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,250), xlab=" ",
+		ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
+	points(Hgc17$DD, Hgc17$gc, type="b", pch=19, col="forestgreen",cex=2)		
+	points(Lgc17$DD, Lgc17$gc, type="b", pch=19, col="deepskyblue4",cex=2)
+	axis(4,seq(0,240,by=20),las=2,cex.axis=2)
+	mtext("gc", side=4, line=8, cex=2)
+	box(which="plot")
+dev.off()
+
+
+###############################################################
+######plot gc vs D
+
+plot(Hgc$D,Hgc$gc, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
+points(Lgc$D,Lgc$gc, pch=19, col="deepskyblue4" )
+
+plot(Hgc17$D,Hgc17$gc, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
+points(Lgc17$D,Lgc17$gc, pch=19, col="deepskyblue4" )
+
+plot(HEl$D,HEl$El, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
+points(LEl$D,LEl$El, pch=19, col="deepskyblue4" )
+
+plot(HEl17$D,HEl17$El, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
+points(LEl17$D,LEl17$El, pch=19, col="deepskyblue4" )
