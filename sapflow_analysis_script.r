@@ -21,9 +21,9 @@ datDTH <- read.csv("high_density_TDP.csv")
 datDTL <- read.csv("low_density_TDP.csv")
 
 #high density 2017
-datDTH17 <- read.table("high_density_TDP17.csv", sep=",", head=TRUE, na.strings=c("NAN"))
+datDTH17 <- read.table("HD_TDP_DT.csv", sep=",", head=TRUE, na.strings=c("NAN"))
 #low density 2017
-datDTL17 <- read.table("low_density_TDP17.csv", sep=",", head=TRUE, na.strings=c("NAN"))
+datDTL17 <- read.table("LD_TDP_DT.csv", sep=",", head=TRUE, na.strings=c("NAN"))
 #read in sensor info
 datS <- read.csv("sensor_info.csv")
 
@@ -45,8 +45,8 @@ datAD<-read.table("airport.csv", sep=";", head=TRUE, skip=6, stringsAsFactors=FA
 #so excluding from calculations
 datH <- datDTH[,5:(4+8)]
 datL <- datDTL[,5:dim(datDTL)[2]]
-datH17 <- datDTH17[,2:17]
-datL17 <- datDTL17[,5:20]
+datH17 <- datDTH17[,7:22]
+datL17 <- datDTL17[,7:22]
 #set up date
 dateDH <- as.Date(datDTH$TIMESTAMP, "%m/%d/%Y %H:%M")
 dateDL <- as.Date(datDTL$TIMESTAMP, "%m/%d/%Y %H:%M")
@@ -279,7 +279,7 @@ for(i in 1:16){
 }
 #high
 for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\velocity\\High\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
+	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\high16\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
 	plot(seq(1:dim(V.h)[1]), V.h[,i], xlab="time", ylab="V (cm/s)", type="b",
 			main=paste("sensor #", i), pch=19)
 	dev.off()
@@ -760,24 +760,15 @@ LEl17$El<-ifelse(LEl17$Pr.mm>1,NA, LEl17$El)
 ############ Calculate daily T from ###########################################
 ############ average across sensors ###########################################
 ###############################################################################
+
+###need to do this across each sensor to get the average daily T
+##use El.H, El.L, El.H17, El.L17
+
 #find number of observations 
 HEl.nn<-na.omit(HEl)
 LEl.nn<-na.omit(LEl)
 HEl17.nn<-na.omit(HEl17)
 LEl17.nn<-na.omit(LEl17)
-
-for(i in 1:8){
-	Hel.nn[[i]]<-na.omit(data.frame(doy=El.H$doy, El=El.H$[,i+2]))
-	Hel.len[[i]]<-aggregate(HEl.nn[[i]]$El,by=list(HEl.nn[[i]]$doy), FUN="length")
-	dayUse[[i]]<-Hel.len[[i]]$Group.1[Hel.len[[i]]$x==48]
-	Hel.toC[[i]]<-data.frame(doy=El.H$doy, El=El.H$[El.h[[i]]$dayUse[[i]],i+2])
-}
-
-
-for(i in 1:16){
-	
-
-}
 
 
 #number for each
@@ -787,16 +778,79 @@ lengHEl17<-aggregate(HEl17.nn$El,by=list(HEl17.nn$doy,HEl17.nn$year), FUN="lengt
 lengLEl17<-aggregate(LEl17.nn$El,by=list(LEl17.nn$doy,LEl17.nn$year), FUN="length")
 
 #grab only the days that have the full measurements
-dayuseH<-lengHEl$Group.1[lengHEl$x==48]
-dayuseL<-lengLEl$Group.1[lengLEl$x==48]
-dayuseH17<-lengHEl$Group.1[lengHEl17$x==48]
-dayuseL17<-lengLEl$Group.1[lengLEl17$x==48]
+dayuseH<-data.frame(doy=lengHEl$Group.1[lengHEl$x==48])
+dayuseL<-data.frame(doy=lengLEl$Group.1[lengLEl$x==48])
+dayuseH17<-data.frame(doy=lengHEl17$Group.1[lengHEl17$x==48])
+dayuseL17<-data.frame(doy=lengLEl17$Group.1[lengLEl17$x==48])
+
+#El is in g m-2 s-1 need to convert to g per m2 half hour
+
+HEl.nn$Ehh <- HEl.nn$El*60*30
+HEl17.nn$Ehh <- HEl17.nn$El*60*30
+LEl.nn$Ehh <- LEl.nn$El*60*30
+LEl17.nn$Ehh <- LEl17.nn$El*60*30
+
+HTuse <- join(HEl.nn,dayuseH, by="doy",type="inner")
+HTuse17 <- join(HEl17.nn,dayuseH17, by="doy",type="inner")
+LTuse <- join(LEl.nn,dayuseL, by="doy",type="inner")
+LTuse17 <- join(LEl17.nn,dayuseL17, by="doy",type="inner")
 
 #calculate T for each day
-for(i in 1:length(dayuseH)){
-	
-
+#need to reformat because trapz doesn't
+#allow fro subsetting within it
+#make a matrix out of each day to use
+HTx<- matrix(rep(NA,dim(dayuseH)[1]*48), ncol=dim(dayuseH)[1])
+HTy<- matrix(rep(NA,dim(dayuseH)[1]*48), ncol=dim(dayuseH)[1])
+HTday<-numeric(0)
+for(i in 1:dim(dayuseH)[1]){
+	HTx[,i] <- HTuse$hour[HTuse$doy==dayuseH$doy[i]]
+	HTy[,i] <- HTuse$Ehh[HTuse$doy==dayuseH$doy[i]]
+	HTday[i]<-trapz(HTx[,i],HTy[,i])
 }
+
+#make a matrix out of each day to use
+HTx17<- matrix(rep(NA,dim(dayuseH17)[1]*48), ncol=dim(dayuseH17)[1])
+HTy17<- matrix(rep(NA,dim(dayuseH17)[1]*48), ncol=dim(dayuseH17)[1])
+HTday17<-numeric(0)
+for(i in 1:dim(dayuseH17)[1]){
+	HTx17[,i] <- HTuse17$hour[HTuse17$doy==dayuseH17$doy[i]]
+	HTy17[,i] <- HTuse17$Ehh[HTuse17$doy==dayuseH17$doy[i]]
+	HTday17[i]<-trapz(HTx17[,i],HTy17[,i])
+}
+
+#low density
+LTx<- matrix(rep(NA,dim(dayuseL)[1]*48), ncol=dim(dayuseL)[1])
+LTy<- matrix(rep(NA,dim(dayuseL)[1]*48), ncol=dim(dayuseL)[1])
+LTday<-numeric(0)
+for(i in 1:dim(dayuseL)[1]){
+	LTx[,i] <- LTuse$hour[LTuse$doy==dayuseL$doy[i]]
+	LTy[,i] <- LTuse$Ehh[LTuse$doy==dayuseL$doy[i]]
+	LTday[i]<-trapz(LTx[,i],LTy[,i])
+}
+#low density17
+LTx17<- matrix(rep(NA,dim(dayuseL17)[1]*48), ncol=dim(dayuseL17)[1])
+LTy17<- matrix(rep(NA,dim(dayuseL17)[1]*48), ncol=dim(dayuseL17)[1])
+LTday17<-numeric(0)
+for(i in 1:dim(dayuseL17)[1]){
+	LTx17[,i] <- LTuse17$hour[LTuse17$doy==dayuseL17$doy[i]]
+	LTy17[,i] <- LTuse17$Ehh[LTuse17$doy==dayuseL17$doy[i]]
+	LTday17[i]<-trapz(LTx17[,i],LTy17[,i])
+}
+
+#convert to L
+	#1 g is cm3 which is 1 mL so (1/1000) to be L
+	
+	HTdayL<-data.frame(TL=HTday/1000, doy=dayuseH$doy,
+						year=rep(2016,dim(dayuseH)[1]))
+	
+	HTdayL17<-data.frame(TL=HTday17/1000, doy=dayuseH17$doy,
+						year=rep(2017,dim(dayuseH17)[1]))
+						
+	LTdayL<-data.frame(TL=LTday/1000, doy=dayuseL$doy,
+						year=rep(2016,dim(dayuseL)[1]))						
+	LTdayL17<-data.frame(TL=LTday17/1000, doy=dayuseL17$doy,
+						year=rep(2017,dim(dayuseL17)[1]))	
+
 
 
 ###############################################################################
@@ -845,10 +899,10 @@ metH16<-datHmet[datHmet$doy>=180&datHmet$year==2016&datHmet$doy<=245,]
 
 Precip16<-PrecipDay[PrecipDay$doy>=180&PrecipDay$year==2016&PrecipDay$doy<=245,]
 
-metL17<-datLmet[datLmet$doy>=158&datLmet$year==2017&datLmet$doy<=179,]
-metH17<-datHmet[datHmet$doy>=158&datHmet$year==2017&datHmet$doy<=179,]
+metL17<-datLmet[datLmet$doy>=158&datLmet$year==2017&datLmet$doy<=198,]
+metH17<-datHmet[datHmet$doy>=158&datHmet$year==2017&datHmet$doy<=198,]
 
-Precip17<-PrecipDay[PrecipDay$doy>=158&PrecipDay$year==2017&PrecipDay$doy<=179,]
+Precip17<-PrecipDay[PrecipDay$doy>=158&PrecipDay$year==2017&PrecipDay$doy<=198,]
 
 ############################################################
 #focus on making small single or double plots for comparision
@@ -873,7 +927,7 @@ jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\metcomp.jpg", wi
 	box(which="plot")
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,3), xlab=" ",
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,200), ylim=c(0,3), xlab=" ",
 			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
 	points(metL17$DD, metL17$D, type="l", col="deepskyblue3",lwd=2)
 	points(metH17$DD, metH17$D, type="l", col="forestgreen",lwd=2)
@@ -891,7 +945,7 @@ jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\metcomp.jpg", wi
 	box(which="plot")
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,30), xlab=" ",
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,200), ylim=c(0,30), xlab=" ",
 			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
 	points(metL17$DD, metL17$Temp, type="l", col="deepskyblue3",lwd=2)
 	points(metH17$DD, metH17$Ctemp, type="l", col="forestgreen",lwd=2)				
@@ -908,12 +962,12 @@ jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\metcomp.jpg", wi
 	}	
 	axis(2, seq(0,30, by=5),cex.axis=3, las=2)
 	mtext("Precip (mm) 2017", side=2, line=7, cex=2)
-	axis(1, seq(180,240, by=5),cex.axis=3)
-		mtext("Day of year", side=1, cex=2, line=4, lwd.ticks=2)
+	axis(1, seq(180,240, by=5),cex.axis=3, lwd.ticks=2)
+		mtext("Day of year", side=1, cex=2, line=4)
 	box(which="plot")
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,35), xlab=" ",
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,200), ylim=c(0,35), xlab=" ",
 			ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
 	for(i in 1:dim(Precip17)[1]){
 		polygon(c(Precip17$doy[i]-.5,Precip17$doy[i]-.5,Precip17$doy[i]+.5,Precip17$doy[i]+.5),
@@ -921,7 +975,7 @@ jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\metcomp.jpg", wi
 	}	
 	axis(4, seq(0,30, by=5),cex.axis=2, las=2)
 	mtext("Precip (mm) 2017", side=4, line=7, cex=2)	
-		axis(1, seq(160,180, by=5),cex.axis=3, lwd.ticks=2)
+		axis(1, seq(160,200, by=5),cex.axis=3, lwd.ticks=2)
 		mtext("Day of year", line=4, side=1, cex=2)		
 	box(which="plot")
 
@@ -950,7 +1004,7 @@ jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\Tcomp.jpg", widt
 	
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,0.03), xlab=" ",
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,200), ylim=c(0,0.03), xlab=" ",
 		ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
 	points(HEl17$DD, HEl17$El, type="b", pch=19, col="forestgreen",cex=2)		
 	points(LEl17$DD, LEl17$El, type="b", pch=19, col="deepskyblue4",cex=2)	
@@ -969,7 +1023,7 @@ jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\Tcomp.jpg", widt
 	
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(158,179), ylim=c(0,250), xlab=" ",
+	plot(c(0,1),c(0,1), type="n", xlim=c(158,200), ylim=c(0,250), xlab=" ",
 		ylab=" ", xaxs="i", yaxs="i", axes=FALSE)
 	points(Hgc17$DD, Hgc17$gc, type="b", pch=19, col="forestgreen",cex=2)		
 	points(Lgc17$DD, Lgc17$gc, type="b", pch=19, col="deepskyblue4",cex=2)
@@ -982,14 +1036,93 @@ dev.off()
 ###############################################################
 ######plot gc vs D
 
-plot(Hgc$D,Hgc$gc, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
-points(Lgc$D,Lgc$gc, pch=19, col="deepskyblue4" )
+plot(log(Hgc$D),Hgc$gc, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
+points(log(Lgc$D),Lgc$gc, pch=19, col="deepskyblue4" )
 
 plot(Hgc17$D,Hgc17$gc, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
 points(Lgc17$D,Lgc17$gc, pch=19, col="deepskyblue4" )
+logDL<-log(Lgc$D)
+orL<-lm(Lgc$gc~logDL)
+summary(orL)
+logDH<-log(Hgc$D)
+orH<-lm(Hgc$gc~logDH)
+summary(orH)
+logDL17<-log(Lgc17$D)
+orL17<-lm(Lgc17$gc~logDL17)
+summary(orL17)
+logDH17<-log(Hgc17$D)
+orH17<-lm(Hgc17$gc~logDH17)
+summary(orH17)
 
+
+summary(orL)
 plot(HEl$D,HEl$El, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
 points(LEl$D,LEl$El, pch=19, col="deepskyblue4" )
 
 plot(HEl17$D,HEl17$El, pch=19, col="forestgreen", ylab="gc", xlab="D" )	
 points(LEl17$D,LEl17$El, pch=19, col="deepskyblue4" )
+
+
+
+##############################################################
+######make a plot of daily transpiration across the two stands
+##############################################################
+
+ds16<-182
+de16<-242
+ds17<-159
+de17<-197
+ys<- 0
+ye <- .7
+
+wd<-30
+ld<-15
+
+jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\dailyT.jpg", width=2200,height=2000)	
+	a<-layout(matrix(seq(1,4), nrow=2, byrow=FALSE), width=rep(lcm(wd),4), height=rep(lcm(ld),4))
+	layout.show(a)
+#2016 high
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+for(i in 1:dim(HTdayL)[1]){
+	polygon(c(HTdayL$doy[i]-.5,HTdayL$doy[i]-.5,HTdayL$doy[i]+.5,HTdayL$doy[i]+.5),
+			c(0,HTdayL$TL[i],HTdayL$TL[i],0),border=NULL, col="darkgreen")
+}	
+		
+box(which="plot")
+#2016 low
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+for(i in 1:dim(LTdayL)[1]){
+	polygon(c(LTdayL$doy[i]-.5,LTdayL$doy[i]-.5,LTdayL$doy[i]+.5,LTdayL$doy[i]+.5),
+			c(0,LTdayL$TL[i],LTdayL$TL[i],0),border=NULL, col="cadetblue3")
+}		
+		
+box(which="plot")
+#2017 low
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+		
+for(i in 1:dim(HTdayL17)[1]){
+	polygon(c(HTdayL17$doy[i]-.5,HTdayL17$doy[i]-.5,HTdayL17$doy[i]+.5,HTdayL17$doy[i]+.5),
+			c(0,HTdayL17$TL[i],HTdayL17$TL[i],0),border=NULL, col="darkgreen")
+}			
+box(which="plot")
+#2017 high
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+for(i in 1:dim(LTdayL17)[1]){
+	polygon(c(LTdayL17$doy[i]-.5,LTdayL17$doy[i]-.5,LTdayL17$doy[i]+.5,LTdayL17$doy[i]+.5),
+			c(0,LTdayL17$TL[i],LTdayL17$TL[i],0),border=NULL, col="cadetblue3")
+}
+		
+box(which="plot")
+	
+dev.off()	
+
+
+
