@@ -764,47 +764,73 @@ LEl17$El<-ifelse(LEl17$Pr.mm>1,NA, LEl17$El)
 ###need to do this across each sensor to get the average daily T
 ##use El.H, El.L, El.H17, El.L17
 
+#turn into a data frame 
+
+HEl.all <- data.frame(doy=rep(El.H$doy, times=8),year=rep(El.H$year, times=8),
+			hour=rep(timeDH,times=8),
+			sensor=rep(seq(1,8),each=dim(El.H)[1])	, 
+			T=as.vector(data.matrix(El.H[,3:10])))
+LEl.all <- data.frame(doy=rep(El.L$doy, times=16),year=rep(El.L$year, times=16),
+				hour=rep(timeDL,times=16),
+				sensor=rep(seq(1,16),each=dim(El.L)[1])	,
+				T=as.vector(data.matrix(El.L[,3:18])))
+
+LEl.all17 <- data.frame(doy=rep(El.L17$doy, times=16),year=rep(El.L17$year, times=16),
+				hour=rep(timeDL17,times=16),
+				sensor=rep(seq(1,16),each=dim(El.L17)[1])	, 
+				T=as.vector(data.matrix(El.L17[,3:18])))
+
+HEl.all17 <- data.frame(doy=rep(El.H17$doy, times=16),year=rep(El.H17$year, times=16),
+				hour=rep(timeDH17,times=16),
+				sensor=rep(seq(1,16),each=dim(El.H17)[1])	, 
+				T=as.vector(data.matrix(El.H17[,3:18])))					
+				
+				
 #find number of observations 
-HEl.nn<-na.omit(HEl)
-LEl.nn<-na.omit(LEl)
-HEl17.nn<-na.omit(HEl17)
-LEl17.nn<-na.omit(LEl17)
+HEl.nn<-na.omit(HEl.all)
+LEl.nn<-na.omit(LEl.all)
+HEl17.nn<-na.omit(HEl.all17)
+LEl17.nn<-na.omit(LEl.all17)
 
 
 #number for each
-lengHEl<-aggregate(HEl.nn$El,by=list(HEl.nn$doy,HEl.nn$year), FUN="length")
-lengLEl<-aggregate(LEl.nn$El,by=list(LEl.nn$doy,LEl.nn$year), FUN="length")
-lengHEl17<-aggregate(HEl17.nn$El,by=list(HEl17.nn$doy,HEl17.nn$year), FUN="length")
-lengLEl17<-aggregate(LEl17.nn$El,by=list(LEl17.nn$doy,LEl17.nn$year), FUN="length")
+lengHEl<-aggregate(HEl.nn$T,by=list(HEl.nn$doy,HEl.nn$year, HEl.nn$sensor), FUN="length")
+lengLEl<-aggregate(LEl.nn$T,by=list(LEl.nn$doy,LEl.nn$year, LEl.nn$sensor), FUN="length")
+lengHEl17<-aggregate(HEl17.nn$T,by=list(HEl17.nn$doy,HEl17.nn$year, HEl17.nn$sensor), FUN="length")
+lengLEl17<-aggregate(LEl17.nn$T,by=list(LEl17.nn$doy,LEl17.nn$year, LEl17.nn$sensor), FUN="length")
 
 #grab only the days that have the full measurements
-dayuseH<-data.frame(doy=lengHEl$Group.1[lengHEl$x==48])
-dayuseL<-data.frame(doy=lengLEl$Group.1[lengLEl$x==48])
-dayuseH17<-data.frame(doy=lengHEl17$Group.1[lengHEl17$x==48])
-dayuseL17<-data.frame(doy=lengLEl17$Group.1[lengLEl17$x==48])
+dayuseH<-data.frame(doy=lengHEl$Group.1[lengHEl$x==48],sensor=lengHEl$Group.3[lengHEl$x==48])
+dayuseL<-data.frame(doy=lengLEl$Group.1[lengLEl$x==48],sensor=lengLEl$Group.3[lengLEl$x==48])
+dayuseH17<-data.frame(doy=lengHEl17$Group.1[lengHEl17$x==48],sensor=lengHEl17$Group.3[lengHEl17$x==48])
+dayuseL17<-data.frame(doy=lengLEl17$Group.1[lengLEl17$x==48],sensor=lengLEl17$Group.3[lengLEl17$x==48])
+
 
 #El is in g m-2 s-1 need to convert to g per m2 half hour
 
-HEl.nn$Ehh <- HEl.nn$El*60*30
-HEl17.nn$Ehh <- HEl17.nn$El*60*30
-LEl.nn$Ehh <- LEl.nn$El*60*30
-LEl17.nn$Ehh <- LEl17.nn$El*60*30
+HEl.nn$Ehh <- HEl.nn$T*60*30
+HEl17.nn$Ehh <- HEl17.nn$T*60*30
+LEl.nn$Ehh <- LEl.nn$T*60*30
+LEl17.nn$Ehh <- LEl17.nn$T*60*30
 
-HTuse <- join(HEl.nn,dayuseH, by="doy",type="inner")
-HTuse17 <- join(HEl17.nn,dayuseH17, by="doy",type="inner")
-LTuse <- join(LEl.nn,dayuseL, by="doy",type="inner")
-LTuse17 <- join(LEl17.nn,dayuseL17, by="doy",type="inner")
+HTuse <- join(HEl.nn,dayuseH, by=c("doy","sensor"),type="inner")
+HTuse17 <- join(HEl17.nn,dayuseH17, by=c("doy","sensor"),type="inner")
+LTuse <- join(LEl.nn,dayuseL, by=c("doy","sensor"),type="inner")
+LTuse17 <- join(LEl17.nn,dayuseL17, by=c("doy","sensor"),type="inner")
+
+
 
 #calculate T for each day
 #need to reformat because trapz doesn't
 #allow fro subsetting within it
 #make a matrix out of each day to use
+
 HTx<- matrix(rep(NA,dim(dayuseH)[1]*48), ncol=dim(dayuseH)[1])
 HTy<- matrix(rep(NA,dim(dayuseH)[1]*48), ncol=dim(dayuseH)[1])
 HTday<-numeric(0)
 for(i in 1:dim(dayuseH)[1]){
-	HTx[,i] <- HTuse$hour[HTuse$doy==dayuseH$doy[i]]
-	HTy[,i] <- HTuse$Ehh[HTuse$doy==dayuseH$doy[i]]
+	HTx[,i] <- HTuse$hour[HTuse$doy==dayuseH$doy[i]&HTuse$sensor==dayuseH$sensor[i]]
+	HTy[,i] <- HTuse$Ehh[HTuse$doy==dayuseH$doy[i]&HTuse$sensor==dayuseH$sensor[i]]
 	HTday[i]<-trapz(HTx[,i],HTy[,i])
 }
 
@@ -813,8 +839,8 @@ HTx17<- matrix(rep(NA,dim(dayuseH17)[1]*48), ncol=dim(dayuseH17)[1])
 HTy17<- matrix(rep(NA,dim(dayuseH17)[1]*48), ncol=dim(dayuseH17)[1])
 HTday17<-numeric(0)
 for(i in 1:dim(dayuseH17)[1]){
-	HTx17[,i] <- HTuse17$hour[HTuse17$doy==dayuseH17$doy[i]]
-	HTy17[,i] <- HTuse17$Ehh[HTuse17$doy==dayuseH17$doy[i]]
+	HTx17[,i] <- HTuse17$hour[HTuse17$doy==dayuseH17$doy[i]&HTuse17$sensor==dayuseH17$sensor[i]]
+	HTy17[,i] <- HTuse17$Ehh[HTuse17$doy==dayuseH17$doy[i]&HTuse17$sensor==dayuseH17$sensor[i]]
 	HTday17[i]<-trapz(HTx17[,i],HTy17[,i])
 }
 
@@ -823,8 +849,8 @@ LTx<- matrix(rep(NA,dim(dayuseL)[1]*48), ncol=dim(dayuseL)[1])
 LTy<- matrix(rep(NA,dim(dayuseL)[1]*48), ncol=dim(dayuseL)[1])
 LTday<-numeric(0)
 for(i in 1:dim(dayuseL)[1]){
-	LTx[,i] <- LTuse$hour[LTuse$doy==dayuseL$doy[i]]
-	LTy[,i] <- LTuse$Ehh[LTuse$doy==dayuseL$doy[i]]
+	LTx[,i] <- LTuse$hour[LTuse$doy==dayuseL$doy[i]&LTuse$sensor==dayuseL$sensor[i]]
+	LTy[,i] <- LTuse$Ehh[LTuse$doy==dayuseL$doy[i]&LTuse$sensor==dayuseL$sensor[i]]
 	LTday[i]<-trapz(LTx[,i],LTy[,i])
 }
 #low density17
@@ -832,27 +858,56 @@ LTx17<- matrix(rep(NA,dim(dayuseL17)[1]*48), ncol=dim(dayuseL17)[1])
 LTy17<- matrix(rep(NA,dim(dayuseL17)[1]*48), ncol=dim(dayuseL17)[1])
 LTday17<-numeric(0)
 for(i in 1:dim(dayuseL17)[1]){
-	LTx17[,i] <- LTuse17$hour[LTuse17$doy==dayuseL17$doy[i]]
-	LTy17[,i] <- LTuse17$Ehh[LTuse17$doy==dayuseL17$doy[i]]
+	LTx17[,i] <- LTuse17$hour[LTuse17$doy==dayuseL17$doy[i]&LTuse17$sensor==dayuseL17$sensor[i]]
+	LTy17[,i] <- LTuse17$Ehh[LTuse17$doy==dayuseL17$doy[i]&LTuse17$sensor==dayuseL17$sensor[i]]
 	LTday17[i]<-trapz(LTx17[,i],LTy17[,i])
 }
-
+	#add to data frame
+	
+	dayuseL17$Tg<-LTday17
+	dayuseL$Tg<-LTday
+	dayuseH17$Tg<-HTday17
+	dayuseH$Tg<-HTday
 #convert to L
 	#1 g is cm3 which is 1 mL so (1/1000) to be L
+	dayuseL17$TL<-dayuseL17$Tg/1000
+	dayuseH17$TL<-dayuseH17$Tg/1000
+	dayuseL$TL<-dayuseL$Tg/1000
+	dayuseH$TL<-dayuseH$Tg/1000
 	
-	HTdayL<-data.frame(TL=HTday/1000, doy=dayuseH$doy,
-						year=rep(2016,dim(dayuseH)[1]))
+#aggregate sensors to get standard error and mean
+#high density
+	HTdayL<-aggregate(dayuseH$TL, by=list(dayuseH$doy),FUN="mean")
+	HTdayLeng<-aggregate(dayuseH$TL, by=list(dayuseH$doy),FUN="length")
+	HTdayLsd<-aggregate(dayuseH$TL, by=list(dayuseH$doy),FUN="sd")
+	colnames(HTdayL)<-c("doy","TL.high")
+	HTdayL$se.high<-HTdayLsd$x/sqrt(HTdayLeng$x)
+	#exclude days with less than 3 sensors
+	HTdayL<-HTdayL[HTdayLeng$x>2,]
 	
-	HTdayL17<-data.frame(TL=HTday17/1000, doy=dayuseH17$doy,
-						year=rep(2017,dim(dayuseH17)[1]))
-						
-	LTdayL<-data.frame(TL=LTday/1000, doy=dayuseL$doy,
-						year=rep(2016,dim(dayuseL)[1]))						
-	LTdayL17<-data.frame(TL=LTday17/1000, doy=dayuseL17$doy,
-						year=rep(2017,dim(dayuseL17)[1]))	
-
-
-
+	HTdayL17<-aggregate(dayuseH17$TL, by=list(dayuseH17$doy),FUN="mean")
+	HTdayLeng17<-aggregate(dayuseH17$TL, by=list(dayuseH17$doy),FUN="length")
+	HTdayLsd17<-aggregate(dayuseH17$TL, by=list(dayuseH17$doy),FUN="sd")
+	colnames(HTdayL17)<-c("doy","TL.high")
+	HTdayL17$se.high<-HTdayLsd17$x/sqrt(HTdayLeng17$x)
+	#exclude days with less than 3 sensors
+	HTdayL17<-HTdayL17[HTdayLeng17$x>2,]
+#low density
+	LTdayL<-aggregate(dayuseL$TL, by=list(dayuseL$doy),FUN="mean")
+	LTdayLeng<-aggregate(dayuseL$TL, by=list(dayuseL$doy),FUN="length")
+	LTdayLsd<-aggregate(dayuseL$TL, by=list(dayuseL$doy),FUN="sd")
+	colnames(LTdayL)<-c("doy","TL.low")
+	LTdayL$se.low<-LTdayLsd$x/sqrt(LTdayLeng$x)
+	#exclude days with less than 3 sensors
+	LTdayL<-LTdayL[LTdayLeng$x>2,]
+	
+	LTdayL17<-aggregate(dayuseL17$TL, by=list(dayuseL17$doy),FUN="mean")
+	LTdayLeng17<-aggregate(dayuseL17$TL, by=list(dayuseL17$doy),FUN="length")
+	LTdayLsd17<-aggregate(dayuseL17$TL, by=list(dayuseL17$doy),FUN="sd")
+	colnames(LTdayL17)<-c("doy","TL.low")
+	LTdayL17$se.low<-LTdayLsd17$x/sqrt(LTdayLeng17$x)
+	#exclude days with less than 3 sensors
+	LTdayL17<-LTdayL17[LTdayLeng17$x>2,]	
 ###############################################################################
 ###############################################################################
 ############ seperate met calc for plot########################################
@@ -1064,65 +1119,143 @@ points(LEl17$D,LEl17$El, pch=19, col="deepskyblue4" )
 
 
 
+
+
 ##############################################################
-######make a plot of daily transpiration across the two stands
+######make a plot of daily transpiration across the with each stand overlayed
 ##############################################################
+#start by organizing into same data frame by joining for each year
+
+T2016<-join(LTdayL,HTdayL,by="doy",type="full")
+T2017<-join(LTdayL17,HTdayL17,by="doy",type="full")
+#turn na to zero for sake of plotting
+T2016$TL.low<-ifelse(is.na(T2016$TL.low),0,T2016$TL.low)
+T2016$TL.high<-ifelse(is.na(T2016$TL.high),0,T2016$TL.high)
+T2016$se.low<-ifelse(is.na(T2016$se.low),0,T2016$se.low)
+T2016$se.high<-ifelse(is.na(T2016$se.high),0,T2016$se.high)
+
+T2017$TL.low<-ifelse(is.na(T2017$TL.low),0,T2017$TL.low)
+T2017$TL.high<-ifelse(is.na(T2017$TL.high),0,T2017$TL.high)
+T2017$se.low<-ifelse(is.na(T2017$se.low),0,T2017$se.low)
+T2017$se.high<-ifelse(is.na(T2017$se.high),0,T2017$se.high)
+
+
+#make a column for order of polygon
+T2016$p1<-ifelse(T2016$TL.low>T2016$TL.high,T2016$TL.low,T2016$TL.high)
+T2016$p2<-ifelse(T2016$TL.low<T2016$TL.high,T2016$TL.low,T2016$TL.high)
+#cols
+T2016$p1c<-ifelse(T2016$TL.low>T2016$TL.high,"dodgerblue3","palegreen4")
+T2016$p2c<-ifelse(T2016$TL.low<T2016$TL.high,"dodgerblue3","palegreen4")
+#make a column for order of polygon
+T2017$p1<-ifelse(T2017$TL.low>T2017$TL.high,T2017$TL.low,T2017$TL.high)
+T2017$p2<-ifelse(T2017$TL.low<T2017$TL.high,T2017$TL.low,T2017$TL.high)
+#cols
+T2017$p1c<-ifelse(T2017$TL.low>T2017$TL.high,"dodgerblue3","palegreen4")
+T2017$p2c<-ifelse(T2017$TL.low<T2017$TL.high,"dodgerblue3","palegreen4")
+
+
 
 ds16<-182
 de16<-242
 ds17<-159
 de17<-197
 ys<- 0
-ye <- .7
+ye <- .5
 
 wd<-30
-ld<-15
+ld<-30
 
-jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\dailyT.jpg", width=2200,height=2000)	
-	a<-layout(matrix(seq(1,4), nrow=2, byrow=FALSE), width=rep(lcm(wd),4), height=rep(lcm(ld),4))
+jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\dailyTc.jpg", width=2200,height=2000)	
+	a<-layout(matrix(seq(1,2), nrow=1, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(ld),2))
 	layout.show(a)
-#2016 high
+#2016 
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
-for(i in 1:dim(HTdayL)[1]){
-	polygon(c(HTdayL$doy[i]-.5,HTdayL$doy[i]-.5,HTdayL$doy[i]+.5,HTdayL$doy[i]+.5),
-			c(0,HTdayL$TL[i],HTdayL$TL[i],0),border=NULL, col="darkgreen")
-}	
-		
-box(which="plot")
-#2016 low
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
-		axes=FALSE, xaxs="i", yaxs="i")
-for(i in 1:dim(LTdayL)[1]){
-	polygon(c(LTdayL$doy[i]-.5,LTdayL$doy[i]-.5,LTdayL$doy[i]+.5,LTdayL$doy[i]+.5),
-			c(0,LTdayL$TL[i],LTdayL$TL[i],0),border=NULL, col="cadetblue3")
-}		
-		
-box(which="plot")
-#2017 low
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
-		axes=FALSE, xaxs="i", yaxs="i")
-		
-for(i in 1:dim(HTdayL17)[1]){
-	polygon(c(HTdayL17$doy[i]-.5,HTdayL17$doy[i]-.5,HTdayL17$doy[i]+.5,HTdayL17$doy[i]+.5),
-			c(0,HTdayL17$TL[i],HTdayL17$TL[i],0),border=NULL, col="darkgreen")
-}			
-box(which="plot")
-#2017 high
-par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
-		axes=FALSE, xaxs="i", yaxs="i")
-for(i in 1:dim(LTdayL17)[1]){
-	polygon(c(LTdayL17$doy[i]-.5,LTdayL17$doy[i]-.5,LTdayL17$doy[i]+.5,LTdayL17$doy[i]+.5),
-			c(0,LTdayL17$TL[i],LTdayL17$TL[i],0),border=NULL, col="cadetblue3")
+for(i in 1:dim(T2016)[1]){
+polygon(c(T2016$doy[i]-.5,T2016$doy[i]-.5,T2016$doy[i],T2016$doy[i]),
+		c(0,T2016$TL.low[i],T2016$TL.low[i],0), col="royalblue1")
+polygon(c(T2016$doy[i],T2016$doy[i],T2016$doy[i]+.5,T2016$doy[i]+.5),
+		c(0,T2016$TL.high[i],T2016$TL.high[i],0), col="palegreen4")
 }
+
 		
 box(which="plot")
-	
-dev.off()	
+
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+for(i in 1:dim(T2017)[1]){
+polygon(c(T2017$doy[i]-.5,T2017$doy[i]-.5,T2017$doy[i],T2017$doy[i]),
+		c(0,T2017$TL.low[i],T2017$TL.low[i],0), col="royalblue1")
+polygon(c(T2017$doy[i],T2017$doy[i],T2017$doy[i]+.5,T2017$doy[i]+.5),
+		c(0,T2017$TL.high[i],T2017$TL.high[i],0), col="palegreen4")
+}		
+box(which="plot")
+
+dev.off()
 
 
+
+#######################################################################
+######make plot of stomatal conductance
+######first compare average daily gc across the sites
+
+#aggregate the stomatal conductance
+mgc.Ln<-na.omit(mgc.L)
+dgc.L<-aggregate(mgc.Ln$gc,by=list(mgc.Ln$doy), FUN="mean")
+colnames(dgc.L)<-c("doy","gc")
+
+mgc.L17n<-na.omit(mgc.L17)
+dgc.L17<-aggregate(mgc.L17n$gc,by=list(mgc.L17n$doy), FUN="mean")
+colnames(dgc.L17)<-c("doy","gc")
+
+mgc.Hn<-na.omit(mgc.H)
+dgc.H<-aggregate(mgc.Hn$gc,by=list(mgc.Hn$doy), FUN="mean")
+colnames(dgc.H)<-c("doy","gc")
+
+mgc.H17n<-na.omit(mgc.H17)
+dgc.H17<-aggregate(mgc.H17n$gc,by=list(mgc.H17n$doy), FUN="mean")
+colnames(dgc.H17)<-c("doy","gc")
+
+ds16<-181
+de16<-243
+ds17<-158
+de17<-198
+ys<- 0
+ye <-200
+
+wd<-30
+ld<-30
+
+
+jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\gc_compALL.jpg", width=2200,height=2000)	
+	a<-layout(matrix(seq(1,2), nrow=1, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(ld),2))
+	layout.show(a)
+#2016 
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+points(dgc.L$doy,dgc.L$gc,pch=19,type="b",col="royalblue1",cex=2)
+points(dgc.H$doy,dgc.H$gc,pch=19,type="b",col="palegreen4",cex=2)
+axis(1,seq(185,240,by=5),lwd.ticks=2,cex=1.5)
+axis(2,seq(0,350,by=50),lwd.ticks=2,cex=1.5)
+box(which="plot")
+
+#2017
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+points(dgc.L17$doy,dgc.L17$gc,pch=19,type="b",col="royalblue1",cex=2)
+points(dgc.H17$doy,dgc.H17$gc,pch=19,type="b",col="palegreen4",cex=2)
+axis(1,seq(185,240,by=5),lwd.ticks=2,cex=1.5)
+axis(2,seq(0,350,by=50),lwd.ticks=2,cex=1.5)
+box(which="plot")
+dev.off()
+#######################################################################
+######make plot of El
+######first compare average daily gc across the sites
+
+#########################################################################
+#####look at several time periods
 
