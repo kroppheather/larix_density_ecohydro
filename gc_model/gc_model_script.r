@@ -8,6 +8,9 @@
 library(lubridate)
 library(plyr)
 library(caTools)
+library(rjags)
+library(coda)
+library(mcmcplots)
 
 setwd("c:\\Users\\hkropp\\Google Drive\\Viper_SF")
 
@@ -620,3 +623,98 @@ HEl17$El<-ifelse(HEl17$Pr.mm>1,NA, HEl17$El)
 LEl17$El<-ifelse(LEl17$Pr.mm>1,NA, LEl17$El)
 
 ##### end filter  ######################
+
+
+###########################################
+###########################################
+### start organizing for model version ####
+###########################################
+###########################################
+
+
+#aggregate daily air temp
+LtempD<-aggregate(datLmet$Temp,by=list(datLmet$doy,datLmet$year),FUN="mean",na.action=na.omit)
+HtempD<-aggregate(datHmet$Ctemp,by=list(datHmet$doy,datHmet$year),FUN="mean",na.action=na.omit)
+colnames(LtempD)<-c("doy","year","Temp")
+colnames(HtempD)<-c("doy","year","Temp")
+#join together and add a standID
+LtempD$standID<-rep(2,dim(LtempD)[1])
+HtempD$standID<-rep(1,dim(HtempD)[1])
+TempAll<-rbind(LtempD,HtempD)
+
+#PrecipDay
+#need to calculate previous weeks total precipitation
+PrecipPast<-rep(NA,dim(PrecipDay)[1])
+for(i in 7:dim(PrecipDay)[1]){
+	PrecipPast[i]<-(PrecipDay$Pr.mm[i]+PrecipDay$Pr.mm[i-1]+PrecipDay$Pr.mm[i-2]+
+					PrecipDay$Pr.mm[i-3]+PrecipDay$Pr.mm[i-4]+PrecipDay$Pr.mm[i-5]
+					+PrecipDay$Pr.mm[i-6])
+
+}
+PrecipDay$WeekP<-PrecipPast
+
+
+
+#need a day siteID
+
+#first combine the gc for both years for each stand
+#1 for high and 2 for low
+Hgc$standID<-rep(1,dim(Hgc)[1])
+Lgc$standID<-rep(2,dim(Lgc)[1])
+Hgc17$standID<-rep(1,dim(Hgc17)[1])
+Lgc17$standID<-rep(2,dim(Lgc17)[1])
+
+#combine into the same dataframe
+gcAllt<-rbind(Hgc,Lgc,Hgc17,Lgc17)
+#exclude days with NA
+gcAll<-na.omit(gcAllt)
+
+#now get unique day, site, year ID for the model
+
+SiteDayTable<-unique(data.frame(doy=gcAll$doy,year=gcAll$year,standID=gcAll$standID))
+#create the ID
+SiteDayTable$SiteDayID<- seq(1,dim(SiteDayTable)[1])
+
+
+#join the DaysiteID to the Temp data
+
+TempforMod<-join(SiteDayTable,TempAll,by=c("doy","year","standID"),type="left")
+
+#now join Precip day to table
+
+MDatforMod<-join(TempforMod, PrecipDay,by=c("doy","year"), type="left")
+
+
+#there is one missing canopy temp for low density on day 162
+#fill in missing value for now from high densisity
+MDatforMod$Temp[MDatforMod$doy==173&MDatforMod$year==2017&MDatforMod$standID==2]<-MDatforMod$Temp[MDatforMod$doy==173&MDatforMod$year==2017&MDatforMod$standID==1]
+
+#last step is to add the siteday index to the gc data
+
+gcforMod<-join(gcAll,SiteDayTable,by=c("doy","year","standID"),type="left")
+
+
+#now fit the model
+#note only loop through sitedayID through 146 because laste one only has 2 obs
+#from the data download time and power issues
+
+dataformodel<-list(Nobs=6243,NdaySiteID=146,Nstand=2,gs=gcforMod$gc,
+					D=gcforMod$D,daySiteID=gcforMod$SiteDayID,
+					ATemp=MDatforMod$Temp,PrecipTot=MDatforMod$WeekP,
+					standID=MDatforMod$standID)
+samplelist<-c("gref","S","a1","a2","a3","b1","b2","b3","sig.gs")					
+gcmodI<-jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\Density_sapflow\\gc_model\\gc_model_code.r",
+						data=dataformodel,
+						n.adapt=5000,
+						n.chains=3)
+						
+gcmodS<-coda.samples(gcmodI,variable.names=samplelist,
+                       n.iter=60000, thin=20)
+		
+					
+mcmcplot(gcmodS, parms=c("gref","S","a1","a2","a3","b1","b2","b3","sig.gs"),
+			dir="c:\\Users\\hkropp\\Google Drive\\Viper_SF\\model\\AGUtest")					
+
+
+
+ 
