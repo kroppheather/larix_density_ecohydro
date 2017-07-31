@@ -9,9 +9,9 @@ Model{
 		r.rep[i]~dnorm(mu.bio[i],tau.bio)
 		#likelihood mean
 		#based on beta shape and total root biomass
-		mu.bio[i]<-r.tot[DaySiteLoc[i]]*Rbeta[i]
+		mu.bio[i]<-r.tot[DaySite[i]]*Rbeta[i]
 		Rbeta[i]<-exp(log.beta[i])
-		log.beta[i]<-(log(depth[i])*(alpha[DaySiteLoc[i]]-1))+(log(1-depth[i])*beta[DaySiteLoc[i]])
+		log.beta[i]<-(log(depth[i])*(alpha[DaySite[i]]-1))+(log(1-depth[i])*beta[DaySite[i]])
 
 	}
 	
@@ -20,7 +20,7 @@ Model{
 	tau.bio<-pow(sig.bio,-2)
 	sig.bio~dunif(0,20)
 	#priors for beta shape function
-	for(i in 1:Ndaysiteloc){
+	for(i in 1:Ndaysite){
 			#start with priors that result in realistic shapes
 			#give beta a noninformative prior
 			beta[i]~dunif(1,20)
@@ -28,49 +28,22 @@ Model{
 			#(depth that this highest amount of root biomass occurs at)
 			alpha[i]<-((beta[i]*Dmode[i])-(2*Dmode[i])+1)/(1-Dmode[i])
 			#read in avergage mode +1 sd and minus 1 sd for prior
-			Dmode[i]~dunif(Dlow[i],Dhigh[i])
+			Dmode[i]~dunif(0,.99)
 			#add in some summary stats
 			#Dmed[i]<-(alpha[i]-(1/3))/(alpha[i]+beta[i]-(2/3))*Adeep[i]
 			#Dmean[i]<-alpha[i]/(alpha[i]+beta[i])*Adeep[i]
 			#give r.tot a noninformative prior
-			r.tot[i]~dnorm(0,.01)I(0,)
+			r.tot[i]~dunif(0,40)
 			r.mode[i]<-Dmode[i]*A.depth[i]
 			r.mean[i]<-(alpha[i]/(alpha[i]+beta[i]))*A.depth[i]
 			r.med[i]<-(alpha[i]-(1/3))/(alpha[i]+beta[i]-(2/3))*A.depth[i]
 	}
 	#add in calculations to explor if variables are signifcantly different
 	#look at difference between groups
-	med.diff[1]<-r.med[1]-r.med[5]
-	med.diff[2]<-r.med[1]-r.med[9]
-	med.diff[3]<-r.med[1]-r.med[12]
-	med.diff[4]<-r.med[5]-r.med[9]
-	med.diff[5]<-r.med[5]-r.med[12]
-	med.diff[6]<-r.med[9]-r.med[12]
-	med.diff[7]<-r.med[2]-r.med[6]
-	med.diff[8]<-r.med[3]-r.med[7]
-	med.diff[9]<-r.med[3]-r.med[11]
-	med.diff[10]<-r.med[3]-r.med[13]
-	med.diff[11]<-r.med[7]-r.med[10]
-	med.diff[12]<-r.med[10]-r.med[13]
-	med.diff[14]<-r.med[4]-r.med[8]
-	med.diff[15]<-r.med[4]-r.med[11]
-	med.diff[16]<-r.med[4]-r.med[14]
-	med.diff[17]<-r.med[8]-r.med[11]
-	med.diff[18]<-r.med[8]-r.med[14]
-	med.diff[19]<-r.med[11]-r.med[14]
-	#compare changes across time
-	med.diff[20]<-r.med[1]-r.med[3]
-	med.diff[21]<-r.med[1]-r.med[4]
-	med.diff[22]<-r.med[5]-r.med[7]
-	med.diff[23]<-r.med[5]-r.med[8]
-	med.diff[24]<-r.med[9]-r.med[10]
-	med.diff[25]<-r.med[9]-r.med[11]
-	med.diff[26]<-r.med[12]-r.med[13]
-	med.diff[27]<-r.med[12]-r.med[14]
 	
 	#calculate predicted root biomass at specific depth increments from parameters
 	for(z in 1:100){
-		for(i in 1:Ndaysiteloc){
+		for(i in 1:Ndaysite){
 			bio.est[z,i]<-r.tot[i]*Rbeta.est[z,i]
 			Rbeta.est[z,i]<-exp(log.beta.est[z,i])
 			log.beta.est[z,i]<-(log(depth.est[z,i])*(alpha[i]-1))+(log(1-depth.est[z,i])*beta[i])
