@@ -715,6 +715,14 @@ gcmodS<-coda.samples(gcmodI,variable.names=samplelist,
 mcmcplot(gcmodS, parms=c("gref","S","a1","a2","a3","b1","b2","b3","sig.gs"),
 			dir="c:\\Users\\hkropp\\Google Drive\\Viper_SF\\model\\AGUtest")					
 
+gcmodOut<-summary(gcmodS)
 
-
+write.table(gcmodOut$statistics,"c:\\Users\\hkropp\\Google Drive\\Viper_SF\\model\\AGUtest\\stats.csv",
+				sep=",",row.names=TRUE)
+				
+write.table(gcmodOut$quantiles,"c:\\Users\\hkropp\\Google Drive\\Viper_SF\\model\\AGUtest\\quants.csv",
+				sep=",",row.names=TRUE)
  
+rall<-cbind(gcmodOut$statistics,gcmodOut$quantiles)
+
+rsub<-data.frame(Mean=rall[,1], pc2.5=rall[,5],pc97.5=rall[,9] )
