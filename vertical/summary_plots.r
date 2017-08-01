@@ -184,202 +184,202 @@ setwd("c:\\Users\\hkropp\\Google Drive\\root_analysis")
 datR<-read.csv("fine_root_out.csv")
 
 #read in index and depth info
-datD<-read.csv("total_root_loc_site_period.csv")
+datD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\Depth.csv")
 #read in data for estimated depth increments
-datE<-read.csv("bio_est_483c098.csv")
-
+datE<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\rbio_SiteDay.csv")
+datMD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\medDepth.csv")
 #organize datE
-datE$spt.id<-rep(seq(1,14),times=100)
-datE$inc<-rep(seq(1,100),each=14)
+datE$spt.id<-rep(seq(1,7),times=100)
+datE$inc<-rep(seq(1,100),each=7)
 
 #organize into a matrix for each type
-R.mean<-matrix(rep(0,100*14), ncol=14)
-R.low<-matrix(rep(0,100*14), ncol=14)
-R.high<-matrix(rep(0,100*14), ncol=14)
+R.mean<-matrix(rep(0,100*7), ncol=7)
+R.low<-matrix(rep(0,100*7), ncol=7)
+R.high<-matrix(rep(0,100*7), ncol=7)
 for(z in 1:100){
-	for(i in 1:14){
-		R.mean[z,i]<-datE$bioEst[datE$inc==z&datE$spt.id==i]
-		R.low[z,i]<-datE$bioE.l[datE$inc==z&datE$spt.id==i]
-		R.high[z,i]<-datE$bioE.h[datE$inc==z&datE$spt.id==i]
+	for(i in 1:7){
+		R.mean[z,i]<-datE$r.mean[datE$inc==z&datE$spt.id==i]
+		R.low[z,i]<-datE$pc2.5[datE$inc==z&datE$spt.id==i]
+		R.high[z,i]<-datE$pc97.5[datE$inc==z&datE$spt.id==i]
 		}
 	
 }
 
 
 #run function on parameter values
-D.seq<-matrix(rep(0,100*14), ncol=14)
-D.seqUN<-matrix(rep(0,100*14), ncol=14)
-for(i in 1:14){
-	D.seq[,i]<-seq(.1,datD$A.depth[i],length.out=100)/datD$A.depth[i]
-	D.seqUN[,i]<-seq(.1,datD$A.depth[i],length.out=100)
+D.seq<-matrix(rep(0,100*7), ncol=7)
+D.seqUN<-matrix(rep(0,100*7), ncol=7)
+for(i in 1:7){
+	D.seq[,i]<-seq(.1,datD$Ave.deepest[i],length.out=100)/datD$Ave.deepest[i]
+	D.seqUN[,i]<-seq(.1,datD$Ave.deepest[i],length.out=100)
 }
 
 
 
 #try an overlay plot where the root function 0-1 is plotted to the average active layer depth
 #and the root biomass is represented with points
-lw<-10
-lh<-11
+lw<-9
+lh<-9
 
 ab<-layout(matrix(seq(1,8), ncol=4, byrow=TRUE), width=c(lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw)),
 				height=c(lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh)))
 				
 layout.show(ab)
 #find the maximum measurement of roots
-depmax<-aggregate(datR$depth.midpoint, by=list(datR$period,datR$loc,datR$site), FUN="max")
+depmax<-aggregate(datR$depth.midpoint, by=list(datR$loc,datR$site), FUN="max")
 #look at diff between max and ave
 Ddiff<-depmax$x-datD$A.depth
 #see what the highest point is to make plots around
 Dhigh<-ifelse(depmax$x>=datD$A.depth,depmax$x,datD$A.depth)
 #highest in high density
-yuH<-max(Dhigh[1:8])+4
-yuL<-max(Dhigh[9:14])+2.5
+yuH<-55
+yuL<-100
 xH<-11
+medSeq<-seq(0,11.5,length.out=50)
 #make a plot of biomass for high density on period 1
 
 layout.show(ab)
 #start by doing all plots across the same depth range
 par(mai=c(0,0,0,0))
-plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-		
-polygon(c(R.low[,1],rev(R.high[,1])), c(D.seqUN[,1], rev(D.seqUN[,1])), col=rgb(.28,.46,1,.5))
-points(R.mean[,1],D.seqUN[,1], type="l", lwd=3, col="royalblue1")
+plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(55,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[1],length(medSeq)),	rep(datMD$med97.5[1],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[1],length(medSeq)), type="l", lty=3,lwd=3)
+			
+polygon(c(R.low[,1],rev(R.high[,1])), c(D.seqUN[,1], rev(D.seqUN[,1])), col="darkseagreen2")
 
 
-polygon(c(R.low[,5],rev(R.high[,5])), c(D.seqUN[,5], rev(D.seqUN[,5])), col=rgb(.15,.25,.55,.5))
-points(R.mean[,5],D.seqUN[,5], type="l", lwd=3, col="royalblue4")
+points(R.mean[,1],D.seqUN[,1], type="l", lwd=4, col="palegreen4")
 
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="s"&datR$period==1],datR$depth.midpoint[datR$site=="h"&datR$loc=="s"&datR$period==1], 
-		col="royalblue1", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="t"&datR$period==1],datR$depth.midpoint[datR$site=="h"&datR$loc=="t"&datR$period==1], 
-		col="royalblue4", pch=19, cex=1.5)
+points(datR$bio.mg.cm3[datR$site=="h"&datR$period==1],datR$depth.midpoint[datR$site=="h"&datR$period==1], 
+		col="palegreen4", pch=19, cex=1.75)
+
 box(which="plot")
-text(5,50,"Early July", cex=2)
-axis(2,seq(yuH,0, by=-5), las=2, cex.axis=2)
-legend(8,45,c("shrub","tree"), col=c("royalblue1","royalblue4"), pch=19, cex=2, bty="n")
+text(5,50,"early July", cex=3)
+axis(2,seq(55,0, by=-5), las=2, cex.axis=2)
+text(5,22,"high density", cex=3)
+legend(.5,22,c("observed biomass","mean biomass","95% mean CI","median rooting depth",
+				"95% CI median depth"), pch=c(19,NA,15,NA,15),lty=c(NA,1,NA,3,NA),
+				lwd=c(NA,2,NA,2,NA),col=c("palegreen4","palegreen4","darkseagreen2",
+					"black","grey75"),bty="n",cex=1.8)
 #Mid July
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-		
-polygon(c(R.low[,2],rev(R.high[,2])), c(D.seqUN[,2], rev(D.seqUN[,2])), col=rgb(.28,.46,1,.5))
-points(R.mean[,2],D.seqUN[,2], type="l", lwd=3, col="royalblue1")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[2],length(medSeq)),	rep(datMD$med97.5[2],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[2],length(medSeq)), type="l", lty=3,lwd=3)		
+polygon(c(R.low[,2],rev(R.high[,2])), c(D.seqUN[,2], rev(D.seqUN[,2])), col="darkseagreen2")
+points(R.mean[,2],D.seqUN[,2], type="l", lwd=3, col="palegreen4")
 
 
-polygon(c(R.low[,6],rev(R.high[,6])), c(D.seqUN[,6], rev(D.seqUN[,6])), col=rgb(.15,.25,.55,.5))
-points(R.mean[,6],D.seqUN[,6], type="l", lwd=3, col="royalblue4")
+points(datR$bio.mg.cm3[datR$site=="h"&datR$period==2],datR$depth.midpoint[datR$site=="h"&datR$period==2], 
+		col="palegreen4", pch=19, cex=1.75)
 
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="s"&datR$period==2],datR$depth.midpoint[datR$site=="h"&datR$loc=="s"&datR$period==2], 
-		col="royalblue1", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="t"&datR$period==2],datR$depth.midpoint[datR$site=="h"&datR$loc=="t"&datR$period==2], 
-		col="royalblue4", pch=19, cex=1.5)
 box(which="plot")
-text(5,50,"Mid July", cex=2)
-legend(8,45,c("shrub","tree"), col=c("royalblue1","royalblue4"), pch=19, cex=2, bty="n")
+text(5,50,"mid July", cex=3)
+
 #End July
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-		
-polygon(c(R.low[,3],rev(R.high[,3])), c(D.seqUN[,3], rev(D.seqUN[,3])), col=rgb(.28,.46,1,.5))
-points(R.mean[,3],D.seqUN[,3], type="l", lwd=3, col="royalblue1")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[3],length(medSeq)),	rep(datMD$med97.5[3],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[3],length(medSeq)), type="l", lty=3,lwd=3)		
+polygon(c(R.low[,3],rev(R.high[,3])), c(D.seqUN[,3], rev(D.seqUN[,3])), col="darkseagreen2")
+points(R.mean[,3],D.seqUN[,3], type="l", lwd=3, col="palegreen4")
 
 
-polygon(c(R.low[,7],rev(R.high[,7])), c(D.seqUN[,7], rev(D.seqUN[,7])), col=rgb(.15,.25,.55,.5))
-points(R.mean[,7],D.seqUN[,7], type="l", lwd=3, col="royalblue4")
 
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="s"&datR$period==3],datR$depth.midpoint[datR$site=="h"&datR$loc=="s"&datR$period==3], 
-		col="royalblue1", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="t"&datR$period==3],datR$depth.midpoint[datR$site=="h"&datR$loc=="t"&datR$period==3], 
-		col="royalblue4", pch=19, cex=1.5)
+points(datR$bio.mg.cm3[datR$site=="h"&datR$period==3],datR$depth.midpoint[datR$site=="h"&datR$period==3], 
+		col="palegreen4", pch=19, cex=1.75)
+
 box(which="plot")
-text(5,50,"End July", cex=2)
-legend(8,45,c("shrub","tree"), col=c("royalblue1","royalblue4"), pch=19, cex=2, bty="n")
+text(5,50,"end July", cex=3)
+
 #Mid August
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-		
-polygon(c(R.low[,4],rev(R.high[,4])), c(D.seqUN[,4], rev(D.seqUN[,4])), col=rgb(.28,.46,1,.5))
-points(R.mean[,4],D.seqUN[,4], type="l", lwd=3, col="royalblue1")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[4],length(medSeq)),	rep(datMD$med97.5[4],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[4],length(medSeq)), type="l", lty=3,lwd=3)		
+polygon(c(R.low[,4],rev(R.high[,4])), c(D.seqUN[,4], rev(D.seqUN[,4])), col="darkseagreen2")
+points(R.mean[,4],D.seqUN[,4], type="l", lwd=3, col="palegreen4")
 
 
-polygon(c(R.low[,8],rev(R.high[,8])), c(D.seqUN[,8], rev(D.seqUN[,8])), col=rgb(.15,.25,.55,.5))
-points(R.mean[,8],D.seqUN[,8], type="l", lwd=3, col="royalblue4")
+points(datR$bio.mg.cm3[datR$site=="h"&datR$period==4],datR$depth.midpoint[datR$site=="h"&datR$period==4], 
+		col="palegreen4", pch=19, cex=1.75)
 
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="s"&datR$period==4],datR$depth.midpoint[datR$site=="h"&datR$loc=="s"&datR$period==4], 
-		col="royalblue1", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="h"&datR$loc=="t"&datR$period==4],datR$depth.midpoint[datR$site=="h"&datR$loc=="t"&datR$period==4], 
-		col="royalblue4", pch=19, cex=1.5)
 box(which="plot")
-text(5,50,"Mid August", cex=2)
-legend(8,45,c("shrub","tree"), col=c("royalblue1","royalblue4"), pch=19, cex=2, bty="n")
+text(5,50,"mid August", cex=3)
 
 #####start low density
 #start by doing all plots across the same depth range
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[5],length(medSeq)),	rep(datMD$med97.5[5],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[5],length(medSeq)), type="l", lty=3,lwd=3)		
+polygon(c(R.low[,5],rev(R.high[,5])), c(D.seqUN[,5], rev(D.seqUN[,5])), col="lightblue")
+points(R.mean[,5],D.seqUN[,5], type="l", lwd=3, col="royalblue3")
+
+
+points(datR$bio.mg.cm3[datR$site=="l"&datR$period==1],datR$depth.midpoint[datR$site=="l"&datR$period==1], 
+		col="royalblue3", pch=19, cex=1.75)
 		
-polygon(c(R.low[,9],rev(R.high[,9])), c(D.seqUN[,9], rev(D.seqUN[,9])), col=rgb(.8,.41,.22,.5))
-points(R.mean[,9],D.seqUN[,9], type="l", lwd=3, col="sienna3")
-
-
-polygon(c(R.low[,12],rev(R.high[,12])), c(D.seqUN[,12], rev(D.seqUN[,12])), col=rgb(.55,.28,.15,.5))
-points(R.mean[,12],D.seqUN[,12], type="l", lwd=3, col="sienna4")
-
-points(datR$bio.mg.cm3[datR$site=="l"&datR$loc=="s"&datR$period==1],datR$depth.midpoint[datR$site=="l"&datR$loc=="s"&datR$period==1], 
-		col="sienna3", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="l"&datR$loc=="t"&datR$period==1],datR$depth.midpoint[datR$site=="l"&datR$loc=="t"&datR$period==1], 
-		col="sienna4", pch=19, cex=1.5)
+text(5,40,"low density", cex=3)		
+legend(.5,40,c("observed biomass","mean biomass","95% mean CI","median rooting depth",
+				"95% CI median depth"), pch=c(19,NA,15,NA,15),lty=c(NA,1,NA,3,NA),
+				lwd=c(NA,2,NA,2,NA),col=c("royalblue3","royalblue3","lightblue",
+					"black","grey75"),bty="n",cex=1.8)
 box(which="plot")
-text(5,90,"Early July", cex=2)
+text(5,90,"early July", cex=3)
 axis(2,seq(100,10, by=-10), las=2, cex.axis=2)
-legend(8,85,c("shrub","tree"), col=c("sienna3","sienna4"), pch=19, cex=2, bty="n")
-mtext("Depth (cm)", outer=TRUE, side=2, line=-9, cex=2)
-axis(1, seq(0,10, by=1), cex.axis=2)
+mtext("Depth (cm)", outer=TRUE, side=2, line=-5, cex=2)
+axis(1, seq(0,9, by=3), cex.axis=2)
 #empty plot mid july
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-text(5,90,"Mid July", cex=2)
-axis(1, seq(0,10, by=1), cex.axis=2)
+text(5,90,"mid July", cex=3)
+axis(1, seq(0,9, by=3), cex.axis=2)
 box(which="plot")	
 #End of July
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-		
-polygon(c(R.low[,10],rev(R.high[,10])), c(D.seqUN[,10], rev(D.seqUN[,10])), col=rgb(.8,.41,.22,.5))
-points(R.mean[,10],D.seqUN[,10], type="l", lwd=3, col="sienna3")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[6],length(medSeq)),	rep(datMD$med97.5[6],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[6],length(medSeq)), type="l", lty=3,lwd=3)		
+polygon(c(R.low[,6],rev(R.high[,6])), c(D.seqUN[,6], rev(D.seqUN[,6])), col="lightblue")
+points(R.mean[,6],D.seqUN[,6], type="l", lwd=3, col="royalblue3")
 
 
-polygon(c(R.low[,13],rev(R.high[,13])), c(D.seqUN[,13], rev(D.seqUN[,13])), col=rgb(.55,.28,.15,.5))
-points(R.mean[,13],D.seqUN[,13], type="l", lwd=3, col="sienna4")
+points(datR$bio.mg.cm3[datR$site=="l"&datR$period==3],datR$depth.midpoint[datR$site=="l"&datR$period==3], 
+		col="royalblue3", pch=19, cex=1.75)
 
-points(datR$bio.mg.cm3[datR$site=="l"&datR$loc=="s"&datR$period==3],datR$depth.midpoint[datR$site=="l"&datR$loc=="s"&datR$period==3], 
-		col="sienna3", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="l"&datR$loc=="t"&datR$period==3],datR$depth.midpoint[datR$site=="l"&datR$loc=="t"&datR$period==3], 
-		col="sienna4", pch=19, cex=1.5)
 box(which="plot")
-text(5,90,"End July", cex=2)
-
-legend(8,85,c("shrub","tree"), col=c("sienna3","sienna4"), pch=19, cex=2, bty="n")
-axis(1, seq(0,10, by=1), cex.axis=2)
+text(5,90,"end July", cex=3)
+axis(1, seq(0,9, by=3), cex.axis=2)
 #Mid August
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
-		
-polygon(c(R.low[,11],rev(R.high[,11])), c(D.seqUN[,11], rev(D.seqUN[,11])), col=rgb(.8,.41,.22,.5))
-points(R.mean[,11],D.seqUN[,11], type="l", lwd=3, col="sienna3")
+polygon(c(medSeq,rev(medSeq)),
+		c(rep(datMD$med2.5[7],length(medSeq)),	rep(datMD$med97.5[7],length(medSeq))),
+			col="grey75",border=NA)
+points(medSeq,rep(datMD$r.med[7],length(medSeq)), type="l", lty=3,lwd=3)		
+polygon(c(R.low[,7],rev(R.high[,7])), c(D.seqUN[,7], rev(D.seqUN[,7])), col="lightblue")
+points(R.mean[,7],D.seqUN[,7], type="l", lwd=3, col="royalblue3")
 
-
-polygon(c(R.low[,14],rev(R.high[,14])), c(D.seqUN[,14], rev(D.seqUN[,14])), col=rgb(.55,.28,.15,.5))
-points(R.mean[,14],D.seqUN[,14], type="l", lwd=3, col="sienna4")
 
 points(datR$bio.mg.cm3[datR$site=="l"&datR$loc=="s"&datR$period==4],datR$depth.midpoint[datR$site=="l"&datR$loc=="s"&datR$period==4], 
-		col="sienna3", pch=19, cex=1.5)
-points(datR$bio.mg.cm3[datR$site=="l"&datR$loc=="t"&datR$period==4],datR$depth.midpoint[datR$site=="l"&datR$loc=="t"&datR$period==4], 
-		col="sienna4", pch=19, cex=1.5)
-box(which="plot")
-text(5,90,"Mid August", cex=2)
+		col="royalblue3", pch=19, cex=1.75)
 
-legend(8,85,c("shrub","tree"), col=c("sienna3","sienna4"), pch=19, cex=2, bty="n")
-axis(1, seq(0,10, by=1), cex.axis=2)
+box(which="plot")
+text(5,90,"mid August", cex=3)
+axis(1, seq(0,9, by=3), cex.axis=2)
 mtext(expression("Root Biomass (mg cm"^-3~")"), side=1, outer=TRUE, line=-1, cex=2)
 
 

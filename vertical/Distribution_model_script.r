@@ -64,7 +64,7 @@ Dave<-aggregate(datA$Frozen.Depth, by=list(datA$period,datA$siteid), FUN="mean")
 colnames(Dave)<-c("period","site","Ave.deepest")
 #join to rootT.spt
 Rall<-join(rootT.spt,Dave,by=c("period","site"), type="left")
-
+write.table(Rall,"c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\Depth.csv",sep=",",row.names=FALSE)
 D.seq<-matrix(rep(0,100*7), ncol=7)
 D.seqUN<-matrix(rep(0,100*7), ncol=7)
 for(i in 1:7){
