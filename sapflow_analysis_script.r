@@ -1221,28 +1221,76 @@ mgc.H17n<-na.omit(mgc.H17)
 dgc.H17<-aggregate(mgc.H17n$gc,by=list(mgc.H17n$doy), FUN="mean")
 colnames(dgc.H17)<-c("doy","gc")
 
+#get the average D across all of the days
+DdayL16<-aggregate(metL16$D, by=list(metL16$doy,metL16$year),FUN="mean")
+DdayH16<-aggregate(metH16$D, by=list(metH16$doy,metH16$year),FUN="mean")
+DdayL17<-aggregate(metL17$D, by=list(metL17$doy,metL17$year),FUN="mean")
+DdayH17<-aggregate(metH17$D, by=list(metH17$doy,metH17$year),FUN="mean")
+colnames(DdayL16)<-c("doy","year","D")
+colnames(DdayH16)<-c("doy","year","D")
+colnames(DdayL17)<-c("doy","year","D")
+colnames(DdayH17)<-c("doy","year","D")
+
+
 ds16<-181
-de16<-243
-ds17<-158
-de17<-198
+de16<-245
+ds17<-157
+de17<-200
 ys<- 0
 ye <-200
+ysD<- 0
+yeD <-1.6
 
-wd<-30
-ld<-30
+wd<-20
+ld<-12
 
+tot16<-de16-ds16
+tot17<-de17-ds17
+totAll<-tot16+tot17
 
-jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\gc_compALL.jpg", width=2200,height=2000)	
-	a<-layout(matrix(seq(1,2), nrow=1, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(ld),2))
+p16<-tot16/totAll
+wd16<-round(p16*40)
+wd17<-40-wd16	
+	
+a<-layout(matrix(seq(1,4), nrow=2, byrow=TRUE),
+	 width=c(lcm(wd16),lcm(wd17),lcm(wd16),lcm(wd17)),
+				height=c(lcm(ld),lcm(ld),lcm(ld),lcm(ld)))
 	layout.show(a)
 #2016 
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ysD,yeD), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+points(DdayL16$doy,DdayL16$D, type="l",lwd=5, col="royalblue1")	
+points(DdayH16$doy,DdayH16$D, type="l",lwd=5, col="palegreen4",lty=3)	
+axis(2, seq(0,2,by=.5), cex.axis=1.5,las=2)
+mtext("Average vapor pressure deficit (KPa)", side=2, line=7, cex=1.5)	
+box(which="plot")
+mtext("2016", side=3, line=1, cex=2)
+legend(181,1.6,c("low density","high density"), lwd=5, lty=c(1,2), col=c("royalblue1","palegreen4"),
+		bty="n", cex=2)
+#2017 
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ysD,yeD), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")
+points(DdayL17$doy,DdayL17$D, type="l",lwd=5, col="royalblue1")	
+points(DdayH17$doy,DdayH17$D, type="l",lwd=5, col="palegreen4",lty=3)	
+mtext("2017", side=3, line=1, cex=2)	
+box(which="plot")
+
+#2016 
+
+
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
 points(dgc.L$doy,dgc.L$gc,pch=19,type="b",col="royalblue1",cex=2)
 points(dgc.H$doy,dgc.H$gc,pch=19,type="b",col="palegreen4",cex=2)
-axis(1,seq(185,240,by=5),lwd.ticks=2,cex=1.5)
-axis(2,seq(0,350,by=50),lwd.ticks=2,cex=1.5)
+axis(1,seq(185,240,by=5),lwd.ticks=2,cex.axis=1.5)
+axis(2,seq(0,175,by=25),lwd.ticks=2,cex.axis=1.5, las=2)
+legend(183,200,c("low density","high density"), pch=19, lty=c(1,1), col=c("royalblue1","palegreen4"),
+		bty="n", cex=2)
+mtext("Average canopy stomatal conductance", side=2, line=7, cex=1.5)		
+mtext(expression(paste("mmol m"^"-2"~"s"^"-1"~")")), side=2, line=4, cex=1.5)	
 box(which="plot")
 
 #2017
@@ -1251,10 +1299,10 @@ plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
 points(dgc.L17$doy,dgc.L17$gc,pch=19,type="b",col="royalblue1",cex=2)
 points(dgc.H17$doy,dgc.H17$gc,pch=19,type="b",col="palegreen4",cex=2)
-axis(1,seq(185,240,by=5),lwd.ticks=2,cex=1.5)
-axis(2,seq(0,350,by=50),lwd.ticks=2,cex=1.5)
+axis(1,seq(160,200,by=5),lwd.ticks=2, cex.axis=1.5)
+#axis(2,seq(0,350,by=50),lwd.ticks=2,cex=1.5)
 box(which="plot")
-dev.off()
+mtext("Day of year", side=1, outer=TRUE, line=-1.5, cex=1.5)
 #######################################################################
 ######make plot of El
 ######first compare average daily gc across the sites
@@ -1460,7 +1508,7 @@ arrows(midStA$doy[midStA$site=="hd"&midStA$year==2017],
 		midStA$wp[midStA$site=="hd"&midStA$year==2017]+midStSD$se[midStSD$site=="hd"&midStA$year==2017],
 		code=0)
 axis(1, seq(185,205,by=5), cex.axis=1.5)
-mtext("Day of year", side=1, cex=1.5, line=3)	
+mtext("Day of year 2017", side=1, cex=1.5, line=3)	
 box(which="plot")	
 
 axis(4,seq(.4,1.6,by=.2), las=2,cex.axis=1.5)
