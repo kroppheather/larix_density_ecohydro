@@ -40,6 +40,9 @@ datHmet<-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\csv_out\\DavCnpy.c
 #airport met data
 datAD<-read.table("airport.csv", sep=";", head=TRUE, skip=6, stringsAsFactors=FALSE)
 
+#water potential data
+datwp<-read.csv("waterpotential.csv")
+
 #sensors 9-16 were run at the incorrect voltage
 #and clearly have incorrect dT values for it
 #so excluding from calculations
@@ -259,31 +262,31 @@ for(i in 1:16){
 
 ######END Corrected velocity done with V.h and V.l ##############
 #plot all sensors
-for(i in 1:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\low16\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(V.l)[1]), V.l[,i], xlab="time", ylab="V (cm/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-for(i in 1:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\low17\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(V.l17)[1]), V.l17[,i], xlab="time", ylab="V (cm/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
-for(i in 1:16){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\high17\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(V.h17)[1]), V.h17[,i], xlab="time", ylab="V (cm/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
+#for(i in 1:16){
+#	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\low16\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
+#	plot(seq(1:dim(V.l)[1]), V.l[,i], xlab="time", ylab="V (cm/s)", type="b",
+#			main=paste("sensor #", i), pch=19)
+#	dev.off()
+#}
+#for(i in 1:16){
+#	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\low17\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
+#	plot(seq(1:dim(V.l17)[1]), V.l17[,i], xlab="time", ylab="V (cm/s)", type="b",
+#			main=paste("sensor #", i), pch=19)
+#	dev.off()
+#}
+#for(i in 1:16){
+#	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\high17\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
+#	plot(seq(1:dim(V.h17)[1]), V.h17[,i], xlab="time", ylab="V (cm/s)", type="b",
+#			main=paste("sensor #", i), pch=19)
+#	dev.off()
+#}
 #high
-for(i in 1:8){
-	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\high16\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
-	plot(seq(1:dim(V.h)[1]), V.h[,i], xlab="time", ylab="V (cm/s)", type="b",
-			main=paste("sensor #", i), pch=19)
-	dev.off()
-}
+#for(i in 1:8){
+#	jpeg(file=paste0("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\plots\\new\\velocity\\high16\\velocity", i, ".jpeg"), width=1500, height=1000, units="px")
+#	plot(seq(1:dim(V.h)[1]), V.h[,i], xlab="time", ylab="V (cm/s)", type="b",
+#			main=paste("sensor #", i), pch=19)
+#	dev.off()
+#}
 
 #################################################################
 ########Compare N and S velocities  #############################
@@ -1258,4 +1261,78 @@ dev.off()
 
 #########################################################################
 #####look at several time periods
+
+##########################################################################
+##########################################################################
+######Water potential vs D and gc ########################################
+##########################################################################
+
+#fix different site labelling
+datwp$siteid<-ifelse(datwp$Site=="l"|datwp$Site=="ld","ld",
+				ifelse(datwp$Site=="h"|datwp$Site=="hd","hd",NA))
+#make a subsetted data frame of water potential
+WPall<-data.frame(doy=datwp$DOY,year=datwp$Year,site=datwp$siteid,species=datwp$Species,
+					wp=datwp$Water.potential,hour=datwp$hour,Time=datwp$hour+(datwp$minute/60)) 
+
+			
+#round the water potential time so that it can be matched to met/gc data
+WPall$TimeM<-ifelse(WPall$Time-WPall$hour<=.25,WPall$hour,
+				ifelse(WPall$Time-WPall$hour>.25&WPall$Time-WPall$hour<.75,(WPall$hour+.5),
+				ifelse(WPall$Time-WPall$hour>=.75,WPall$hour+1,NA)))
+
+#now match gc and D to the wp
+#combine all into the same dataframe
+Hgc$site<-rep("hd",dim(Hgc)[1])
+Hgc17$site<-rep("hd",dim(Hgc17)[1])
+Lgc$site<-rep("ld",dim(Lgc)[1])
+Lgc17$site<-rep("ld",dim(Lgc17)[1])
+
+#now combine all into the smae data frame
+gcAll<-rbind(Hgc,Hgc17,Lgc,Lgc17)
+colnames(gcAll)[3]<-"TimeM"
+#take only larch
+WPlarch<-WPall[WPall$species=="larix",]
+
+#join 
+WPLdat<-join(WPlarch,gcAll,by=c("site","doy","year", "TimeM"), type="left")
+
+par(mfrow=c(1,2))
+
+
+plot(WPLdat$D[WPLdat$site=="ld"&WPLdat$year==2016],WPLdat$wp[WPLdat$site=="ld"&WPLdat$year==2016],xlim=c(0,2.5), ylim=c(0.4,1.6),pch=19, col="royalblue1")
+points(WPLdat$D[WPLdat$site=="ld"&WPLdat$year==2017],WPLdat$wp[WPLdat$site=="ld"&WPLdat$year==2017],pch=19, col="royalblue4")
+points(WPLdat$D[WPLdat$site=="hd"&WPLdat$year==2016],WPLdat$wp[WPLdat$site=="hd"&WPLdat$year==2016],pch=19, col="palegreen2")
+points(WPLdat$D[WPLdat$site=="hd"&WPLdat$year==2017],WPLdat$wp[WPLdat$site=="hd"&WPLdat$year==2017],pch=19, col="palegreen4")
+
+#find out how many days have all day measurements
+daysWP<-unique(data.frame(doy=WPLdat$doy,year=WPLdat$year,hour=WPLdat$hour))
+#count how many hours in a day
+dayCP<-aggregate(daysWP$doy,by=list(daysWP$doy,daysWP$year),FUN="length")
+colnames(dayCP)<-c("doy","year","hr.count")
+#filter days with 4 or more hours
+dayTU<-dayCP[dayCP$hr.count>3,]
+dayTU
+dayTU$dayseq<-seq(1,dim(dayTU)[1])
+#subset WPL
+daySubWPL<-join(WPLdat,dayTU,by=c("doy","year"), type="inner")
+
+subD<-unique(data.frame(dayseq=daySubWPL$dayseq,site=daySubWPL$site,doy=daySubWPL$doy,year=daySubWPL$year))
+subD$IDseq<-seq(1,dim(subD)[1])
+#make color
+colID<-ifelse(subD$site=="hd","palegreen4","royalblue1")
+
+#join this id back
+
+daySubWPL2<-join(subD,daySubWPL, by=c("doy","year","dayseq","site"), type="left")
+
+
+
+plot(c(0,1),c(0,1), xlim=c(9.5,20), ylim=c(0.4,1.6), type="n", axes=FALSE, xlab=" ", ylab=" ",
+		yaxs="i",xaxs="i")
+		
+for(i in 1:dim(subD)[1]){
+	points(daySubWPL2$Time[daySubWPL2$IDseq==1],daySubWPL2$wp[daySubWPL2$IDseq==1], type="b",
+			pch=19, col=colID[1])
+
+}		
 

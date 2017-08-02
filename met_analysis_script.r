@@ -26,6 +26,9 @@ PrecipF1 <- ifelse(Precip1 == "Trace of precipitation" ,"0.01" ,
 				
 PrecipN1<-as.numeric(PrecipF1)
 
+#read in canopy met data
+datLM<-read.csv("LDF2RS.csv.csv")
+datHM<-read.csv("DavCnpy.csv.csv")
 
 
 #now turn into a dataframe
@@ -213,3 +216,10 @@ points(TDave$doy[TDave$site=="hd"&TDave$year==2017],TDave$TD[TDave$site=="hd"&TD
 box(which="plot")
 axis(1,seq(165,200,by=5),cex.axis=1.5)
 mtext("Day of year",side=1,line=-2,outer=TRUE,cex=1.75)
+
+
+#########################################################################################################
+
+#######################################################################
+#########Make plot of above ground met
+
