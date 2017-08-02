@@ -1266,6 +1266,16 @@ dev.off()
 ##########################################################################
 ######Water potential vs D and gc ########################################
 ##########################################################################
+#look at past precipitation
+PrecipPast<-rep(NA,dim(PrecipDay)[1])
+for(i in 7:dim(PrecipDay)[1]){
+	PrecipPast[i]<-(PrecipDay$Pr.mm[i]+PrecipDay$Pr.mm[i-1]+PrecipDay$Pr.mm[i-2]+
+					PrecipDay$Pr.mm[i-3]+PrecipDay$Pr.mm[i-4]+PrecipDay$Pr.mm[i-5]
+					+PrecipDay$Pr.mm[i-6])
+
+}
+PrecipDay$WeekP<-PrecipPast
+
 
 #fix different site labelling
 datwp$siteid<-ifelse(datwp$Site=="l"|datwp$Site=="ld","ld",
@@ -1293,6 +1303,8 @@ colnames(gcAll)[3]<-"TimeM"
 #take only larch
 WPlarch<-WPall[WPall$species=="larix",]
 
+#aggregate larch water potetnail across time period
+
 #join 
 WPLdat<-join(WPlarch,gcAll,by=c("site","doy","year", "TimeM"), type="left")
 
@@ -1304,35 +1316,152 @@ points(WPLdat$D[WPLdat$site=="ld"&WPLdat$year==2017],WPLdat$wp[WPLdat$site=="ld"
 points(WPLdat$D[WPLdat$site=="hd"&WPLdat$year==2016],WPLdat$wp[WPLdat$site=="hd"&WPLdat$year==2016],pch=19, col="palegreen2")
 points(WPLdat$D[WPLdat$site=="hd"&WPLdat$year==2017],WPLdat$wp[WPLdat$site=="hd"&WPLdat$year==2017],pch=19, col="palegreen4")
 
-#find out how many days have all day measurements
-daysWP<-unique(data.frame(doy=WPLdat$doy,year=WPLdat$year,hour=WPLdat$hour))
-#count how many hours in a day
-dayCP<-aggregate(daysWP$doy,by=list(daysWP$doy,daysWP$year),FUN="length")
-colnames(dayCP)<-c("doy","year","hr.count")
-#filter days with 4 or more hours
-dayTU<-dayCP[dayCP$hr.count>3,]
-dayTU
-dayTU$dayseq<-seq(1,dim(dayTU)[1])
-#subset WPL
-daySubWPL<-join(WPLdat,dayTU,by=c("doy","year"), type="inner")
+#now look at mid day stress. Take all measurements occuring between 11:00-2:00pm
+midSt<-WPLdat[WPLdat$hour>=11&WPLdat$hour<14,]
+#now aggregate across stand and day
+midStA<-aggregate(midSt$wp,by=list(midSt$doy,midSt$year,midSt$site),FUN="mean")
+midStSD<-aggregate(midSt$wp,by=list(midSt$doy,midSt$year,midSt$site),FUN="sd")
+midStL<-aggregate(midSt$wp,by=list(midSt$doy,midSt$year,midSt$site),FUN="length")
+colnames(midStA)<-c("doy","year","site","wp")
+colnames(midStSD)<-c("doy","year","site","wp.sd")
+colnames(midStL)<-c("doy","year","site","wp.L")
+midStSD$se<-midStSD$wp.sd/sqrt(midStL$wp.L)
 
-subD<-unique(data.frame(dayseq=daySubWPL$dayseq,site=daySubWPL$site,doy=daySubWPL$doy,year=daySubWPL$year))
-subD$IDseq<-seq(1,dim(subD)[1])
-#make color
-colID<-ifelse(subD$site=="hd","palegreen4","royalblue1")
+midD<-aggregate(midSt$D,by=list(midSt$doy,midSt$year,midSt$site),FUN="mean")
+colnames(midD)<-c("doy","year","site","midD")
+midStA<-join(midStA,midD,by=c("doy","year","site"), type="left")
 
-#join this id back
-
-daySubWPL2<-join(subD,daySubWPL, by=c("doy","year","dayseq","site"), type="left")
+#join Precipday to mid
+midStA<-join(midStA,PrecipDay,by=c("doy","year"), type="left")
 
 
-
-plot(c(0,1),c(0,1), xlim=c(9.5,20), ylim=c(0.4,1.6), type="n", axes=FALSE, xlab=" ", ylab=" ",
-		yaxs="i",xaxs="i")
+plot(c(0,1),c(0,1), type="n",ylim=c(.5,1.6), xlim=c(169,245), xlab=" ", ylab=" ", xaxs="i",
+		yaxs="i", axes=FALSE)
 		
-for(i in 1:dim(subD)[1]){
-	points(daySubWPL2$Time[daySubWPL2$IDseq==1],daySubWPL2$wp[daySubWPL2$IDseq==1], type="b",
-			pch=19, col=colID[1])
+points(midStA$doy[midStA$site=="ld"],midStA$wp[midStA$site=="ld"], pch=19, col="royalblue1")		
+points(midStA$doy[midStA$site=="hd"],midStA$wp[midStA$site=="hd"], pch=19, col="palegreen4")
 
-}		
 
+arrows(midStA$doy[midStA$site=="ld"],
+		midStA$wp[midStA$site=="ld"]-midStSD$se[midStSD$site=="ld"],
+		midStA$doy[midStA$site=="ld"],
+		midStA$wp[midStA$site=="ld"]+midStSD$se[midStSD$site=="ld"],
+		code=0)
+
+arrows(midStA$doy[midStA$site=="hd"],
+		midStA$wp[midStA$site=="hd"]-midStSD$se[midStSD$site=="hd"],
+		midStA$doy[midStA$site=="hd"],
+		midStA$wp[midStA$site=="hd"]+midStSD$se[midStSD$site=="hd"],
+		code=0)
+		
+gcnn<-na.omit(gcAll)
+maxgc<-aggregate(gcnn$gc, by=list(gcnn$doy,gcnn$year, gcnn$site), FUN="mean")
+colnames(maxgc)<-c("doy","year","site","mean.gc")
+#now join to mid day
+midStA<-join(midStA,maxgc,by=c("doy","year","site"), type="left")
+
+plot(midStA$wp[midStA$site=="ld"],midStA$mean.gc[midStA$site=="ld"],pch=19, col="royalblue1")
+points(midStA$wp[midStA$site=="hd"],midStA$mean.gc[midStA$site=="hd"],pch=19, col="palegreen4")
+
+####################################################
+#aggregate larch water potetnail across time period
+WPL<-aggregate(WPlarch$wp, by=list(WPlarch$doy,WPlarch$year,WPlarch$site,WPlarch$TimeM), FUN="mean")
+colnames(WPL)<-c("doy","year","site","TimeM","wp")
+#now join to gc 
+WPLd<-join(WPL,gcAll,by=c("doy","year","TimeM","site"), type="left")
+
+wd<-15
+hd<-15
+
+#test relationships
+DWH<-lm(WPLd$wp[WPLd$site=="hd"]~WPLd$D[WPLd$site=="hd"])
+DWL<-lm(WPLd$wp[WPLd$site=="ld"]~WPLd$D[WPLd$site=="ld"])
+GWH<-lm(WPLd$gc[WPLd$site=="hd"]~WPLd$wp[WPLd$site=="hd"])
+GWL<-lm(WPLd$gc[WPLd$site=="ld"])~WPLd$wp[WPLd$site=="ld"])
+
+summary(DWH)
+summary(DWL)
+summary(GWH)
+summary(GWL)
+
+ab<-layout(matrix(c(1,2), ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
+layout.show(ab)
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), type="n",ylim=c(.4,1.6), xlim=c(0,2.5), xlab=" ", ylab=" ", xaxs="i",
+		yaxs="i", axes=FALSE)
+points(WPLd$D[WPLd$site=="hd"],WPLd$wp[WPLd$site=="hd"], pch=19, col="palegreen4",cex=1.75)
+points(WPLd$D[WPLd$site=="ld"],WPLd$wp[WPLd$site=="ld"], pch=19, col="royalblue1",cex=1.75)	
+abline(DWH,col="palegreen4",lwd=2 )
+abline(DWL,col="royalblue1",lwd=2 )
+axis(2,seq(.4,1.6,by=.2), las=2,cex.axis=1.5)
+axis(1,seq(0,2.5,by=.5), cex.axis=1.5)
+box(which="plot")
+mtext("Xylem water potential (- MPa)", side=2, cex=1.5, line=4)
+mtext("Vapor pressure Deficit (KPa)", side=1, cex=1.5, line=3)
+legend(0,1.6, c("low density", "high density"), col=c("royalblue1","palegreen4"), pch=19,
+		cex=1.5, bty="n")
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), type="n",ylim=c(0,80), xlim=c(.2,1.6), xlab=" ", ylab=" ", xaxs="i",
+		yaxs="i", axes=FALSE)
+points(WPLd$wp[WPLd$site=="hd"],WPLd$gc[WPLd$site=="hd"], pch=19, col="palegreen4",cex=1.75)
+points(WPLd$wp[WPLd$site=="ld"],WPLd$gc[WPLd$site=="ld"], pch=19, col="royalblue1",cex=1.75)
+abline(GWH,col="palegreen4",lwd=2 )
+#abline(GWL,col="royalblue1",lwd=2 )			
+box(which="plot")
+axis(1,seq(.4,1.6,by=.2),cex.axis=1.5)
+axis(4,seq(0,80,by=10), las=2,cex.axis=1.5)
+mtext(expression(paste("Canopy stomatal conductance (mmol m"^"-2"~"s"^"-1"~" )")), side=4, cex=1.5, line=4)
+mtext("Xylem water potential (- MPa)", side=1, cex=1.5, line=3)
+
+
+
+
+
+#############################################################################
+#######make panel with wp vs d and mid day stress
+wd<-15
+hd<-15
+
+
+
+
+ab<-layout(matrix(seq(1,2), ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
+layout.show(ab)
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), type="n",ylim=c(.4,1.6), xlim=c(0,2.5), xlab=" ", ylab=" ", xaxs="i",
+		yaxs="i", axes=FALSE)
+points(WPLd$D[WPLd$site=="hd"],WPLd$wp[WPLd$site=="hd"], pch=19, col="palegreen4",cex=2)
+points(WPLd$D[WPLd$site=="ld"],WPLd$wp[WPLd$site=="ld"], pch=19, col="royalblue1",cex=2)	
+axis(2,seq(.4,1.6,by=.2), las=2,cex.axis=1.5)
+axis(1,seq(0,2.5,by=.5), cex.axis=1.5)
+box(which="plot")
+mtext("Xylem water potential (- MPa)", side=2, cex=1.5, line=4)
+mtext("Vapor pressure Deficit (KPa)", side=1, cex=1.5, line=3)
+legend(0,1.6, c("low density", "high density"), col=c("royalblue1","palegreen4"), pch=19,
+		cex=2, bty="n")
+
+
+plot(c(0,1),c(0,1), type="n",ylim=c(.4,1.6), xlim=c(180,200), xlab=" ", ylab=" ", xaxs="i",
+		yaxs="i", axes=FALSE)
+		
+points(midStA$doy[midStA$site=="ld"&midStA$year==2017],midStA$wp[midStA$site=="ld"&midStA$year==2017], pch=19, col="royalblue1", cex=2)		
+points(midStA$doy[midStA$site=="hd"&midStA$year==2017],midStA$wp[midStA$site=="hd"&midStA$year==2017], pch=19, col="palegreen4", cex=2)
+
+
+arrows(midStA$doy[midStA$site=="ld"&midStA$year==2017],
+		midStA$wp[midStA$site=="ld"&midStA$year==2017]-midStSD$se[midStSD$site=="ld"&midStA$year==2017],
+		midStA$doy[midStA$site=="ld"&midStA$year==2017],
+		midStA$wp[midStA$site=="ld"&midStA$year==2017]+midStSD$se[midStSD$site=="ld"&midStA$year==2017],
+		code=0)
+
+arrows(midStA$doy[midStA$site=="hd"&midStA$year==2017],
+		midStA$wp[midStA$site=="hd"&midStA$year==2017]-midStSD$se[midStSD$site=="hd"&midStA$year==2017],
+		midStA$doy[midStA$site=="hd"&midStA$year==2017],
+		midStA$wp[midStA$site=="hd"&midStA$year==2017]+midStSD$se[midStSD$site=="hd"&midStA$year==2017],
+		code=0)
+axis(1, seq(185,205,by=5), cex.axis=1.5)
+mtext("Day of year", side=1, cex=1.5, line=3)	
+box(which="plot")	
+
+axis(4,seq(.4,1.6,by=.2), las=2,cex.axis=1.5)
+mtext("Mid-day Xylem water potential (- MPa)", side=4, cex=1.5, line=4)
