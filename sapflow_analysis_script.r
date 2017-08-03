@@ -1126,6 +1126,7 @@ points(LEl17$D,LEl17$El, pch=19, col="deepskyblue4" )
 
 ##############################################################
 ######make a plot of daily transpiration across the with each stand overlayed
+######and air temperature and D
 ##############################################################
 #start by organizing into same data frame by joining for each year
 
@@ -1163,26 +1164,67 @@ de16<-242
 ds17<-159
 de17<-197
 ys<- 0
-ye <- .5
+ye <- .3
+ysM<-0
+yeM<-30
 
-wd<-30
-ld<-30
+ld<-12
 
-jpeg("c:\\Users\\hkropp\\Google Drive\\Viper_SF\\analysis_plot\\dailyTc.jpg", width=2200,height=2000)	
-	a<-layout(matrix(seq(1,2), nrow=1, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(ld),2))
+#days 
+tot16<-de16-ds16
+tot17<-de17-ds17
+wa<-40
+pw16<-round(wa*(tot16/(tot16+tot17)))
+pw17<-wa-pw16
+
+	a<-layout(matrix(seq(1,4), nrow=2, byrow=TRUE), width=c(lcm(pw16),lcm(pw17),lcm(pw16),lcm(pw17)), height=rep(lcm(ld),4))
 	layout.show(a)
+	
+#2016 
+par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ysM,yeM), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")	
+
+	#points(metH16$DD, metH16$D*10, type="l", col="sienna3",lwd=2)
+	points(metL16$DD, metL16$Temp, type="l", col="grey0",lwd=3)
+	points(metL16$DD, metL16$D*10, type="l", col=rgb(133/255,133/255,133/255,.5),lwd=3)	
+	
+	#points(metH16$DD, metH16$Ctemp, type="l", col="sienna4",lwd=2)	
+	axis(2, seq(0,25, by=5),cex.axis=2, las=2)
+	mtext("Air temperature (C)", side=2, line=7, cex=2)
+	box(which="plot")
+	legend(184,30, c("Temp", "VPD"), col=c("grey0",rgb(133/255,133/255,133/255,.5)),lwd=3, cex=2, bty="n")
+	mtext("2016", side=3, line=1, cex=2)
+	
+	
+	par(mai=c(0,0,0,0))
+plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ysM,yeM), xlab=" ", ylab=" ",
+		axes=FALSE, xaxs="i", yaxs="i")	
+	points(metL17$DD, metL17$Temp, type="l", col="grey0",lwd=3)
+	#points(metH17$DD, metH17$Ctemp, type="l", col="sienna4",lwd=2)	
+	points(metL17$DD, metL17$D*10, type="l", col=rgb(133/255,133/255,133/255,.5),lwd=3)
+	#points(metH17$DD, metH17$D*10, type="l", col="sienna3",lwd=2)
+	axis(4, seq(0,30, by=5), seq(0,3, by=.5),las=2, cex.axis=2)
+	#axis(4, seq(0,25, by=5),cex.axis=3, las=2)
+	#mtext("Air temp 2017", side=4, line=7, cex=2)
+	box(which="plot")	
+	mtext("Vapor pressure deficit (KPa)", side=4, line=7, cex=2)
+	mtext("2017", side=3, line=1, cex=2)
 #2016 
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
 for(i in 1:dim(T2016)[1]){
 polygon(c(T2016$doy[i]-.5,T2016$doy[i]-.5,T2016$doy[i],T2016$doy[i]),
-		c(0,T2016$TL.low[i],T2016$TL.low[i],0), col="royalblue1")
+		c(0,T2016$TL.low[i],T2016$TL.low[i],0), col="royalblue")
 polygon(c(T2016$doy[i],T2016$doy[i],T2016$doy[i]+.5,T2016$doy[i]+.5),
-		c(0,T2016$TL.high[i],T2016$TL.high[i],0), col="palegreen4")
+		c(0,T2016$TL.high[i],T2016$TL.high[i],0), col="tomato3")
 }
-
-		
+arrows(T2016$doy+.25,T2016$TL.high-T2016$se.high,T2016$doy+.25,T2016$TL.high+T2016$se.high,code=0,lwd=2)
+arrows(T2016$doy-.25,T2016$TL.low-T2016$se.low,T2016$doy-.25,T2016$TL.low+T2016$se.low,code=0,lwd=2)
+axis(1,seq(185,240, by=5),cex.axis=2)
+axis(2, seq(0,.25, by=.05), cex.axis=2, las=2)
+mtext(expression(paste("Transpiration (L day"^"-1",")")), side=2, line=	7, cex=2)
 box(which="plot")
 
 par(mai=c(0,0,0,0))
@@ -1190,14 +1232,17 @@ plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
 for(i in 1:dim(T2017)[1]){
 polygon(c(T2017$doy[i]-.5,T2017$doy[i]-.5,T2017$doy[i],T2017$doy[i]),
-		c(0,T2017$TL.low[i],T2017$TL.low[i],0), col="royalblue1")
+		c(0,T2017$TL.low[i],T2017$TL.low[i],0), col="royalblue")
 polygon(c(T2017$doy[i],T2017$doy[i],T2017$doy[i]+.5,T2017$doy[i]+.5),
-		c(0,T2017$TL.high[i],T2017$TL.high[i],0), col="palegreen4")
-}		
+		c(0,T2017$TL.high[i],T2017$TL.high[i],0), col="tomato3")
+}	
+
+arrows(T2017$doy+.25,T2017$TL.high-T2017$se.high,T2017$doy+.25,T2017$TL.high+T2017$se.high,code=0,lwd=2)
+arrows(T2017$doy-.25,T2017$TL.low-T2017$se.low,T2017$doy-.25,T2017$TL.low+T2017$se.low,code=0,lwd=2)	
 box(which="plot")
+axis(1, seq(160,195, by=5), cex.axis=2)
 
-dev.off()
-
+mtext("Day of year", side=1, outer=TRUE, line=-1.5,cex=2)
 
 
 #######################################################################
