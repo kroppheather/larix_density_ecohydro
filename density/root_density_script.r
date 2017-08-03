@@ -147,7 +147,7 @@ mtext("Depth (cm)", side=2, line=3, cex=2)
 #order is moss, organic, mineral
 #start with hd in each layer
 
-layR$pcol<-rep(c("palegreen4","royalblue1"), each=3)
+layR$pcol<-rep(c(rgb(205/255,79/255,57/255,.9),"royalblue"), each=3)
 
 
 #setup plot layout
@@ -168,8 +168,8 @@ plot(c(0,1),c(0,1), type="n",ylim=c(6.1,-.1),xlim=c(-.1,8), axes=FALSE, xlab=" "
 axis(2, c(1,3,5), c("moss", "organic", "mineral < 20 cm"), las=2, cex.axis=2)
 axis(1, seq(0,7, by=1), cex.axis=2)
 box(which="plot")
-legend(4,0,c("high density","low density"), fill=c("palegreen4","royalblue1"),bty="n", cex=2)
-mtext("Soil layer", side=2, cex=3, line=8)
+legend(4,0,c("high density","low density"), fill=c(rgb(205/255,79/255,57/255,.9),"royalblue"),bty="n", cex=2)
+mtext("Soil layer", side=2, cex=3, line=12)
 mtext(expression(paste("Root biomass mg cm"^"-3")), side=1, cex=3, line=5)
 text(layR$r.d+layR$se+.5,layR$pseq-.5,layR$sL,cex=2)
 #plot thickness
@@ -177,21 +177,24 @@ par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n",ylim=c(20,0),xlim=c(0,2), axes=FALSE, xlab=" ", ylab=" ", yaxs="i",
 		xaxs="i")
 	for(i in 1:2){
-		polygon(c(i-1,i-1,i,i),c(0,Green$thick[i],Green$thick[i],0), col="palegreen3")
+		polygon(c(i-1,i-1,i,i),c(0,Green$thick[i],Green$thick[i],0), col="palegreen4")
 	}
 
 	for(i in 1:2){
 		polygon(c(i-1,i-1,i,i),
 		c(Green$thick[i],Green$thick[i]+Brown$thick[i],Green$thick[i]+Brown$thick[i],Green$thick[i]), 
-		col="tan3")
+		col="burlywood4")
 	}
 
 		for(i in 1:2){
 		polygon(c(i-1,i-1,i,i),
 		c(Green$thick[i]+Brown$thick[i],Green$thick[i]+Brown$thick[i]+Organic$thick[i],
 		Green$thick[i]+Brown$thick[i]+Organic$thick[i],Green$thick[i]+Brown$thick[i]), 
-		col="tan4")
+		col="saddlebrown")
 	}
+
+	
+	
 		arrows(c(.5,1.5), Green$thick-Green$se,c(.5,1.5), Green$thick+Green$se, lwd=2, code=0)
 		
 			arrows(c(.5,1.5), Green$thick+Brown$thick-Brown$se,c(.5,1.5), 
@@ -205,4 +208,4 @@ plot(c(0,1),c(0,1), type="n",ylim=c(20,0),xlim=c(0,2), axes=FALSE, xlab=" ", yla
 mtext("Soil layer depth", side=4, cex=3, line=8)
 mtext("Stand", side=1, cex=3, line=5)
 
-legend(1,13,c("green moss", "brown moss", "fibric organic"), fill=c("palegreen3", "tan3","tan4"), bty="n", cex=2)
+legend(1,13,c("green moss", "brown moss", "fibric organic"), fill=c("palegreen4", "burlywood4","saddlebrown"), bty="n", cex=2)
