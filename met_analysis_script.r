@@ -94,7 +94,7 @@ TDsd$se<-TDsd$TD.sd/sqrt(TDL$TD.L)
 wd<-15
 hd<-9
 #doy195 is when actually started
-xl16<-183
+xl16<-180
 xh16<-245
 xl17<-160
 xh17<-199
@@ -108,8 +108,8 @@ dc17<-xh17-xl17
 dtT<-dc16+dc17
 #get 18 total cm
 p16<-dc16/dtT
-pp16<-round(p16*30)
-pp17<-30-pp16
+pp16<-round(p16*40)
+pp17<-40-pp16
 
 #subset precip
 PrecipDay16<-PrecipDay[PrecipDay$doy>=xl16&PrecipDay$doy<=xh16&PrecipDay$year==2016,]
@@ -132,18 +132,18 @@ for(i in 1:dim(PrecipDay16)[1]){
 
 }
 points(datLS$times[datLS$doy>195&datLS$year==2016],datLS$Moist1[datLS$doy>195&datLS$year==2016], type="l",col="royalblue4",lty=2,lwd=3)
-points(datLS$times[datLS$doy>195&datLS$year==2016],datLS$Moist2[datLS$doy>195&datLS$year==2016], type="l",col="royalblue1",lwd=3)
+points(datLS$times[datLS$doy>195&datLS$year==2016],datLS$Moist2[datLS$doy>195&datLS$year==2016], type="l",col="royalblue",lwd=3)
 
 
-points(datHS$times[datHS$doy>195&datHS$year==2016],datHS$VWC1[datHS$doy>195&datHS$year==2016], type="l",col="palegreen2",lwd=3)
-points(datHS$times[datHS$doy>195&datHS$year==2016],datHS$VWC2[datHS$doy>195&datHS$year==2016], type="l",col="palegreen4",lty=2,lwd=3)
-mtext(expression(paste("Soil Moisture (m"^"3"~" m"^"-3"~")")),side=2,line=3,cex=1.75)
+points(datHS$times[datHS$doy>195&datHS$year==2016],datHS$VWC1[datHS$doy>195&datHS$year==2016], type="l",col="tomato3",lwd=3)
+points(datHS$times[datHS$doy>195&datHS$year==2016],datHS$VWC2[datHS$doy>195&datHS$year==2016], type="l",col="tomato4",lty=2,lwd=3)
+mtext(expression(paste("Soil Moisture (m"^"3"~" m"^"-3"~")")),side=2,line=4,cex=2)
 mtext("2016",side=3,line=1,cex=2)
 box(which="plot")
-axis(2,seq(0,.6,by=.1),las=2,cex.axis=1.5)
-legend(183,.7,c("high 5cm","high ?cm","low 5cm","low ?cm","Precip"),
-				pch=c(NA,NA,NA,NA,15),col=c("palegreen2","palegreen4","royalblue1","royalblue4","grey80"),
-				lty=c(1,2,1,2,NA),lwd=c(3,3,3,3,NA), bty="n",cex=1.5)
+axis(2,seq(0,.6,by=.1),las=2,cex.axis=2)
+legend(180,.7,c("high 5cm moss","high 5cm organic","low 5cm shrub","low 5cm tree","Precip"),
+				pch=c(NA,NA,NA,NA,15),col=c("tomato3","tomato4","royalblue","royalblue4","grey80"),
+				lty=c(1,2,1,2,NA),lwd=c(3,3,3,3,NA), bty="n",cex=1.75)
 
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1),xlim=c(xl17,xh17), type="n", xlab=" ", ylim=c(ylv,yuv),
@@ -158,13 +158,13 @@ for(i in 1:dim(PrecipDay17)[1]){
 
 }
 points(datLS$times[datLS$year==2017],datLS$Moist1[datLS$year==2017], type="l",col="royalblue4",lty=2,lwd=3)
-points(datLS$times[datLS$year==2017],datLS$Moist2[datLS$year==2017], type="l",col="royalblue1",lwd=3)
+points(datLS$times[datLS$year==2017],datLS$Moist2[datLS$year==2017], type="l",col="royalblue",lwd=3)
 
-points(datHS$times[datHS$year==2017],datHS$VWC1[datHS$year==2017], type="l",col="palegreen2",lwd=3)
-points(datHS$times[datHS$year==2017],datHS$VWC2[datHS$year==2017], type="l",col="palegreen4",lty=2,lwd=3)
+points(datHS$times[datHS$year==2017],datHS$VWC1[datHS$year==2017], type="l",col="tomato3",lwd=3)
+points(datHS$times[datHS$year==2017],datHS$VWC2[datHS$year==2017], type="l",col="tomato4",lty=2,lwd=3)
 mtext("2017",side=3,line=1,cex=2)
-mtext("Precipitation (cm)",side=4,line=3,cex=1.75)
-axis(4,seq(0,.6,by=.1),seq(0,6,by=1),las=2,cex.axis=1.5)
+mtext("Precipitation (cm)",side=4,line=4,cex=2)
+axis(4,seq(0,.6,by=.1),seq(0,6,by=1),las=2,cex.axis=2)
 box(which="plot")
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1),xlim=c(xl16,xh16), type="n", xlab=" ", ylim=c(ylT,yuT),
@@ -182,17 +182,17 @@ arrows(TDsd$doy[TDave$site=="hd"&TDave$year==2016],
 		TDave$TD[TDave$site=="hd"&TDave$year==2016]+TDsd$se[TDsd$site=="hd"&TDsd$year==2016],
 		code=0,lwd=2)		
 points(TDave$doy[TDave$site=="ld"&TDave$year==2016],TDave$TD[TDave$site=="ld"&TDave$year==2016],
-		type="b",pch=19,lwd=2,col="royalblue1",cex=1.5)		
+		type="b",pch=19,lwd=2,col="royalblue",cex=1.5)		
 points(TDave$doy[TDave$site=="hd"&TDave$year==2016],TDave$TD[TDave$site=="hd"&TDave$year==2016],
-		type="b",pch=19,lwd=2,col="palegreen4",cex=1.5)	
+		type="b",pch=19,lwd=2,col="tomato3",cex=1.5)	
 
-legend(185,60,c("high","low"),pch=19, col=c("palegreen4","royalblue1"),cex=1.5,
+legend(180,60,c("high","low"),pch=19, col=c("tomato3","royalblue"),cex=2,
 		bty="n")
 		
 box(which="plot")		
-axis(2,seq(100,10,by=-10),las=2,cex.axis=1.5)
-axis(1, seq(185,245,by=5),cex.axis=1.5)
-mtext("Thaw depth (cm)",side=2,line=3,cex=1.75)
+axis(2,seq(100,10,by=-10),las=2,cex.axis=2)
+axis(1, seq(185,245,by=5),cex.axis=2)
+mtext("Thaw depth (cm)",side=2,line=4,cex=2)
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1),xlim=c(xl17,xh17), type="n", xlab=" ", ylim=c(ylT,yuT),
 			ylab=" ", xaxs="i",
@@ -209,13 +209,13 @@ arrows(TDsd$doy[TDave$site=="hd"&TDave$year==2017],
 		code=0,lwd=2)		
 		
 points(TDave$doy[TDave$site=="ld"&TDave$year==2017],TDave$TD[TDave$site=="ld"&TDave$year==2017],
-		type="b",pch=19,lwd=2,col="royalblue1",cex=1.5)		
+		type="b",pch=19,lwd=2,col="royalblue",cex=1.5)		
 points(TDave$doy[TDave$site=="hd"&TDave$year==2017],TDave$TD[TDave$site=="hd"&TDave$year==2017],
-		type="b",pch=19,lwd=2,col="palegreen4",cex=1.5)	
+		type="b",pch=19,lwd=2,col="tomato3",cex=1.5)	
 		
 box(which="plot")
-axis(1,seq(165,200,by=5),cex.axis=1.5)
-mtext("Day of year",side=1,line=-2,outer=TRUE,cex=1.75)
+axis(1,seq(165,200,by=5),cex.axis=2)
+mtext("Day of year",side=1,line=-2,outer=TRUE,cex=2)
 
 
 #########################################################################################################
