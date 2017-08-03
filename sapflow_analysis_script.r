@@ -1133,30 +1133,8 @@ points(LEl17$D,LEl17$El, pch=19, col="deepskyblue4" )
 T2016<-join(LTdayL,HTdayL,by="doy",type="full")
 T2017<-join(LTdayL17,HTdayL17,by="doy",type="full")
 #turn na to zero for sake of plotting
-T2016$TL.low<-ifelse(is.na(T2016$TL.low),0,T2016$TL.low)
-T2016$TL.high<-ifelse(is.na(T2016$TL.high),0,T2016$TL.high)
-T2016$se.low<-ifelse(is.na(T2016$se.low),0,T2016$se.low)
-T2016$se.high<-ifelse(is.na(T2016$se.high),0,T2016$se.high)
-
-T2017$TL.low<-ifelse(is.na(T2017$TL.low),0,T2017$TL.low)
-T2017$TL.high<-ifelse(is.na(T2017$TL.high),0,T2017$TL.high)
-T2017$se.low<-ifelse(is.na(T2017$se.low),0,T2017$se.low)
-T2017$se.high<-ifelse(is.na(T2017$se.high),0,T2017$se.high)
-
-
-#make a column for order of polygon
-T2016$p1<-ifelse(T2016$TL.low>T2016$TL.high,T2016$TL.low,T2016$TL.high)
-T2016$p2<-ifelse(T2016$TL.low<T2016$TL.high,T2016$TL.low,T2016$TL.high)
-#cols
-T2016$p1c<-ifelse(T2016$TL.low>T2016$TL.high,"dodgerblue3","palegreen4")
-T2016$p2c<-ifelse(T2016$TL.low<T2016$TL.high,"dodgerblue3","palegreen4")
-#make a column for order of polygon
-T2017$p1<-ifelse(T2017$TL.low>T2017$TL.high,T2017$TL.low,T2017$TL.high)
-T2017$p2<-ifelse(T2017$TL.low<T2017$TL.high,T2017$TL.low,T2017$TL.high)
-#cols
-T2017$p1c<-ifelse(T2017$TL.low>T2017$TL.high,"dodgerblue3","palegreen4")
-T2017$p2c<-ifelse(T2017$TL.low<T2017$TL.high,"dodgerblue3","palegreen4")
-
+#order by day of year so can draw lines
+T2016<-T2016[order(T2016$doy),]
 
 
 ds16<-182
@@ -1214,29 +1192,26 @@ plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ysM,yeM), xlab=" ", ylab=" ",
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
-for(i in 1:dim(T2016)[1]){
-polygon(c(T2016$doy[i]-.5,T2016$doy[i]-.5,T2016$doy[i],T2016$doy[i]),
-		c(0,T2016$TL.low[i],T2016$TL.low[i],0), col="royalblue")
-polygon(c(T2016$doy[i],T2016$doy[i],T2016$doy[i]+.5,T2016$doy[i]+.5),
-		c(0,T2016$TL.high[i],T2016$TL.high[i],0), col="tomato3")
-}
+
+
+points(T2016$doy+.25,T2016$TL.high, pch=19, cex=2, col="tomato3")
+points(T2016$doy-.25,T2016$TL.low, pch=19, cex=2, col="royalblue")
+
 arrows(T2016$doy+.25,T2016$TL.high-T2016$se.high,T2016$doy+.25,T2016$TL.high+T2016$se.high,code=0,lwd=2)
 arrows(T2016$doy-.25,T2016$TL.low-T2016$se.low,T2016$doy-.25,T2016$TL.low+T2016$se.low,code=0,lwd=2)
 axis(1,seq(185,240, by=5),cex.axis=2)
 axis(2, seq(0,.25, by=.05), cex.axis=2, las=2)
 mtext(expression(paste("Transpiration (L day"^"-1",")")), side=2, line=	7, cex=2)
+legend(184,.3, c("high density", "low density"),pch=19, col=c("tomato3","royalblue"), bty="n", cex=2)
 box(which="plot")
 
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
-for(i in 1:dim(T2017)[1]){
-polygon(c(T2017$doy[i]-.5,T2017$doy[i]-.5,T2017$doy[i],T2017$doy[i]),
-		c(0,T2017$TL.low[i],T2017$TL.low[i],0), col="royalblue")
-polygon(c(T2017$doy[i],T2017$doy[i],T2017$doy[i]+.5,T2017$doy[i]+.5),
-		c(0,T2017$TL.high[i],T2017$TL.high[i],0), col="tomato3")
-}	
 
+
+points(T2017$doy+.25,T2017$TL.high, pch=19, cex=2, col="tomato3")
+points(T2017$doy-.25,T2017$TL.low, pch=19, cex=2, col="royalblue")
 arrows(T2017$doy+.25,T2017$TL.high-T2017$se.high,T2017$doy+.25,T2017$TL.high+T2017$se.high,code=0,lwd=2)
 arrows(T2017$doy-.25,T2017$TL.low-T2017$se.low,T2017$doy-.25,T2017$TL.low+T2017$se.low,code=0,lwd=2)	
 box(which="plot")
@@ -1253,18 +1228,40 @@ mtext("Day of year", side=1, outer=TRUE, line=-1.5,cex=2)
 mgc.Ln<-na.omit(mgc.L)
 dgc.L<-aggregate(mgc.Ln$gc,by=list(mgc.Ln$doy), FUN="mean")
 colnames(dgc.L)<-c("doy","gc")
+dgc.Lsd<-aggregate(mgc.Ln$gc,by=list(mgc.Ln$doy), FUN="sd")
+colnames(dgc.Lsd)<-c("doy","gc.sd")
+
+dgc.Ln<-aggregate(mgc.Ln$gc,by=list(mgc.Ln$doy), FUN="length")
+colnames(dgc.Ln)<-c("doy","gc.n")
+dgc.L$se<-dgc.Lsd$gc.sd/sqrt(dgc.Ln$gc.n)
 
 mgc.L17n<-na.omit(mgc.L17)
 dgc.L17<-aggregate(mgc.L17n$gc,by=list(mgc.L17n$doy), FUN="mean")
 colnames(dgc.L17)<-c("doy","gc")
+dgc.L17sd<-aggregate(mgc.L17n$gc,by=list(mgc.L17n$doy), FUN="sd")
+colnames(dgc.L17sd)<-c("doy","gc.sd")
+dgc.L17n<-aggregate(mgc.L17n$gc,by=list(mgc.L17n$doy), FUN="length")
+colnames(dgc.L17n)<-c("doy","gc.n")
+dgc.L17$se<-dgc.L17sd$gc.sd/sqrt(dgc.L17n$gc.n)
 
 mgc.Hn<-na.omit(mgc.H)
 dgc.H<-aggregate(mgc.Hn$gc,by=list(mgc.Hn$doy), FUN="mean")
 colnames(dgc.H)<-c("doy","gc")
+dgc.Hsd<-aggregate(mgc.Hn$gc,by=list(mgc.Hn$doy), FUN="sd")
+colnames(dgc.Hsd)<-c("doy","gc.sd")
+dgc.Hl<-aggregate(mgc.Hn$gc,by=list(mgc.Hn$doy), FUN="length")
+colnames(dgc.Hl)<-c("doy","gc.n")
+dgc.H$se<-dgc.Hsd$gc.sd/sqrt(dgc.Hl$gc.n)
 
 mgc.H17n<-na.omit(mgc.H17)
 dgc.H17<-aggregate(mgc.H17n$gc,by=list(mgc.H17n$doy), FUN="mean")
 colnames(dgc.H17)<-c("doy","gc")
+dgc.H17sd<-aggregate(mgc.H17n$gc,by=list(mgc.H17n$doy), FUN="sd")
+colnames(dgc.H17sd)<-c("doy","gc.sd")
+dgc.H17l<-aggregate(mgc.H17n$gc,by=list(mgc.H17n$doy), FUN="length")
+colnames(dgc.H17l)<-c("doy","gc.n")
+dgc.H17$se<-dgc.H17sd$gc.sd/sqrt(dgc.H17l$gc.n)
+
 
 #get the average D across all of the days
 DdayL16<-aggregate(metL16$D, by=list(metL16$doy,metL16$year),FUN="mean")
@@ -1305,20 +1302,23 @@ a<-layout(matrix(seq(1,4), nrow=2, byrow=TRUE),
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ysD,yeD), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
-points(DdayL16$doy,DdayL16$D, type="l",lwd=5, col="royalblue1")	
-points(DdayH16$doy,DdayH16$D, type="l",lwd=5, col="palegreen4",lty=3)	
-axis(2, seq(0,2,by=.5), cex.axis=1.5,las=2)
-mtext("Average vapor pressure deficit (KPa)", side=2, line=7, cex=1.5)	
+points(DdayL16$doy,DdayL16$D, type="l",lwd=5, col="royalblue")	
+points(DdayH16$doy,DdayH16$D, type="l",lwd=5, col=rgb(205/255,79/255,57/255,.7))	
+axis(2, seq(0,2,by=.5), cex.axis=2,las=2)
+
+mtext("Average daily", side=2, line=10, cex=2)
+mtext("vapor pressure deficit", side=2, line=7, cex=2)	
+mtext("(KPa)",side=2, line=4, cex=2)	
 box(which="plot")
 mtext("2016", side=3, line=1, cex=2)
-legend(181,1.6,c("low density","high density"), lwd=5, lty=c(1,2), col=c("royalblue1","palegreen4"),
+legend(181,1.6,c("low density","high density"), lwd=5, lty=c(1,1), col=c("royalblue",rgb(205/255,79/255,57/255,.7)),
 		bty="n", cex=2)
 #2017 
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ysD,yeD), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
-points(DdayL17$doy,DdayL17$D, type="l",lwd=5, col="royalblue1")	
-points(DdayH17$doy,DdayH17$D, type="l",lwd=5, col="palegreen4",lty=3)	
+points(DdayL17$doy,DdayL17$D, type="l",lwd=5, col="royalblue")	
+points(DdayH17$doy,DdayH17$D, type="l",lwd=5, col=rgb(205/255,79/255,57/255,.7))	
 mtext("2017", side=3, line=1, cex=2)	
 box(which="plot")
 
@@ -1329,13 +1329,17 @@ par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds16,de16),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
 points(dgc.L$doy,dgc.L$gc,pch=19,type="b",col="royalblue1",cex=2)
-points(dgc.H$doy,dgc.H$gc,pch=19,type="b",col="palegreen4",cex=2)
-axis(1,seq(185,240,by=5),lwd.ticks=2,cex.axis=1.5)
-axis(2,seq(0,175,by=25),lwd.ticks=2,cex.axis=1.5, las=2)
-legend(183,200,c("low density","high density"), pch=19, lty=c(1,1), col=c("royalblue1","palegreen4"),
+points(dgc.H$doy,dgc.H$gc,pch=19,type="b",col="tomato3",cex=2)
+arrows(dgc.H$doy,dgc.H$gc-dgc.H$se,dgc.H$doy,dgc.H$gc+dgc.H$se, code=0, lwd=2)
+arrows(dgc.L$doy,dgc.L$gc-dgc.L$se,dgc.L$doy,dgc.L$gc+dgc.L$se, code=0, lwd=2)
+axis(1,seq(185,240,by=5),lwd.ticks=2,cex.axis=2)
+axis(2,seq(0,175,by=25),lwd.ticks=2,cex.axis=2, las=2)
+legend(183,200,c("low density","high density"), pch=19, lty=c(1,1), col=c("royalblue","tomato3"),
 		bty="n", cex=2)
-mtext("Average canopy stomatal conductance", side=2, line=7, cex=1.5)		
-mtext(expression(paste("mmol m"^"-2"~"s"^"-1"~")")), side=2, line=4, cex=1.5)	
+mtext("Average daily", side=2, line=10, cex=2)
+mtext("canopy stomatal conductance", side=2, line=7, cex=2)
+		
+mtext(expression(paste("mmol m"^"-2"~"s"^"-1"~")")), side=2, line=4, cex=2)	
 box(which="plot")
 
 #2017
@@ -1343,11 +1347,13 @@ par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), xlim=c(ds17,de17),ylim=c(ys,ye), xlab=" ", ylab=" ",
 		axes=FALSE, xaxs="i", yaxs="i")
 points(dgc.L17$doy,dgc.L17$gc,pch=19,type="b",col="royalblue1",cex=2)
-points(dgc.H17$doy,dgc.H17$gc,pch=19,type="b",col="palegreen4",cex=2)
-axis(1,seq(160,200,by=5),lwd.ticks=2, cex.axis=1.5)
+points(dgc.H17$doy,dgc.H17$gc,pch=19,type="b",col="tomato3",cex=2)
+arrows(dgc.H17$doy,dgc.H17$gc-dgc.H17$se,dgc.H17$doy,dgc.H17$gc+dgc.H17$se, code=0, lwd=2)
+arrows(dgc.L17$doy,dgc.L17$gc-dgc.L17$se,dgc.L17$doy,dgc.L17$gc+dgc.L17$se, code=0, lwd=2)
+axis(1,seq(160,200,by=5),lwd.ticks=2, cex.axis=2)
 #axis(2,seq(0,350,by=50),lwd.ticks=2,cex=1.5)
 box(which="plot")
-mtext("Day of year", side=1, outer=TRUE, line=-1.5, cex=1.5)
+mtext("Day of year", side=1, outer=TRUE, line=-1.5, cex=2)
 #######################################################################
 ######make plot of El
 ######first compare average daily gc across the sites
@@ -1523,22 +1529,22 @@ layout.show(ab)
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n",ylim=c(.4,1.6), xlim=c(0,2.5), xlab=" ", ylab=" ", xaxs="i",
 		yaxs="i", axes=FALSE)
-points(WPLd$D[WPLd$site=="hd"],WPLd$wp[WPLd$site=="hd"], pch=19, col="palegreen4",cex=2)
-points(WPLd$D[WPLd$site=="ld"],WPLd$wp[WPLd$site=="ld"], pch=19, col="royalblue1",cex=2)	
-axis(2,seq(.4,1.6,by=.2), las=2,cex.axis=1.5)
-axis(1,seq(0,2.5,by=.5), cex.axis=1.5)
+points(WPLd$D[WPLd$site=="hd"],WPLd$wp[WPLd$site=="hd"], pch=19, col="tomato3",cex=2)
+points(WPLd$D[WPLd$site=="ld"],WPLd$wp[WPLd$site=="ld"], pch=19, col="royalblue",cex=2)	
+axis(2,seq(.4,1.6,by=.2), las=2,cex.axis=2)
+axis(1,seq(0,2.5,by=.5), cex.axis=2)
 box(which="plot")
-mtext("Xylem water potential (- MPa)", side=2, cex=1.5, line=4)
-mtext("Vapor pressure Deficit (KPa)", side=1, cex=1.5, line=3)
-legend(0,1.6, c("low density", "high density"), col=c("royalblue1","palegreen4"), pch=19,
+mtext("Xylem water potential (- MPa)", side=2, cex=2, line=5)
+mtext("Vapor pressure Deficit (KPa)", side=1, cex=2, line=3)
+legend(0,1.6, c("low density", "high density"), col=c("royalblue1","tomato3"), pch=19,
 		cex=2, bty="n")
 
 
 plot(c(0,1),c(0,1), type="n",ylim=c(.4,1.6), xlim=c(180,200), xlab=" ", ylab=" ", xaxs="i",
 		yaxs="i", axes=FALSE)
 		
-points(midStA$doy[midStA$site=="ld"&midStA$year==2017],midStA$wp[midStA$site=="ld"&midStA$year==2017], pch=19, col="royalblue1", cex=2)		
-points(midStA$doy[midStA$site=="hd"&midStA$year==2017],midStA$wp[midStA$site=="hd"&midStA$year==2017], pch=19, col="palegreen4", cex=2)
+points(midStA$doy[midStA$site=="ld"&midStA$year==2017],midStA$wp[midStA$site=="ld"&midStA$year==2017], pch=19, col="royalblue", cex=2)		
+points(midStA$doy[midStA$site=="hd"&midStA$year==2017],midStA$wp[midStA$site=="hd"&midStA$year==2017], pch=19, col="tomato3", cex=2)
 
 
 arrows(midStA$doy[midStA$site=="ld"&midStA$year==2017],
@@ -1552,9 +1558,9 @@ arrows(midStA$doy[midStA$site=="hd"&midStA$year==2017],
 		midStA$doy[midStA$site=="hd"&midStA$year==2017],
 		midStA$wp[midStA$site=="hd"&midStA$year==2017]+midStSD$se[midStSD$site=="hd"&midStA$year==2017],
 		code=0)
-axis(1, seq(185,205,by=5), cex.axis=1.5)
-mtext("Day of year 2017", side=1, cex=1.5, line=3)	
+axis(1, seq(185,205,by=5), cex.axis=2)
+mtext("Day of year 2017", side=1, cex=2, line=3)	
 box(which="plot")	
 
-axis(4,seq(.4,1.6,by=.2), las=2,cex.axis=1.5)
-mtext("Mid-day Xylem water potential (- MPa)", side=4, cex=1.5, line=4)
+axis(4,seq(.4,1.6,by=.2), las=2,cex.axis=2)
+mtext("Mid-day Xylem water potential (- MPa)", side=4, cex=2, line=5)
