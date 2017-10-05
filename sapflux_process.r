@@ -94,7 +94,7 @@ for(i in 1:16){
 	LmaxDTA[[i]] <- aggregate(LmaxTemp[[i]]$dT, by=list(LmaxTemp[[i]]$doy5,LmaxTemp[[i]]$daytimeInd), FUN="max")
 	colnames(LmaxDTA[[i]]) <- c("doy5", "daytimeInd", "dT")
 	LlengthDTA[[i]] <- aggregate(LmaxTemp[[i]]$dT, by=list(LmaxTemp[[i]]$doy5,LmaxTemp[[i]]$daytimeInd), FUN="length")
-colnames(LmaxDTA[[i]]) <- c("doy5", "daytimeInd", "n")
+colnames(LlengthDTA[[i]]) <- c("doy5", "daytimeInd", "n")
 	}
 #diagnostic plots to see what 
 if(plotcheck==1){
@@ -105,15 +105,15 @@ if(plotcheck==1){
 				ylim=c(0,15),
 				xlab="Day of year", ylab="dT (C)", main=paste("sensor",i),
 				pch=19, cex=1.5)
-		text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==1]-.5,
-			LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==1]-.5,
-			paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==1]) )		
+		#text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==1]-.5,
+		#	LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==1]-.5,
+		#	paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==1]) )		
 		points(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==2],LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==2],
 				pch=19, col="tomato3", cex=1.5)
 		
-		text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==2]-.5,
-			LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==2]-.5,
-			paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==2]) )	
+		#text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==2]-.5,
+		#	LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==2]-.5,
+		#	paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==2]) )	
 	dev.off()
 	}
 }
