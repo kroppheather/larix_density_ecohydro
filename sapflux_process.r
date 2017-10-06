@@ -11,6 +11,9 @@
 ###########################################################################
 ###########################################################################
 ############## Output data files:                            ##############
+############## Transpiration: El.L,El.L17,El.H,El.H17        ##############
+###########################################################################
+###########################################################################
 library(lubridate)
 library(plyr)
 library(caTools)
@@ -29,7 +32,7 @@ plotcheck <- 1
 #################################################################
 #directory to save plot checks
 diagP <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\sapflux_diag"
-#sub folders in diagnostics: maxT, aspectV
+#sub folders in diagnostics: maxT, aspectV, allometry, El, gc
 
 
 #################################################################
@@ -71,7 +74,18 @@ datS17<-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_da
 ##### read in sapwood thickness or sensor correciton
 datSW <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\sap_thick.csv")
 
+# read in larch SLA from stands
+datSLA <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\sla.csv")
 
+#density allometry
+datAllom <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\larix_allom.csv")
+
+# airport pressure and precip data
+datAirP <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\airport\\airport.csv")
+
+#canopy rh and temperature
+datRH <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\RH.VP4.csv")
+datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.csv")
 #################################################################
 ####calculate maxdT                                       #######
 #################################################################
@@ -436,3 +450,336 @@ dev.off()
 ###### calculate flow in g/s                    #################
 #################################################################
 
+# now calculate flow in  in g per s by accounting for sapwood area
+# that the flow is occuring over and include the correction for 
+# different sapflow on the south side. Here we assume
+# that half of the sapwood area is a flow rate that is given by the
+# the south side
+
+F.h<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
+F.hf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
+F.lf17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
+F.l17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
+F.lf<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
+F.l<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
+F.hf17<-matrix(rep(0,dim(KH17)[1]*16), ncol=16)
+F.h17<-matrix(rep(0,dim(KH17)[1]*16), ncol=16)
+########################################
+########################################
+########FILTER POINT 1   ###############
+########Quantile filter  ###############
+########################################
+
+for(i in 1:16){
+	#filter for values above the 95% 
+	#filtering at 0.9 seems to remove some values in the a realistic range
+	#of the data
+	F.l[,i]<-(V.l[,i]*(0.5*datSL$sapA[i])) + ((AspNL$coefficients[1]+(AspNL$coefficients[2]*V.l[,i]))*(0.5*datSL$sapA[i]))
+	F.lf[,i]<-ifelse(F.l[,i]<quantile(F.l[,i],probs=c(0.95),na.rm=TRUE),F.l[,i],NA)
+	F.l17[,i]<-(V.l17[,i]*(0.5*datSL$sapA[i])) + ((AspNL$coefficients[1]+(AspNL$coefficients[2]*V.l17[,i]))*(0.5*datSL$sapA[i]))
+	F.lf17[,i]<-ifelse(F.l17[,i]<quantile(F.l17[,i],probs=c(0.95),na.rm=TRUE),F.l17[,i],NA)	
+	F.h17[,i]<-(V.h17[,i]*(0.5*datSH17$sapA[i])) + ((AspNH$coefficients[1]+ (AspNH$coefficients[1]*V.h17[,i]))*(0.5*datSH17$sapA[i]))
+	F.hf17[,i]<-ifelse(F.h17[,i]<quantile(F.h17[,i],probs=c(0.95),na.rm=TRUE),F.h17[,i],NA)
+}	
+for(i in 1:8){
+
+	F.h[,i]<-(V.h[,i]*(0.5*datSH$sapA[i])) + ((AspNH$coefficients[1]+ (AspNH$coefficients[1]*V.h[,i]))*(0.5*datSH$sapA[i]))
+	F.hf[,i]<-ifelse(F.h[,i]<quantile(F.h[,i],probs=c(0.95),na.rm=TRUE),F.h[,i],NA)
+	}
+#################################################################
+###### normalize by leaf area                   #################
+#################################################################	
+#leaf allometry function 
+leaf.bio<-function(DBH,a.leaf,b.leaf){a.leaf*(DBH^b.leaf)}
+#fit nonlinear function
+nlsLow <- nls(leaf~a.leaf*(DBH^b.leaf), data=list(DBH=datAllom$dbh[datAllom$density=="Low"],
+				leaf=datAllom$foliage[datAllom$density=="Low"]),
+				start=list(a.leaf=40.5, b.leaf=1.41))
+nlsHigh <- nls(leaf~a.leaf*(DBH^b.leaf), data=list(DBH=datAllom$dbh[datAllom$density=="High"],
+				leaf=datAllom$foliage[datAllom$density=="High"]),
+				start=list(a.leaf=40.5, b.leaf=1.41))
+
+
+#plot stand allometry
+#starting values from Alexander 2012
+if(plotcheck==1){
+	jpeg(file=paste0(diagP, "\\allometry\\dbhL.jpg"), width=1500, height=1000, units="px")
+	par(mfrow=c(1,2))
+	plot(datAllom$dbh[datAllom$density=="High"],datAllom$foliage[datAllom$density=="High"],
+			pch=19, xlab = "dbh (cm)", ylab=" Canopy leaf mass (g)", main="High")
+	points(seq(0,30, by=.1), leaf.bio(seq(0,30, by=.1), summary(nlsHigh)$coefficients[1,1],
+				summary(nlsHigh)$coefficients[2,1]), type="l", col="red",lwd=2)
+			
+	plot(datAllom$dbh[datAllom$density=="Low"],datAllom$foliage[datAllom$density=="Low"],
+			pch=19, xlab = "dbh (cm)", ylab=" Canopy leaf mass (g)", main="Low")
+	points(seq(0,30, by=.1), leaf.bio(seq(0,30, by=.1), summary(nlsLow)$coefficients[1,1],
+				summary(nlsLow)$coefficients[2,1]), type="l", col="red",lwd=2)		
+			
+dev.off()
+}
+
+
+#calculated expected canopy mass in g based on dbh of tree
+datSL$leafwt<-leaf.bio(datSL$DBH,summary(nlsLow)$coefficients[1,1],summary(nlsLow)$coefficients[2,1])	
+datSL17$leafwt<-leaf.bio(datSL17$DBH..cm.,summary(nlsLow)$coefficients[1,1],summary(nlsLow)$coefficients[2,1])	
+datSH$leafwt<-leaf.bio(datSH$DBH,summary(nlsHigh)$coefficients[1,1],summary(nlsHigh)$coefficients[2,1])	
+datSH17$leafwt<-leaf.bio(datSH17$DBH..cm.,summary(nlsHigh)$coefficients[1,1],summary(nlsHigh)$coefficients[2,1])	
+
+#calculate stand specific sla
+datSLA$SLA <- datSLA$leaf.area/datSLA$mass
+lowSLA <-mean(datSLA$SLA[datSLA$stand=="ld"])
+highSLA <-mean(datSLA$SLA[datSLA$stand=="hd"])
+#larch cm2/g
+datSL$leaf<-datSL$leafwt*lowSLA
+datSL17$leaf<-datSL17$leafwt*lowSLA
+datSH$leaf<-datSH$leafwt*highSLA
+datSH17$leaf<-datSH17$leafwt*highSLA
+
+#convert to m2 
+datSL$leafm2<-datSL$leaf*.0001	
+datSL17$leafm2<-datSL17$leaf*.0001
+datSH$leafm2<-datSH$leaf*.0001
+datSH17$leafm2<-datSH17$leaf*.0001	
+
+
+#################################################################
+###### calculate flow in g m-2 s-1              #################
+#################################################################
+
+
+########################################
+########################################
+########FILTER POINT2    ###############
+########Quantile filter  ###############
+########################################
+
+#now calculate in g m-2 s
+T.gL<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
+T.gH17<-matrix(rep(0,dim(KH17)[1]*16), ncol=16)
+T.gHf17<-matrix(rep(0,dim(KH17)[1]*16), ncol=16)
+T.gLf<-matrix(rep(0,dim(KL)[1]*16), ncol=16)
+T.gL17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
+T.gLf17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
+T.gH<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
+T.gHf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
+for(i in 1:8){
+	T.gH[,i]<-F.hf[,i]/datSH$leafm2[i]
+	T.gHf[,i]<-ifelse(T.gH[,i]<quantile(T.gH[,i],probs=c(0.95),na.rm=TRUE),T.gH[,i],NA)
+	
+}
+for(i in 1:16){
+	T.gL[,i]<-F.lf[,i]/datSL$leafm2[i]	
+	T.gLf[,i]<-ifelse(T.gL[,i]<quantile(T.gL[,i],probs=c(0.95),na.rm=TRUE),T.gL[,i],NA)
+	T.gL17[,i]<-F.lf17[,i]/datSL17$leafm2[i]	
+	T.gLf17[,i]<-ifelse(T.gL17[,i]<quantile(T.gL17[,i],probs=c(0.95),na.rm=TRUE),T.gL17[,i],NA)
+	T.gH17[,i]<-F.hf17[,i]/datSH17$leafm2[i]
+	T.gHf17[,i]<-ifelse(T.gH17[,i]<quantile(T.gH17[,i],probs=c(0.95),na.rm=TRUE),T.gH17[,i],NA)
+}
+
+#remove south facing measurements
+AllSeqSens <- seq(1,16)
+AllSeqSensH <- seq(1,8)
+NorthLkeep <- AllSeqSens[!AllSeqSens%in%LSouthS]
+NorthL17keep <- AllSeqSens[!AllSeqSens%in%LSouth17S]
+NorthHkeep <- AllSeqSensH[!AllSeqSensH%in%HSouthS]
+NorthH17keep <- AllSeqSens[!AllSeqSens%in%HSouth17S]
+
+
+
+#create a dataframe
+El.H<-data.frame(doy=datDTH$doy, year=rep(2016,length(datDTH$doy)),hour=datDTH$hour, T.gHf[,NorthHkeep])
+
+El.L<-data.frame(doy=datDTL$doy, year=rep(2016,length(datDTL$doy)),hour=datDTL$hour,T.gLf[,NorthLkeep])
+
+El.H17<-data.frame(doy=datDTH17$doy, year=rep(2017,length(datDTH17$doy)),hour=datDTH17$hour, T.gHf17[,NorthH17keep])
+
+El.L17<-data.frame(doy=datDTL17$doy, year=rep(2017,length(datDTL17$doy)),hour=datDTL17$hour,T.gLf17[,NorthL17keep])
+
+if(plotcheck==1){
+	for(i in 1:length(NorthHkeep)){
+		jpeg(file=paste0(diagP, "\\El\\high2016sensor",NorthHkeep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(El.H$doy+(El.H$hour/24),El.H[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
+			main=paste("sensor",NorthHkeep[i]))
+		dev.off()
+	}
+		for(i in 1:length(NorthH17keep)){
+		jpeg(file=paste0(diagP, "\\El\\high2017sensor",NorthH17keep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(El.H17$doy+(El.H17$hour/24),El.H17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
+			main=paste("sensor",NorthH17keep[i]))
+		dev.off()
+	}
+	
+	for(i in 1:length(NorthL17keep)){
+		jpeg(file=paste0(diagP, "\\El\\low2017sensor",NorthL17keep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(El.L17$doy+(El.L17$hour/24),El.L17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
+			main=paste("sensor",NorthL17keep[i]))
+		dev.off()
+	}
+	for(i in 1:length(NorthLkeep)){
+		jpeg(file=paste0(diagP, "\\El\\low2016sensor",NorthLkeep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(El.L$doy+(El.L$hour/24),El.L[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
+			main=paste("sensor",NorthLkeep[i]))
+		dev.off()
+	}
+}
+
+
+
+#########End Transpiration (T) calcs ####################
+
+#################################################################
+###### calculate canopy stomatal conductance    #################
+#################################################################
+
+#convert transpiration to kg m-2 
+datLc1<-data.frame(El.L[,1:3], El.L[,4:(3+length(NorthLkeep))]/1000)
+datL17c1<-data.frame(El.L17[,1:3], El.L17[,4:(3+length(NorthL17keep))]/1000)
+datHc1<-data.frame(El.H[,1:3], El.H[,4:(3+length(NorthHkeep))]/1000)
+datH17c1<-data.frame(El.H17[,1:3], El.H17[,4:(3+length(NorthH17keep))]/1000)
+
+#only canopy met was pulled
+#subset and match
+datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
+datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
+
+datHRHmet <- data.frame(datRH[datRH$site=="hd",1:3], RH=datRH$RH.VP4[datRH$site=="hd"])
+datHTCmet <- data.frame(datTC[datTC$site=="hd",1:3], Temp=datTC$TempC.VP4[datTC$site=="hd"])
+#join temp and RH
+datLmet <- join(datLRHmet, datLTCmet, by=c("doy","year","hour"),type="full")
+datHmet <- join(datHRHmet, datHTCmet, by=c("doy","year","hour"),type="full")
+
+#join airport data to each table
+
+datLmet <- join(datLmet, datAirP, by=c("doy","year"), type="left")
+datHmet <- join(datHmet, datAirP, by=c("doy","year"), type="left")
+
+#join met data to T
+datLtkg<-join(datLc1,datLmet, by=c("doy","year","hour"), type="left")
+datHtkg<-join(datHc1,datHmet, by=c("doy","year","hour"), type="left")
+
+datLtkg17<-join(datL17c1,datLmet, by=c("doy","year","hour"), type="left")
+datHtkg17<-join(datH17c1,datHmet, by=c("doy","year","hour"), type="left")
+
+#calculate saturated vapor pressure
+datLe.sat<-0.611*exp((17.502*datLtkg$Temp)/(datLtkg$Temp+240.97))
+datHe.sat<-0.611*exp((17.502*datHtkg$Temp)/(datHtkg$Temp+240.97))
+datL17e.sat<-0.611*exp((17.502*datLtkg17$Temp)/(datLtkg17$Temp+240.97))
+datH17e.sat<-0.611*exp((17.502*datHtkg17$Temp)/(datHtkg17$Temp+240.97))
+
+#calculate vapor pressure deficit
+#here rh is is in decimal form 
+datLtkg$RHfix<-ifelse(datLtkg$RH>=1,.999,datLtkg$RH)
+datHtkg$RHfix<-ifelse(datHtkg$RH>=1,.999,datHtkg$RH)
+datLtkg17$RHfix<-ifelse(datLtkg17$RH>=1,.999,datLtkg17$RH)
+datHtkg17$RHfix<-ifelse(datHtkg17$RH>=1,.999,datHtkg17$RH)
+
+
+datLtkg$D<-(datLe.sat-(datLtkg$RHfix*datLe.sat))
+datHtkg$D<-(datHe.sat-(datHtkg$RHfix*datHe.sat))
+datLtkg17$D<-(datL17e.sat-(datLtkg17$RHfix*datL17e.sat))
+datHtkg17$D<-(datH17e.sat-(datHtkg17$RHfix*datH17e.sat))
+
+
+Kg.coeff<-function(T){115.8+(.423*T)}
+datLtkg$Kg<-Kg.coeff(datLtkg$Temp)
+datHtkg$Kg<-Kg.coeff(datHtkg$Temp)
+
+datLtkg17$Kg<-Kg.coeff(datLtkg17$Temp)
+datHtkg17$Kg<-Kg.coeff(datHtkg17$Temp)
+#convert to gs
+Gs.convert1<-function(Kg,El,D,P){((Kg*El)/D)*P}
+#change units to moles
+unit.conv<-function(gs,T,P){gs*.446*(273/(T+273))*(P/101.3)}
+
+
+Gshigh<-matrix(rep(0,dim(datHtkg)[1]*length(NorthHkeep)), ncol=length(NorthHkeep))
+Gslow<-matrix(rep(0,dim(datLtkg)[1]*length(NorthLkeep)), ncol=length(NorthLkeep))
+Gshighmm<-matrix(rep(0,dim(datHtkg)[1]*length(NorthHkeep)), ncol=length(NorthHkeep))
+Gslowmm<-matrix(rep(0,dim(datLtkg)[1]*length(NorthLkeep)), ncol=length(NorthLkeep))
+Gshighf<-matrix(rep(0,dim(datHtkg)[1]*length(NorthHkeep)), ncol=length(NorthHkeep))
+Gslowf<-matrix(rep(0,dim(datLtkg)[1]*length(NorthLkeep)), ncol=length(NorthLkeep))
+
+
+Gshigh17<-matrix(rep(0,dim(datHtkg17)[1]*length(NorthH17keep)), ncol=length(NorthH17keep))
+Gslow17<-matrix(rep(0,dim(datLtkg17)[1]*length(NorthL17keep)), ncol=length(NorthL17keep))
+Gshighmm17<-matrix(rep(0,dim(datHtkg17)[1]*length(NorthH17keep)), ncol=length(NorthH17keep))
+Gslowmm17<-matrix(rep(0,dim(datLtkg17)[1]*length(NorthL17keep)), ncol=length(NorthL17keep))
+Gshighf17<-matrix(rep(0,dim(datHtkg17)[1]*length(NorthH17keep)), ncol=length(NorthH17keep))
+Gslowf17<-matrix(rep(0,dim(datLtkg17)[1]*length(NorthL17keep)), ncol=length(NorthL17keep))
+
+########################################
+########################################
+########FILTER POINT 3   ###############
+########Range filter     ###############
+########################################
+for(i in 1:length(NorthHkeep)){
+	Gshigh[,i]<-Gs.convert1(datHtkg$Kg,datHtkg[,(i+3)],datHtkg$D, datHtkg$Pkpa.gap)
+	Gshighmm[,i]<-unit.conv(Gshigh[,i],datHtkg$Temp, datHtkg$Pkpa.gap)*1000
+	Gshighf[,i]<-ifelse(Gshighmm[,i]<400,Gshighmm[,i],NA)
+}	
+for(i in 1:length(NorthLkeep)){	
+	Gslow[,i]<-Gs.convert1(datLtkg$Kg,datLtkg[,i+3],datLtkg$D, datLtkg$Pkpa.gap)
+	Gslowmm[,i]<-unit.conv(Gslow[,i],datLtkg$Temp, datLtkg$Pkpa.gap)*1000
+	Gslowf[,i]<-ifelse(Gslowmm[,i]<400,Gslowmm[,i],NA)
+	}
+for(i in 1:length(NorthH17keep)){		
+	Gshigh17[,i]<-Gs.convert1(datHtkg17$Kg,datHtkg17[,i+3],datHtkg17$D, datHtkg17$Pkpa.gap)
+	Gshighmm17[,i]<-unit.conv(Gshigh17[,i],datHtkg17$Temp, datHtkg17$Pkpa.gap)*1000
+	Gshighf17[,i]<-ifelse(Gshighmm17[,i]<400,Gshighmm17[,i],NA)
+}	
+for(i in 1:length(NorthL17keep)){		
+	Gslow17[,i]<-Gs.convert1(datLtkg17$Kg,datLtkg17[,i+3],datLtkg17$D, datLtkg17$Pkpa.gap)
+	Gslowmm17[,i]<-unit.conv(Gslow17[,i],datLtkg17$Temp, datLtkg17$Pkpa.gap)*1000
+	Gslowf17[,i]<-ifelse(Gslowmm17[,i]<400,Gslowmm17[,i],NA)
+}
+
+#create a dataframe
+gc.H<-data.frame(doy=datHtkg$doy, year=rep(2016,length(datHtkg$doy)),hour=datHtkg$hour,Gshighf[,1:length(NorthHkeep)])
+#exclude sensor 1 because it is very high and can't be verified 
+gc.L<-data.frame(doy=datLtkg$doy, year=rep(2016,length(datLtkg$doy)),hour=datLtkg$hour,Gslowf[,1:length(NorthLkeep)])
+
+gc.H17<-data.frame(doy=datHtkg17$doy, year=rep(2017,length(datHtkg17$doy)),hour=datHtkg17$hour,Gshighf17[,1:length(NorthH17keep)])
+#exclude sensor 1 because it is very high and can't be verified 
+gc.L17<-data.frame(doy=datLtkg17$doy, year=rep(2017,length(datLtkg17$doy)),hour=datLtkg17$hour,Gslowf17[,1:length(NorthL17keep)])
+
+
+
+
+if(plotcheck==1){
+	for(i in 1:length(NorthHkeep)){
+		jpeg(file=paste0(diagP, "\\gc\\high2016sensor",NorthHkeep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(gc.H$doy+(gc.H$hour/24),gc.H[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
+			main=paste("sensor",NorthHkeep[i]))
+		dev.off()
+	}
+	for(i in 1:length(NorthH17keep)){
+		jpeg(file=paste0(diagP, "\\gc\\high2017sensor",NorthH17keep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(gc.H17$doy+(gc.H17$hour/24),gc.H17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
+			main=paste("sensor",NorthH17keep[i]))
+		dev.off()
+	}
+	for(i in 1:length(NorthLkeep)){
+		jpeg(file=paste0(diagP, "\\gc\\low2016sensor",NorthLkeep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(gc.L$doy+(gc.L$hour/24),gc.L[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
+			main=paste("sensor",NorthLkeep[i]))
+		dev.off()
+	}
+	for(i in 1:length(NorthL17keep)){
+		jpeg(file=paste0(diagP, "\\gc\\low2017sensor",NorthL17keep[i],".jpg"), width=1500, height=1000, units="px")
+			plot(gc.L17$doy+(gc.L17$hour/24),gc.L17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
+			main=paste("sensor",NorthLkeep[i]))
+		dev.off()
+	}
+}
+
+#########End canopy stomatal conductance(gc) calcs ####################
+
+#################################################################
+###### clear workspace so workspace is filled with too     ######
+###### many variables when the script is called            ######
+#################################################################
+
+
+
+#clear all variables except for T and gc outptut
+rm(list=setdiff(ls(), c("El.L", "El.H", "El.H17","El.L17", "gc.H","gc.H17","gc.L", "gc.L17")))
