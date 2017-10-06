@@ -29,6 +29,8 @@ plotcheck <- 1
 #################################################################
 #directory to save plot checks
 diagP <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\sapflux_diag"
+#sub folders in diagnostics: maxT
+
 
 #################################################################
 ####read in datafiles                                     #######
@@ -76,10 +78,10 @@ datSW <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_d
 
 #create an index that indicates nighttime or daytime
 #to check how maximums are comparing
-datL$daytimeInd <-ifelse(datDTL$hour<5|datDTL$hour>=9,1,2)
-datH$daytimeInd <-ifelse(datDTH$hour<5|datDTH$hour>=9,1,2)
-datL17$daytimeInd <-ifelse(datDTL17$hour<5|datDTL17$hour>=9,1,2)
-datH17$daytimeInd <-ifelse(datDTH17$hour<5|datDTH17$hour>=9,1,2)
+datL$daytimeInd <-ifelse(datDTL$hour<5|datDTL$hour>=21,1,2)
+datH$daytimeInd <-ifelse(datDTH$hour<5|datDTH$hour>=21,1,2)
+datL17$daytimeInd <-ifelse(datDTL17$hour<5|datDTL17$hour>=21,1,2)
+datH17$daytimeInd <-ifelse(datDTH17$hour<5|datDTH17$hour>=21,1,2)
 #add time
 datH$hour <- datDTH[,3]
 datL$hour <- datDTL[,3]
@@ -105,15 +107,15 @@ if(plotcheck==1){
 				ylim=c(0,15),
 				xlab="Day of year", ylab="dT (C)", main=paste("sensor",i),
 				pch=19, cex=1.5)
-		#text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==1]-.5,
-		#	LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==1]-.5,
-		#	paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==1]) )		
+		text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==1]-.5,
+			LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==1]-.5,
+			paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==1]) )		
 		points(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==2],LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==2],
 				pch=19, col="tomato3", cex=1.5)
 		
-		#text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==2]-.5,
-		#	LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==2]-.5,
-		#	paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==2]) )	
+		text(LmaxDTA[[i]]$doy5[LmaxDTA[[i]]$daytimeInd==2]+.5,
+			LmaxDTA[[i]]$dT[LmaxDTA[[i]]$daytimeInd==2]+.5,
+			paste(LlengthDTA[[i]]$n[LlengthDTA[[i]]$daytimeInd==2]), col="tomato3" )	
 	dev.off()
 	}
 }
