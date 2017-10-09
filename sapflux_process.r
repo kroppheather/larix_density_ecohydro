@@ -98,6 +98,9 @@ datL17$hour <- datDTL17[,3]
 
 #there were power isses with the low density around mid June-July 2017
 #make sure that too little data isn't going into the maximum
+#calculations because shut down at night
+#so exclude data where there isn't at least 6 measurements at night
+#because those days can sample too little of the maximum period
 
 #create an index that indicates nighttime or daytime
 datLdaytimeInd <-ifelse(datDTL$hour<5|datDTL$hour>=21,1,2)
@@ -112,42 +115,82 @@ LmaxTemp17 <- list()
 LmaxDTA17 <- list()
 HmaxTemp17 <- list()
 HmaxDTA17 <- list()
-LmaxDayL  <- list()
-LmaxDayL17 <- list()
-HmaxDayL  <- list()
-HmaxDayL17 <- list()
 LmaxtimeDayL <- list()
 LmaxtimeDayL17 <- list()
 HmaxtimeDayL <- list()
 HmaxtimeDayL17 <- list()
 
+LnightN <- list()
+LnightN17 <- list()
+HnightN <- list()
+HnightN17 <- list()
+
+LdaysAllN <- list()
+LdaysAllN17 <- list()
+HdaysAllN <- list()
+HdaysAllN17 <- list()
+
+LmaxDTAb <-list()
+LmaxDTA17b <-list()
+HmaxDTAb <-list()
+HmaxDTA17b <-list()
 for(i in 1:16){
-	#ld 2016
+	#ld 2016 omit NA
 	LmaxTemp[[i]]<- na.omit(data.frame(dT=datL[,i],doy5=datL$doy5, daytimeInd=datLdaytimeInd))
+	#get daily maximum
 	LmaxDTA[[i]] <- aggregate(LmaxTemp[[i]]$dT, by=list(LmaxTemp[[i]]$doy5), FUN="max")
-	colnames(LmaxDTA[[i]]) <- c("doy5",  paste0("mdT",i))
-	LmaxDayL[[i]] <- aggregate(LmaxTemp[[i]]$dT, by=list(LmaxTemp[[i]]$doy5), FUN="length")
-	colnames(LmaxDayL[[i]]) <- c("doy5",paste0("nday",i))
+	colnames(LmaxDTA[[i]]) <- c("doy5", "mdT")
+	#count number of day and night measurements
 	LmaxtimeDayL[[i]] <- aggregate(LmaxTemp[[i]]$dT, by=list(LmaxTemp[[i]]$doy5, LmaxTemp[[i]]$daytimeInd), FUN="length")
-	colnames(LmaxtimeDayL[[i]]) <- c("doy5","daytimeInd", paste0("ndaytime",i))
+	colnames(LmaxtimeDayL[[i]]) <- c("doy5","daytimeInd", "ndaytime")
+	#join count of night measurements to all days
+	LnightN[[i]] <- data.frame(doy5=LmaxtimeDayL[[i]]$doy5[LmaxtimeDayL[[i]]$daytimeInd==1],
+								Nnight=LmaxtimeDayL[[i]]$ndaytime[LmaxtimeDayL[[i]]$daytimeInd==1])
+	#join with full list of days
+	LdaysAllN[[i]]<- join(LmaxDTA[[i]],LnightN[[i]], by="doy5", type="left")
+	#reformat and exclude days with less than 6 obs at night
+	LmaxDTAb[[i]] <- data.frame(doy5=LdaysAllN[[i]]$doy5,
+								mdT=ifelse(LdaysAllN[[i]]$Nnight<6,NA,
+								LdaysAllN[[i]]$mdT))
+	colnames(LmaxDTAb[[i]]) <- c("doy5",paste0("mdT",i))
 	
 	#ld 2017
 	LmaxTemp17[[i]]<- na.omit(data.frame(dT=datL17[,i],doy5=datL17$doy5, daytimeInd=datL17daytimeInd))
+	#get daily maximum
 	LmaxDTA17[[i]] <- aggregate(LmaxTemp17[[i]]$dT, by=list(LmaxTemp17[[i]]$doy5), FUN="max")
-	colnames(LmaxDTA17[[i]]) <- c("doy5",  paste0("mdT",i))
-	LmaxDayL17[[i]] <- aggregate(LmaxTemp17[[i]]$dT, by=list(LmaxTemp17[[i]]$doy5), FUN="length")
-	colnames(LmaxDayL17[[i]]) <- c("doy5",paste0("nday",i))
+	colnames(LmaxDTA17[[i]]) <- c("doy5",  "mdT")
+	#count number of day and night measurements
 	LmaxtimeDayL17[[i]] <- aggregate(LmaxTemp17[[i]]$dT, by=list(LmaxTemp17[[i]]$doy5,LmaxTemp17[[i]]$daytimeInd), FUN="length")
 	colnames(LmaxtimeDayL17[[i]]) <- c("doy5","daytimeInd", paste0("ndaytime",i))
-	
+	#join count of night measurements to all days
+	LnightN17[[i]] <- data.frame(doy5=LmaxtimeDayL17[[i]]$doy5[LmaxtimeDayL17[[i]]$daytimeInd==1],
+								Nnight=LmaxtimeDayL17[[i]]$ndaytime[LmaxtimeDayL17[[i]]$daytimeInd==1])
+	#join with full list of days
+	LdaysAllN17[[i]]<- join(LmaxDTA17[[i]],LnightN17[[i]], by="doy5", type="left")
+	#reformat and exclude days with less than 6 obs at night
+	LmaxDTA17b[[i]] <- data.frame(doy5=LdaysAllN17[[i]]$doy5,
+								mdT=ifelse(LdaysAllN17[[i]]$Nnight<6,NA,
+								LdaysAllN17[[i]]$mdT))
+	colnames(LmaxDTA17b[[i]]) <- c("doy5",paste0("mdT",i))
 	#hd 2017
 	HmaxTemp17[[i]]<- na.omit(data.frame(dT=datH17[,i],doy5=datH17$doy5, daytimeInd=datH17daytimeInd))
+	#get daily maximum
 	HmaxDTA17[[i]] <- aggregate(HmaxTemp17[[i]]$dT, by=list(HmaxTemp17[[i]]$doy5), FUN="max")
-	colnames(HmaxDTA17[[i]]) <- c("doy5",  paste0("mdT",i))	
-	HmaxDayL17[[i]] <- aggregate(HmaxTemp17[[i]]$dT, by=list(HmaxTemp17[[i]]$doy5), FUN="length")
-	colnames(HmaxDayL17[[i]]) <- c("doy5",paste0("nday",i))
+	colnames(HmaxDTA17[[i]]) <- c("doy5",  "mdT")
+	#count number of day and night measurements
 	HmaxtimeDayL17[[i]] <- aggregate(HmaxTemp17[[i]]$dT, by=list(HmaxTemp17[[i]]$doy5, HmaxTemp17[[i]]$daytimeInd), FUN="length")
 	colnames(HmaxtimeDayL17[[i]]) <- c("doy5","daytimeInd", paste0("ndaytime",i))
+	#join count of night measurements to all days
+	HnightN17[[i]] <- data.frame(doy5=HmaxtimeDayL17[[i]]$doy5[HmaxtimeDayL17[[i]]$daytimeInd==1],
+								Nnight=HmaxtimeDayL17[[i]]$ndaytime[HmaxtimeDayL17[[i]]$daytimeInd==1])
+	#join with full list of days
+	HdaysAllN17[[i]]<- join(HmaxDTA17[[i]],HnightN17[[i]], by="doy5", type="left")
+	#reformat and exclude days with less than 6 obs at night
+	HmaxDTA17b[[i]] <- data.frame(doy5=HdaysAllN17[[i]]$doy5,
+								mdT=ifelse(HdaysAllN17[[i]]$Nnight<6,NA,
+								HdaysAllN17[[i]]$mdT))
+	colnames(HmaxDTA17b[[i]]) <- c("doy5",paste0("mdT",i))
+	
 	}
 #hd 2016
 #get maximum for each sesnor
@@ -155,30 +198,29 @@ HmaxTemp <- list()
 HmaxDTA <- list()
 for(i in 1:8){	
 	HmaxTemp[[i]]<- na.omit(data.frame(dT=datH[,i],doy5=datH$doy5, daytimeInd=datHdaytimeInd))
+	#get daily maximum
 	HmaxDTA[[i]] <- aggregate(HmaxTemp[[i]]$dT, by=list(HmaxTemp[[i]]$doy5), FUN="max")
-	colnames(HmaxDTA[[i]]) <- c("doy5",  paste0("mdT",i))
-	HmaxDayL[[i]] <- aggregate(HmaxTemp[[i]]$dT, by=list(HmaxTemp[[i]]$doy5), FUN="length")
-	colnames(HmaxDayL[[i]]) <- c("doy5",paste0("nday",i))
+	colnames(HmaxDTA[[i]]) <- c("doy5",   "mdT")
+	#count number of day and night measurements
 	HmaxtimeDayL[[i]] <- aggregate(HmaxTemp[[i]]$dT, by=list(HmaxTemp[[i]]$doy5, HmaxTemp[[i]]$daytimeInd), FUN="length")
 	colnames(HmaxtimeDayL[[i]]) <- c("doy5","daytimeInd", paste0("ndaytime",i))	
+	#join count of night measurements to all days
+	HnightN[[i]] <- data.frame(doy5=HmaxtimeDayL[[i]]$doy5[HmaxtimeDayL[[i]]$daytimeInd==1],
+								Nnight=HmaxtimeDayL[[i]]$ndaytime[HmaxtimeDayL[[i]]$daytimeInd==1])
+	#join with full list of days
+	HdaysAllN[[i]]<- join(HmaxDTA[[i]],HnightN[[i]], by="doy5", type="left")
+	#reformat and exclude days with less than 6 obs at night
+	HmaxDTAb[[i]] <- data.frame(doy5=HdaysAllN[[i]]$doy5,
+								mdT=ifelse(HdaysAllN[[i]]$Nnight<6,NA,
+								HdaysAllN[[i]]$mdT))
+	colnames(HmaxDTAb[[i]]) <- c("doy5",paste0("mdT",i))
 }
 	
 #join the daily maximums back into a dataframe
-LmaxDTA2 <- join_all(LmaxDTA, by="doy5", type="full")	
-LmaxDTA172 <- join_all(LmaxDTA17, by="doy5", type="full")
-HmaxDTA2 <- join_all(HmaxDTA, by="doy5", type="full")
-HmaxDTA172 <- join_all(HmaxDTA17, by="doy5", type="full")	
-	
-	
-LmaxDayLb <- join_all(LmaxDayL, by="doy5", type="full")
-HmaxDayLb <- join_all(HmaxDayL, by="doy5", type="full")
-HmaxDayL17b <- join_all(HmaxDayL17, by="doy5", type="full")
-LmaxDayL17b <- join_all(LmaxDayL17, by="doy5", type="full")	
-
-LmaxtimeDayLb <- join_all(LmaxtimeDayL, by=c("doy5","daytimeInd"), type="full")
-HmaxtimeDayLb <- join_all(HmaxtimeDayL, by=c("doy5","daytimeInd"), type="full")
-HmaxtimeDayL17b <- join_all(HmaxtimeDayL17, by=c("doy5","daytimeInd"), type="full")
-LmaxtimeDayL17b <- join_all(LmaxtimeDayL17, by=c("doy5","daytimeInd"), type="full")	
+LmaxDTA2 <- join_all(LmaxDTAb, by="doy5", type="full")	
+LmaxDTA172 <- join_all(LmaxDTA17b, by="doy5", type="full")
+HmaxDTA2 <- join_all(HmaxDTAb, by="doy5", type="full")
+HmaxDTA172 <- join_all(HmaxDTA17b, by="doy5", type="full")	
 	
 	
 	
