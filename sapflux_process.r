@@ -645,8 +645,9 @@ datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$
 datHRHmet <- data.frame(datRH[datRH$site=="hd",1:3], RH=datRH$RH.VP4[datRH$site=="hd"])
 datHTCmet <- data.frame(datTC[datTC$site=="hd",1:3], Temp=datTC$TempC.VP4[datTC$site=="hd"])
 #join temp and RH
-datLmet <- join(datLRHmet, datLTCmet, by=c("doy","year","hour"),type="full")
-datHmet <- join(datHRHmet, datHTCmet, by=c("doy","year","hour"),type="full")
+datLmet <- join(datLRHmet, datLTCmet, by=c("doy","year","hour"),type="inner")
+datHmet <- join(datHRHmet, datHTCmet, by=c("doy","year","hour"),type="inner")
+
 
 #join airport data to each table
 
