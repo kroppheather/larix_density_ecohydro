@@ -876,4 +876,4 @@ if(plotcheck==1){
 
 #clear all variables except for T and gc outptut
 rm(list=setdiff(ls(), c("El.L", "El.H", "El.H17","El.L17", "gc.H","gc.H17","gc.L", "gc.L17", 
-							"datTreeH", "datTreeL", "datTreeH17, datTreeL17")))
+							"datTreeH", "datTreeL", "datTreeH17", "datTreeL17")))
