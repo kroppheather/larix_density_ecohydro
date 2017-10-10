@@ -10,6 +10,8 @@
 ############## Output data files:                            ##############
 ############## Transpiration: El.L,El.L17,El.H,El.H17        ##############
 ############## stomatal conductance:gc.L, gc.L17, gc.H, gc.H17#############
+############## tree info: datTreeL, datTreeL17, datTreeH,     #############
+##############            datTreeH17                          #############
 ###########################################################################
 ###########################################################################
 library(lubridate)
@@ -671,8 +673,11 @@ NorthL17keep <- AllSeqSens[!AllSeqSens%in%LSouth17S]
 NorthHkeep <- AllSeqSensH[!AllSeqSensH%in%HSouthS]
 NorthH17keep <- AllSeqSens[!AllSeqSens%in%HSouth17S]
 
-
-
+#create a new sensor list to accompany all of these changes
+datTreeL <- datSL[datSL$Aspect=="N",]
+datTreeH <- datSH[datSH$Aspect=="N"&datSH$Sensor<=8,]
+datTreeL17 <- datSL17[datSL17$Aspect=="N",]
+datTreeH17 <- datSH17[datSH17$Aspect=="N",]
 #create a dataframe
 El.H<-data.frame(doy=datDTH$doy, year=rep(2016,length(datDTH$doy)),hour=datDTH$hour, T.gHf[,NorthHkeep])
 
@@ -870,4 +875,5 @@ if(plotcheck==1){
 
 
 #clear all variables except for T and gc outptut
-rm(list=setdiff(ls(), c("El.L", "El.H", "El.H17","El.L17", "gc.H","gc.H17","gc.L", "gc.L17")))
+rm(list=setdiff(ls(), c("El.L", "El.H", "El.H17","El.L17", "gc.H","gc.H17","gc.L", "gc.L17", 
+							"datTreeH", "datTreeL", "datTreeH17, datTreeL17")))

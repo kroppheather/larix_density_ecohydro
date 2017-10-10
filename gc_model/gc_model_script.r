@@ -10,6 +10,8 @@
 ############## from sapflux calc:                            ##############
 ############## Transpiration: El.L,El.L17,El.H,El.H17        ##############
 ############## stomatal conductance:gc.L, gc.L17, gc.H, gc.H17#############
+############## tree info: datTreeL, datTreeL17, datTreeH,     #############
+##############            datTreeH17                          #############
 ###########################################################################
 ###########################################################################
 
@@ -20,3 +22,4 @@ source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_pr
 #plyr, lubridate,caTools
 
 
+#read in sesnor information
