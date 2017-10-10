@@ -108,3 +108,6 @@ m.gcH <- datgcH[datgcH$D>=.6&datgcH$PAR>5&datgcH$Pr.mm<=1,]
 m.gcH17 <- datgcH17[datgcH17$D>=.6&datgcH17$PAR>5&datgcH17$Pr.mm<=1,]
 
 
+#################################################################
+####organize data for model                               #######
+#################################################################
