@@ -147,3 +147,17 @@ for(i in 1:length(a)){
 axis(4, c(0,fig.lab), c(round(rev(vupper),3),0), las=2, cex.axis=2.5 )
 mtext("Volumetric soil moisture ", side=4, line=9, cex=3)
 dev.off()
+
+
+#now compare modelled resitivity in the 0.025 and the soil moisture
+#it is also in the middle of 10 cm increment
+vDB1$x2 <- vDB1$x+.05
+
+vDB1comp <- data.frame(x=vDB1$x2, vwc=vDB1$Mineral.VWC)
+rDB1comp <- data.frame(x=rDB1$X[rDB1$Depth==-.025], Res=rDB1$Resistivity[rDB1$Depth==-.025])
+
+vRcomp <- join(vDB1comp,rDB1comp, by="x", type="inner")
+
+plot(vRcomp$Res,vRcomp$vwc,pch=19)
+plot(vRcomp$Res[vRcomp$Res>200],vRcomp$vwc[vRcomp$Res>200],pch=19)
+fDB1 <- lm(vRcomp$vwc[vRcomp$Res>200]~vRcomp$Res[vRcomp$Res>200])
