@@ -12,6 +12,10 @@ rDB1 <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\resistivity\\
 #read in soil moisture
 datVWC <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\vwc_resitivity.csv")
 
+#read in thaw depth
+datTD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\resitivity_thaw17.csv")
+
+
 #directory to save plots in
 
 plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\resistivity_plot"
@@ -20,6 +24,9 @@ plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\resistivity_plot"
 vDB1 <-datVWC[datVWC$file.name=="DB1",]
 #calculate correct dist in m (start at 20 because broken tape)
 vDB1$x <- (vDB1$transect.distance-20)/100
+
+tdDB1 <- datTD[datTD$file_label=="DB1",]
+tdDB1$x <- (tdDB1$distance.on.transect-20)/100
 
 #get range of resistivity
 range(rDB1$Resistivity)
@@ -102,11 +109,13 @@ jpeg(paste0(plotDI, "\\DB1_out.jpg") , width=1500, height=700, units="px", quali
 ab <- layout(matrix(seq(1,3), ncol=3), width=c(lcm(36), lcm(4), lcm(4)), height=c(lcm(15), lcm(15), lcm(15)))
 layout.show(ab)
 par(mai=c(0,0,0,0))		
-plot(c(0,1), c(0,1), type="n", ylim=c(yl,yh), xlim=c(xl,xh), ylab=" ", xlab=" ", axes=FALSE, yaxs="i", xaxs="i")		
+plot(c(0,1), c(0,1), type="n", ylim=c(-.62,yh), xlim=c(xl,xh), ylab=" ", xlab=" ", axes=FALSE, yaxs="i", xaxs="i")		
 points(DB1sp$x,DB1sp$y,pch=19, col=DB1sp$col)
-axis(2, seq(-.35,0, by=.05), las=2, cex.axis=2.5)
-mtext("Depth (m)", side=2, line=7, cex=3)
-axis(1, seq(0,2.5, by=.1), cex.axis=2.5)
+
+points(tdDB1$x, -tdDB1$thaw.depth/100, type="l", lwd=5, col="thistle4")
+axis(2, seq(-.65,0, by=.05), las=2, cex.axis=2.5)
+mtext("Depth (m)", side=2, line=8, cex=3)
+axis(1, seq(0.1,2.5, by=.1), cex.axis=2.5)
 mtext("Transect distance (m)", side=1, line=5, cex=3)
 
 for(i in 1:dim(vDB1)[1]){
@@ -114,7 +123,7 @@ for(i in 1:dim(vDB1)[1]){
 			col=vDB1$col[i],border=FALSE)
 
 }
-
+legend(1,-.45, c("thaw depth"), lwd=5, col="thistle4", bty="n", cex=3)
 
 par(mai=c(0,.5,0,.5))
 plot(c(0,1), c(0,1), type="n", ylim=c(0,1), xlim=c(0,1), ylab=" ", xlab=" ", axes=FALSE, yaxs="i", xaxs="i")
