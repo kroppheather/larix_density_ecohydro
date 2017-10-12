@@ -294,7 +294,7 @@ parallel.bugs <- function(chain,folder, x.data, params){
 		}		
 	# 5b. call openbugs
 	bugs(data=x.data, inits=inits, parameters.to.save=params,
-             n.iter=3000, n.chains=1, n.burnin=1000, n.thin=1,
+             n.iter=3500, n.chains=1, n.burnin=2000, n.thin=5,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
              working.directory=folder)	
