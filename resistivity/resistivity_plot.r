@@ -255,16 +255,62 @@ for(i in 1:dim(datRQ)[1]){
 
 }
 
+#################################################################
+####compare restivity to soil moisture                    #######
+#################################################################
+#start by being conservative and don't include anything
+#with a quality flag of 2 until they can be investigated
+comp1 <- which(datRQ$qualityID!=2,)
+sitesc1 <- datRQ[comp1,]
+#c3, d1 have increments in 5 and are facing the side
+#rest are increments of 10
+siteflag <- ifelse(sitesc1=="C3",0,
+			ifelse(sitesc1=="D1",0,1))
+		
+vwSc1 <- list()
+resc1 <- list()
+comp1ALL <- list()
+datAR <-list()
+for(i in 1:length(comp1)){
+	vwSc1[[i]] <- vwcS[[comp1[i]]]
+	resc1[[i]] <-datR[[comp1[i]]][datR[[comp1[i]]]$Depth>-0.05,]
+	resc1[[i]]$filename <- sitesc1$filename[i]
+	#aggregate all across depth
+	resc1[[i]]$X <- round_any(resc1[[i]]$X,.05, floor)
+	datAR[[i]]<- aggregate(resc1[[i]]$Resistivity, by=list(resc1[[i]]$filename,resc1[[i]]$X), FUN="mean")
+	colnames(datAR[[i]])<-c("filename", "X", "Resistivity")
+	
+	#assume the value in the middle is the same as the start so just match
+	#or will average and than assume the middle represents the meas at the start
 
-#now compare modelled resitivity in the 0.025 and the soil moisture
-#it is also in the middle of 10 cm increment
-vDB1$x2 <- vDB1$x+.05
+	if(siteflag[i]==1){
+		vwSc1[[i]]$X <-vwSc1[[i]]$x+.05
+	}else{vwSc1[[i]]$X <-vwSc1[[i]]$x}
+	
+	datAR[[i]]$X <- as.character(datAR[[i]]$X)
+	vwSc1[[i]]$X <- as.character(vwSc1[[i]]$X)
+	comp1ALL[[i]] <- join( vwSc1[[i]],datAR[[i]], by="X", type="inner")
+	}
 
-vDB1comp <- data.frame(x=vDB1$x2, vwc=vDB1$Mineral.VWC)
-rDB1comp <- data.frame(x=rDB1$X[rDB1$Depth==-.025], Res=rDB1$Resistivity[rDB1$Depth==-.025])
+compC1 <- ldply(comp1ALL,data.frame)
 
-vRcomp <- join(vDB1comp,rDB1comp, by="x", type="inner")
+#there is one really low resitivity that I think is a mistake due to some sort of interferience
+#and it is a really huge outlier in the resistivity range
+#correct
+compC1 <- compC1[compC1$Resistivity>5,]
 
-plot(vRcomp$Res,vRcomp$vwc,pch=19)
-plot(vRcomp$Res[vRcomp$Res>200],vRcomp$vwc[vRcomp$Res>200],pch=19)
-fDB1 <- lm(vRcomp$vwc[vRcomp$Res>200]~vRcomp$Res[vRcomp$Res>200])
+jpeg(paste0(plotDI, "\\","swc_resist_comp.jpg") , width=1500, height=700, units="px", quality=100)
+par(mai=c(1,1,1,1))
+plot(log(compC1$Resistivity),compC1$Mineral.VWC, pch=19, ylab="Observed SWC (m3/m3)", xlab="Log Resistivity", cex.lab=2,
+		axes=FALSE)	
+axis(1, seq(0,9), cex.axis=1.5)
+axis(2, seq(-.1,.9, by=.1), cex.axis=1.5, las=2)	
+fitC1 <- lm(compC1$Mineral.VWC~log(compC1$Resistivity))
+summary(fitC1)
+abline(fitC1, lwd=2)
+
+text(6.5,.65,paste0("SWC = ", round(fitC1$coefficients[1],2), "+ ",round(fitC1$coefficients[2],2), "* log(Resistivity)"),
+		cex=2)
+text(6.5,.55,paste0("R2 = ", round(summary(fitC1)$r.squared,2)),
+		cex=2)
+dev.off()		
