@@ -29,7 +29,7 @@ model{
 	#light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
 	
 	#oren model 1999 for mean gs
-	oren.mod[i]<-gref[standDay[i]]*(1-S[standDay[i]]*log(D[i]))
+	oren.mod[i]<-gref[standDay[i]]-(S[standDay[i]]*log(D[i]))
 
 	}
 	for(i in 1:NstandDay){
@@ -76,16 +76,16 @@ model{
 	
 
 	for(i in 1:Nstand){
-		a1[i]~dnorm(0,.0001)
-		b1[i]~dnorm(0,.0001)
+		a1[i]~dnorm(0,.001)
+		b1[i]~dnorm(0,.001)
 	#	d1[i]~dnorm(0,.0001)
 	#	d.trans1[i]<-exp(d1[i])
-		a2[i]~dnorm(0,.0001)
-		b2[i]~dnorm(0,.0001)
+		a2[i]~dnorm(0,.001)
+		b2[i]~dnorm(0,.001)
 	#	d2[i]~dnorm(0,.0001)
 	#	d.trans2[i]<-exp(d2[i])
-		a3[i]~dnorm(0,.0001)
-		b3[i]~dnorm(0,.0001)
+		a3[i]~dnorm(0,.001)
+		b3[i]~dnorm(0,.001)
 	#	d3[i]~dnorm(0,.0001)
 	#	d.trans3[i]<-exp(d3[i])
 	}

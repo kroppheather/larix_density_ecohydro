@@ -33,7 +33,7 @@ library(mcmcplots)
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run1")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r"
 
@@ -283,8 +283,11 @@ for (i in 1:length(folderALL)){
 # x.data - the data list
 # params - parameters to be monitored
 #folder - folder to save output in
-parallel.bugs <- function(chain,folder, x.data, params){
-
+#folder argument
+parallel.bugs <- function(chain, x.data, params){
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2\\chain3"))
  	# 5a. specifying the initial MCMC values		
 	 inits <- function(){				
 		list(deltapr=matrix(rgamma(6*2,1,rate=1), ncol=2),
@@ -294,25 +297,25 @@ parallel.bugs <- function(chain,folder, x.data, params){
 		}		
 	# 5b. call openbugs
 	bugs(data=x.data, inits=inits, parameters.to.save=params,
-             n.iter=3500, n.chains=1, n.burnin=2000, n.thin=5,
+             n.iter=7000, n.chains=1, n.burnin=5000, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
              working.directory=folder)	
 }			 
 
 #6. set parameters to monitor
-parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3", "d1", "d2", "d3", "gref", "S", "l.slope","sig.gs")
+parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "l.slope","sig.gs","deltapr","pastpr","pr.temp")
 
 # 7. calling the sfLapply function that will run
 # parallel.bugs on each of the 3 CPUs
-sfLapply(1:3, fun=parallel.bugs, folder=folderALL,x.data=datalist, params=parms)
+sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
 
 
 # 8. locating position of each CODA chain
-chain1 <- paste(folder1, "/CODAchain1.txt", sep="")
-chain2 <- paste(folder2, "/CODAchain1.txt", sep="")
-chain3 <- paste(folder3, "/CODAchain1.txt", sep="")
+chain1 <- paste(folder1, "\\CODAchain1.txt", sep="")
+chain2 <- paste(folder2, "\\CODAchain1.txt", sep="")
+chain3 <- paste(folder3, "\\CODAchain1.txt", sep="")
 
 
 # 9. pull coda back out
