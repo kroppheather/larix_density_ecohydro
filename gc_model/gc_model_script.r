@@ -315,15 +315,21 @@ parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "l.slope","si
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
-
+folder1 <- paste0(saveMdir, "\\chain1\\")
+folder2 <- paste0(saveMdir, "\\chain2\\")
+folder3 <- paste0(saveMdir, "\\chain3\\")
 
 
 
 
 # 9. pull coda back out
-codaobj <- read.bugs(c(chain1, chain2, chain3))
+codaobj1 <- read.bugs(c(paste0(folder1, "CODAchain1.txt"),
+						paste0(folder2, "CODAchain1.txt"),
+						paste0(folder3, "CODAchain1.txt")))
 
-mcmcplots(codaobj, dir=saveMdir)
+
+
+mcmcplot(codaobj1, dir=saveMdir)
 
 modSum <-summary(codaobj) 
 
