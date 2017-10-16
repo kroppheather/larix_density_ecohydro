@@ -29,11 +29,12 @@ library(snow)
 library(snowfall)
 library(mcmcplots)
 
+
 #################################################################
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r"
 
@@ -272,9 +273,11 @@ folder3 <- paste0(saveMdir, "\\chain3")
 dir.create(folder1); dir.create(folder2); dir.create(folder3)	
 folderALL <- c(folder1, folder2, folder3)
 
+
 for (i in 1:length(folderALL)){
 
 	file.copy(modCode, paste0(folderALL[i], "\\model_code.txt"), overwrite=TRUE) 
+
 }	
 					
 # 5. defining the function that will run MCMC on each CPU
@@ -284,17 +287,19 @@ for (i in 1:length(folderALL)){
 # params - parameters to be monitored
 #folder - folder to save output in
 #folder argument
-parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run2\\chain3"))
- 	# 5a. specifying the initial MCMC values		
-	 inits <- function(){				
-		list(deltapr=matrix(rgamma(6*2,1,rate=1), ncol=2),
-				a1=rnorm(2,70,10), b1=rnorm(2,1.6,.1), d1=rnorm(2,-5,1),
-				a2=rnorm(2, -5,2), b2=rnorm(2, .1,.1), d2=rnorm(2,.5,.5),
-				a3=rnorm(2, 3,1), b3=rnorm(2,-.1,.1), d3=rnorm(2,.5,.5),sig.gs=rnorm(2,30,10))
-		}		
+
+  
+
+
+parallel.bugs <- function(chain, x.data, params, initlist){
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain3"))
+ 	
+	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain1\\inits.R"),
+				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain2\\inits.R"),
+					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain3\\inits.R")))
+	
 	# 5b. call openbugs
 	bugs(data=x.data, inits=inits, parameters.to.save=params,
              n.iter=7000, n.chains=1, n.burnin=5000, n.thin=1,
@@ -308,14 +313,11 @@ parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "l.slope","si
 
 # 7. calling the sfLapply function that will run
 # parallel.bugs on each of the 3 CPUs
-sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
+sfLapply(1:3, fun=parallel.bugs,x.data=datalist,initlist=initlist, params=parms)
 
 
 
-# 8. locating position of each CODA chain
-chain1 <- paste(folder1, "\\CODAchain1.txt", sep="")
-chain2 <- paste(folder2, "\\CODAchain1.txt", sep="")
-chain3 <- paste(folder3, "\\CODAchain1.txt", sep="")
+
 
 
 # 9. pull coda back out
