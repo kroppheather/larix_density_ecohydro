@@ -291,7 +291,7 @@ for (i in 1:length(folderALL)){
   
 
 
-parallel.bugs <- function(chain, x.data, params, initlist){
+parallel.bugs <- function(chain, x.data, params){
 	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain1",
 				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain2",
 					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run3\\chain3"))
@@ -313,7 +313,7 @@ parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "l.slope","si
 
 # 7. calling the sfLapply function that will run
 # parallel.bugs on each of the 3 CPUs
-sfLapply(1:3, fun=parallel.bugs,x.data=datalist,initlist=initlist, params=parms)
+sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
 
 

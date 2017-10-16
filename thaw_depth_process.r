@@ -4,6 +4,11 @@
 ############## This script interpolates a daily thaw depth   ##############
 ###########################################################################
 ###########################################################################
+############## output: TDall: interpolated thaw depth        ##############
+############## by stand and year                             ##############
+###########################################################################
+###########################################################################
+
 library(lubridate)
 library(plyr)
 library(zoo)
@@ -63,7 +68,7 @@ lTH16 <- TH16[TH16$site=="ld",]
 ####organize data                                         #######
 #################################################################
 
-daysAll16 <- data.frame(doy=seq(182,243), year=rep(2016,length(seq(182,243))))
+daysAll16 <- data.frame(doy=seq(184,243), year=rep(2016,length(seq(184,243))))
 daysAll17 <- data.frame(doy=seq(148,225), year=rep(2017,length(seq(148,225))))
 
 #join each stand into all days
@@ -80,4 +85,23 @@ l2017$site <- rep("ld", dim(l2017)[1])
 #get the number that the first measurement starts on
 
 
-THday <- na.approx(h2016$TD)
+h2016$TDday[h2016$doy>=188] <- na.approx(h2016$TD[h2016$doy>=188])
+#get the first approximation increment and fill in remaining days
+hrate <- h2016$TDday[h2016$doy==189]- h2016$TDday[h2016$doy==188]
+h2016$TDday[h2016$doy<188] <- h2016$TDday[h2016$doy==188]-(hrate*(188-h2016$doy[h2016$doy<188]))
+
+l2016$TDday<- na.approx(l2016$TD)
+
+h2017$TDday <- na.approx(h2017$TD)
+
+l2017$TDday[l2017$doy<=224] <- na.approx(l2017$TD[l2017$doy<=224])
+#fill in last day
+lrate <- l2017$TDday[l2017$doy==224]-l2017$TDday[l2017$doy==223]
+l2017$TDday[l2017$doy>224] <- l2017$TDday[l2017$doy==224] +(lrate*(l2017$doy[l2017$doy>224]-224))
+
+
+TDall <- rbind(h2016,l2016,h2017,l2017)
+
+rm(list=c("datTH","datTH17","dateTH","tTH17","mTH17","sTH17","d1TH17","d2TH17","TH17","TH16",
+			"hTH17","lTH17","hTH16","lTH16",
+			"daysAll16","daysAll17","h2016","l2016","l2017","h2017","lrate","hrate"))
