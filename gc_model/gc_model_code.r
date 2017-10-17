@@ -29,12 +29,12 @@ model{
 	#light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
 	
 	#oren model 1999 for mean gs
-	oren.mod[i]<-gref[standDay[i]]*(1-(S[standDay[i]]*log(D[i])))
+	oren.mod[i]<-gref[standDay[i]]*(1-(mslope[standDay[i]]*log(D[i])))
 
 	}
 	for(i in 1:NstandDay){
 		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*pastpr[Days[i],stand[i]]
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[stand[i]]+b3[stand[i]]*pastpr[Days[i],stand[i]]
+		mslope[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[stand[i]]+b3[stand[i]]*pastpr[Days[i],stand[i]]
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		#slope.temp[i]<-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*pastpr[Days[i],stand[i]]
@@ -42,6 +42,8 @@ model{
 	#conduct covariate centering to help with mixing
 
 	airTcent[i]<-airT[i]-airTmean	
+	#calculate sensitivity
+	S[i] <- mslope[i]/gref[i] 
 	}
 
 
