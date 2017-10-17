@@ -15,8 +15,7 @@
 ###########################################################################
 
 
-#set the plotting directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\time_plot"
+
 
 #################################################################
 ####read in sapflow data                                  #######
@@ -25,7 +24,8 @@ source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_pr
 #libraries loaded from source
 #plyr, lubridate,caTools
 
-
+#set the plotting directory
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\time_plot"
 #################################################################
 ####read in thaw depth data                               #######
 #################################################################
@@ -246,7 +246,14 @@ dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
 #################################################################
 #filter out point that seems to have an erroneous meas
 Eday <- Eday[Eday$T.L.day<.4,]
-
+#day range for x axis 
+xl2016 <- 180
+xh2016 <- 245
+xl2017 <- 155
+xh2017 <- 230
+#subset precip
+prec2016 <- datAirP[datAirP$doy<=xh2016&datAirP$doy>=xl2016&datAirP$year==2016,]
+prec2017 <- datAirP[datAirP$doy<=xh2017&datAirP$doy>=xl2017&datAirP$year==2017,]
 #set up plot widths
 wd <- 35
 hd <-17
@@ -255,11 +262,7 @@ colH <- "tomato3"
 colHt <- rgb(205/255,79/255,57/255, .5)
 colLt <- rgb(65/255,105/255,225/255,.5)
 
-#day range for x axis 
-xl2016 <- 180
-xh2016 <- 245
-xl2017 <- 155
-xh2017 <- 230
+
 ylT <- 0
 yhT <- .3
 ylG <- 0
@@ -267,11 +270,16 @@ yhG <- 300
 ylA <- 0
 yhA <- 25
 ylD <- 0
-yhD <- 2
+yhD <- 1.6
 
 axisC <- 5
 
-jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px")
+TDmax <- 75
+TDscale <- yhA/TDmax
+Prmax <- 40
+Prscale <- yhD/Prmax
+
+jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2600, height=2200, units="px")
 	ab <- layout(matrix(seq(1,8), ncol=2, byrow=TRUE), width=rep(lcm(wd),8), height=rep(lcm(hd),8))
 
 
@@ -291,7 +299,10 @@ jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px"
 				Eday$T.L.day[Eday$year==2016]+
 				Eday$T.se[Eday$year==2016],lwd=3, code=0)
 		axis(2, seq(ylT,yhT, by=.1 ), las=2, cex.axis=axisC, lwd.ticks=3)	
-		legend(220,yhT,c("low density", "high density"), col=c(colL,colH), pch=19, cex=5, bty="n")
+		legend(220,yhT,c("low density", "high density"), col=c(colL,colH), pch=19, cex=4, bty="n")
+	mtext("Daily transpiraiton", side=2, line=18, cex=4)
+	mtext(expression(paste("(L m"^"-2","day"^"-1",")")), side=2, line=10, cex=4)
+	mtext("2016", side=3, line=5, cex=4)
 	box(which="plot")
 
 	par(mai=c(0,0,0,0))
@@ -309,8 +320,9 @@ jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px"
 				Eday$doy[Eday$year==2017],
 				Eday$T.L.day[Eday$year==2017]+
 				Eday$T.se[Eday$year==2017],lwd=3, code=0)
+	
 		axis(4, seq(ylT,yhT, by=.1 ), las=2, cex.axis=axisC, lwd.ticks=3)		
-			
+		mtext("2017", side=3, line=5, cex=4)	
 			
 	box(which="plot")
 
@@ -329,8 +341,9 @@ jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px"
 			gsDave$doy[gsDave$year==2016],
 				gsDave$gc.mmol.s[gsDave$year==2016]+
 				gsDave$gc.se[gsDave$year==2016],lwd=3, code=0)	
-				
-	axis(2, seq(50, yhG-50, by=50), las=2, cex.axis=axisC, lwd.ticks=3)			
+	mtext("Daily average gc", side=2, line=18, cex=4)
+	mtext(expression(paste("(mmol m"^"-2","s"^"-1",")")), side=2, line=10, cex=4)			
+	axis(2, seq(0, yhG-50, by=50), las=2, cex.axis=axisC, lwd.ticks=3)			
 	box(which="plot")
 
 	par(mai=c(0,0,0,0))
@@ -349,7 +362,7 @@ jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px"
 				gsDave$gc.mmol.s[gsDave$year==2017]+
 				gsDave$gc.se[gsDave$year==2017],lwd=3, code=0)	
 				
-	axis(4, seq(50, yhG-50, by=50), las=2, cex.axis=axisC, lwd.ticks=3)
+	axis(4, seq(0, yhG-50, by=50), las=2, cex.axis=axisC, lwd.ticks=3)
 	box(which="plot")
 
 
@@ -364,7 +377,15 @@ jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px"
 	points(dayL$doy[dayL$doy<=xh2016&dayL$doy>=xl2016&dayL$year==2016], 
 			dayL$T[dayL$doy<=xh2016&dayL$doy>=xl2016&dayL$year==2016], type="l",
 			lwd=6, col=colLt)
-	axis(2, seq(0,yhA-5, by=5), las=2, cex.axis=axisC, lwd.ticks=3)
+	axis(2, seq(0,20, by=5), las=2, cex.axis=axisC, lwd.ticks=3)
+	
+	points(TDall$doy[TDall$year==2016&TDall$site=="ld"],TDall$TDday[TDall$year==2016&TDall$site=="ld"]*TDscale,
+			type="l", col=colL, lty=4, lwd=6)
+	
+		points(TDall$doy[TDall$year==2016&TDall$site=="hd"],TDall$TDday[TDall$year==2016&TDall$site=="hd"]*TDscale,
+			type="l", col=colHt, lty=4, lwd=6)
+	mtext("Daily average air temp", side=2, line=18, cex=4)
+	mtext("(C)", side=2, line=10, cex=4)
 	box(which="plot")
 
 	par(mai=c(0,0,0,0))
@@ -377,19 +398,75 @@ jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px"
 	points(dayL$doy[dayL$doy<=xh2017&dayL$doy>=xl2017&dayL$year==2017], 
 			dayL$T[dayL$doy<=xh2017&dayL$doy>=xl2017&dayL$year==2017], type="l",
 			lwd=6, col=colLt)
-	axis(4, seq(0,yhA-5, by=5), las=2, cex.axis=axisC, lwd.ticks=3)		
 			
+	points(TDall$doy[TDall$year==2017&TDall$site=="ld"],TDall$TDday[TDall$year==2017&TDall$site=="ld"]*TDscale,
+			type="l", col=colL, lty=4, lwd=6)
+	
+	points(TDall$doy[TDall$year==2017&TDall$site=="hd"],TDall$TDday[TDall$year==2017&TDall$site=="hd"]*TDscale,
+			type="l", col=colHt, lty=4, lwd=6)		
+	
+	axis(4, seq(0,20,by=5),seq(0,20,by=5)*3, las=2, cex.axis=axisC, lwd.ticks=3)			
+	legend(165,26, c("low density TD", "high density TD", "low density Ta", "high density Ta"),
+					col=c(colL,colHt,colLt,colH), lwd=6, lty=c(4,4,1,1), bty="n", cex=4)
+		mtext("Thaw depth", side=4, line=10, cex=4)
+	mtext("(cm)", side=4, line=18, cex=4)
 	box(which="plot")
 
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(ylD,yhD),type="n", axes=FALSE, xlab=" ", ylab=" ",
 			yaxs="i", xaxs="i")
+		for(i in 1:dim(prec2016)[1]){
+		polygon(c(prec2016$doy[i]-.5,prec2016$doy[i]-.5,prec2016$doy[i]+.5,prec2016$doy[i]+.5),
+				c(0,prec2016$Pr.mm[i]*Prscale,prec2016$Pr.mm[i]*Prscale,0), col="grey60", border=FALSE)
+		}
+
+	
+	points(dayH$doy[dayH$doy<=xh2016&dayH$doy>=xl2016&dayH$year==2016], 
+			dayH$D[dayH$doy<=xh2016&dayH$doy>=xl2016&dayH$year==2016], type="l",
+			lwd=6, col=colH)
+		
+	points(dayL$doy[dayL$doy<=xh2016&dayL$doy>=xl2016&dayL$year==2016], 
+			dayL$D[dayL$doy<=xh2016&dayL$doy>=xl2016&dayL$year==2016], type="l",
+			lwd=6, col=colLt)		
+	axis(2, seq(0,1.2, by=.4), las=2, cex.axis=axisC, lwd.ticks=3)		
+	mtext(seq(xl2016,xh2016, by=10),at=seq(xl2016,xh2016, by=10), line=4, side=1, cex=3)
+	axis(1, seq(xl2016,xh2016, by=10), rep(" ", length(seq(xl2016,xh2016, by=10)))	,cex.axis=axisC, lwd.ticks=3)	
+	mtext("Daily average VPD", side=2, line=18, cex=4)
+	mtext("(kPa)", side=2, line=10, cex=4)
+	
 	box(which="plot")
 
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), xlim=c(xl2017,xh2017), ylim=c(ylD,yhD),type="n", axes=FALSE, xlab=" ", ylab=" ",
 			yaxs="i", xaxs="i")
+	
+		for(i in 1:dim(prec2017)[1]){
+		polygon(c(prec2017$doy[i]-.5,prec2017$doy[i]-.5,prec2017$doy[i]+.5,prec2017$doy[i]+.5),
+				c(0,prec2017$Pr.mm[i]*Prscale,prec2017$Pr.mm[i]*Prscale,0), col="grey60", border=FALSE)
+		}
+	
+	points(dayH$doy[dayH$doy<=xh2017&dayH$doy>=xl2017&dayH$year==2017], 
+			dayH$D[dayH$doy<=xh2017&dayH$doy>=xl2017&dayH$year==2017], type="l",
+			lwd=6, col=colH)
+		
+	points(dayL$doy[dayL$doy<=xh2017&dayL$doy>=xl2017&dayL$year==2017], 
+			dayL$D[dayL$doy<=xh2017&dayL$doy>=xl2017&dayL$year==2017], type="l",
+			lwd=6, col=colLt)	
+	legend(165,1.6, c("low density VPD", "high density VPD", "Precipitaiton"),
+					col=c(colLt, colH, "grey60"), lty=c(1,1,NA), pch=c(NA,NA,15),
+					bty="n", lwd=c(6,6,NA), cex=4)
+	axis(4,seq(0,1.2, by=.4),seq(0,1.2, by=.4)*25,  las=2, cex.axis=axisC, lwd.ticks=3)		
+	
+	mtext(seq(xl2017,xh2017, by=10),at=seq(xl2017,xh2017, by=10), line=4, side=1, cex=3)
+	axis(1, seq(xl2017,xh2017, by=10), rep(" ", length(seq(xl2017,xh2017, by=10)))	,cex.axis=axisC, lwd.ticks=3)
+	mtext("Precipitation", side=4, line=10, cex=4)
+	mtext("(mm)", side=4, line=18, cex=4)
+	mtext("Day of year", side=1, outer=TRUE, line=-3, cex=4)
 	box(which="plot")
 
 dev.off()
 
+#################################################################
+####make a panel of subset of half hourly                 #######      
+####met and T and gc calc                                 #######
+#################################################################
