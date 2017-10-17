@@ -193,7 +193,55 @@ for(i in 1:4){
 #label the site
 		gsDave$site <- ifelse(gsDave$dataset==1|gsDave$dataset==2,"ld","hd")
 		gsHHave$site <- ifelse(gsHHave$dataset==1|gsHHave$dataset==2,"ld","hd")
+
+
+#################################################################
+####aggregate and organize met                            #######
+#################################################################
+#subset and match
+datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
+datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
+
+datHRHmet <- data.frame(datRH[datRH$site=="hd",1:3], RH=datRH$RH.VP4[datRH$site=="hd"])
+datHTCmet <- data.frame(datTC[datTC$site=="hd",1:3], Temp=datTC$TempC.VP4[datTC$site=="hd"])
+#join temp and RH
+datLmet <- join(datLRHmet, datLTCmet, by=c("doy","year","hour"),type="inner")
+datHmet <- join(datHRHmet, datHTCmet, by=c("doy","year","hour"),type="inner")
+#calculate VPD
+datLe.sat<-0.611*exp((17.502*datLmet$Temp)/(datLmet$Temp+240.97))
+datHe.sat<-0.611*exp((17.502*datHmet$Temp)/(datHmet$Temp+240.97))
+datLRHfix<-ifelse(datLmet$RH>=1,.999,datLmet$RH)
+datHRHfix<-ifelse(datHmet$RH>=1,.999,datHmet$RH)
+
+datLmet$D<-(datLe.sat-(datLRHfix*datLe.sat))
+datHmet$D<-(datHe.sat-(datHRHfix*datHe.sat))
+
+
+#join PAR to the dataframes
+datPARL <- data.frame(doy=datPAR$doy[datPAR$site=="ld"], year=datPAR$year[datPAR$site=="ld"],
+						hour=datPAR$hour[datPAR$site=="ld"], PAR=datPAR$PAR.QSOS.Par[datPAR$site=="ld"])
+datPARH <- data.frame(doy=datPAR$doy[datPAR$site=="hd"], year=datPAR$year[datPAR$site=="hd"],
+						hour=datPAR$hour[datPAR$site=="hd"], PAR=datPAR$PAR.QSOS.Par[datPAR$site=="hd"])		
+
+#join into met
+datLmet <- join(datLmet, datPARL, by=c("doy","year","hour"), type="left")
+datHmet <- join(datHmet, datPARH, by=c("doy","year","hour"), type="left")
+
+#pull out daily means
+dayLD <- aggregate(datLmet$D, by=list(datLmet$doy,datLmet$year), FUN="mean")
+colnames(dayLD) <- c("doy","year","D")
+dayLT <- aggregate(datLmet$Temp, by=list(datLmet$doy,datLmet$year), FUN="mean")
+colnames(dayLT) <- c("doy","year","T")
+dayL <- join(dayLT,dayLD, by=c("doy","year"),type="full")
+	
+dayHD <- aggregate(datHmet$D, by=list(datHmet$doy,datHmet$year), FUN="mean")
+colnames(dayHD) <- c("doy","year","D")
+dayHT <- aggregate(datHmet$Temp, by=list(datHmet$doy,datHmet$year), FUN="mean")
+colnames(dayHT) <- c("doy","year","T")
+dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
+
 	
 #################################################################
-####make a panel of met and T and gc calc                 #######
+####make a panel of daily met and T and gc calc           #######
 #################################################################
+#

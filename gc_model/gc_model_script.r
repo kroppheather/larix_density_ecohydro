@@ -309,7 +309,7 @@ parallel.bugs <- function(chain, x.data, params){
 }			 
 
 #6. set parameters to monitor
-parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "l.slope","sig.gs","deltapr","pastpr","pr.temp","m")
+parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","l.slope","sig.gs","deltapr","pastpr","pr.temp","m")
 
 # 7. calling the sfLapply function that will run
 # parallel.bugs on each of the 3 CPUs
