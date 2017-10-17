@@ -78,7 +78,7 @@ for(i in 1:4){
 }
 Esshh <- ldply(E.tempwork,data.frame)
 #convert to mols
-Esshh$E.mmols <- Esshh$E.ss*18*1000
+Esshh$E.mmols <- (Esshh$E.ss/18)*1000
 
 #now aggregate to see how many observations in a day
 #and pull out data on days that have at least 3 trees
@@ -143,7 +143,8 @@ Eday$T.se <- Eday$T.sd/sqrt(Eday$T.n)
 #aggrate to half hourly
 Esshh$site <-ifelse(Esshh$dataset==1|Esshh$dataset==2, "ld", "hd")
 #filter unrealistic values
-Esshh <- Esshh[Esshh$E.mmols>700,]
+
+Esshh <- Esshh[Esshh$E.mmols<quantile(Esshh$E.mmols,.975),]
 
 EHHave <- aggregate(Esshh$E.mmols, by=list(Esshh$hour,Esshh$doy,Esshh$year,Esshh$site), FUN="mean" )
 colnames(EHHave) <- c("hour","doy", "year","site", "E.hh")
@@ -501,5 +502,91 @@ dev.off()
 #################################################################
 #datHmet and datLmet
 #EHHave and gcHHave
+#set up plot widths
+gcHHave$site <-ifelse(gcHHave$dataset==1|gcHHave$dataset==2,"ld","hd")
+
+wd <- 35
+hd <-20
+colL <- "royalblue"
+colH <- "tomato3"
+colHt <- rgb(205/255,79/255,57/255, .5)
+colLt <- rgb(65/255,105/255,225/255,.5)
 
 
+#specify year to plot
+yrS <- 2016
+xS <- 215
+xE <- 220
+ylG <- 0
+yhG <- 400
+ylT <- 0
+yhT <- 0.75
+ylD <- 0
+yhD <- 3
+ylP <- 0
+yhP <- 2000
+
+jpeg(paste0(plotDI , "\\hh_210_233_16_summary.jpg"), width=2600, height=2200, units="px")
+	ab <- layout(matrix(seq(1,4), ncol=1, byrow=TRUE), width=rep(lcm(wd),8), height=rep(lcm(hd),8))
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylG,yhG),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	points(gcHHave$doy[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"]+
+			(gcHHave$hour[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"]/24),
+			gcHHave$gc.mmol.s[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"],
+			 col=colL, pch=19, cex=3)
+	points(gcHHave$doy[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"]+
+			(gcHHave$hour[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"]/24),
+			gcHHave$gc.mmol.s[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"],
+			 col=colH, pch=19, cex=3)	
+	axis(2, seq(0,400,by=50),  las=2, cex.axis=axisC, lwd.ticks=3)
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylT,yhT),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+		points(EHHave$doy[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"]+
+			(EHHave$hour[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"]/24),
+			EHHave$E.hh[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"],
+			 col=colL, pch=19, cex=3)		
+		points(EHHave$doy[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="hd"]+
+			(EHHave$hour[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="hd"]/24),
+			EHHave$E.hh[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="hd"],
+			 col=colH, pch=19, cex=3)		
+	axis(2, seq(0,.6,by=.1),  las=2, cex.axis=axisC, lwd.ticks=3)			
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylD,yhD),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	points(datHmet$doy[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS]+
+			(datHmet$hour[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS]/24),
+			datHmet$D[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS],
+			col=colH, type="l", lwd=6)
+			
+	points(datLmet$doy[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]+
+			(datLmet$hour[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]/24),
+			datLmet$D[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS],
+			col=colLt, type="l", lwd=6)
+	axis(2, seq(0,2.5, by=.5)	,  las=2, cex.axis=axisC, lwd.ticks=3)		
+	
+	box(which="plot")
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylP,yhP),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+		points(datHmet$doy[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS]+
+			(datHmet$hour[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS]/24),
+			datHmet$PAR[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS],
+			col=colH, type="l", lwd=6)
+			
+	points(datLmet$doy[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]+
+			(datLmet$hour[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]/24),
+			datLmet$PAR[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS],
+			col=colLt, type="l", lwd=6)		
+	axis(2, seq(0,1500, by=500)	,  las=2, cex.axis=axisC, lwd.ticks=3)		
+	box(which="plot")
+	
+dev.off()	
+	
+	
