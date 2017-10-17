@@ -245,3 +245,5 @@ dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
 ####make a panel of daily met and T and gc calc           #######
 #################################################################
 #
+
+
