@@ -244,6 +244,152 @@ dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
 #################################################################
 ####make a panel of daily met and T and gc calc           #######
 #################################################################
-#
+#filter out point that seems to have an erroneous meas
+Eday <- Eday[Eday$T.L.day<.4,]
 
+#set up plot widths
+wd <- 35
+hd <-17
+colL <- "royalblue"
+colH <- "tomato3"
+colHt <- rgb(205/255,79/255,57/255, .5)
+colLt <- rgb(65/255,105/255,225/255,.5)
+
+#day range for x axis 
+xl2016 <- 180
+xh2016 <- 245
+xl2017 <- 155
+xh2017 <- 230
+ylT <- 0
+yhT <- .3
+ylG <- 0
+yhG <- 300
+ylA <- 0
+yhA <- 25
+ylD <- 0
+yhD <- 2
+
+axisC <- 5
+
+jpeg(paste0(plotDI , "\\daily_summary.jpg"), width=2500, height=2200, units="px")
+	ab <- layout(matrix(seq(1,8), ncol=2, byrow=TRUE), width=rep(lcm(wd),8), height=rep(lcm(hd),8))
+
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(ylT,yhT),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+		points(Eday$doy[Eday$site=="ld"&Eday$year==2016],
+		Eday$T.L.day[Eday$site=="ld"&Eday$year==2016],pch=19,
+		col=colL,cex=5 )	
+		points(Eday$doy[Eday$site=="hd"&Eday$year==2016],
+		Eday$T.L.day[Eday$site=="hd"&Eday$year==2016],pch=19,
+		col=colH,cex=5 )		
+		arrows(Eday$doy[Eday$year==2016],
+				Eday$T.L.day[Eday$year==2016]-
+				Eday$T.se[Eday$year==2016],
+				Eday$doy[Eday$year==2016],
+				Eday$T.L.day[Eday$year==2016]+
+				Eday$T.se[Eday$year==2016],lwd=3, code=0)
+		axis(2, seq(ylT,yhT, by=.1 ), las=2, cex.axis=axisC, lwd.ticks=3)	
+		legend(220,yhT,c("low density", "high density"), col=c(colL,colH), pch=19, cex=5, bty="n")
+	box(which="plot")
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2017,xh2017), ylim=c(ylT,yhT),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+		points(Eday$doy[Eday$site=="ld"&Eday$year==2017],
+			Eday$T.L.day[Eday$site=="ld"&Eday$year==2017],pch=19,
+			col=colL,cex=5 )	
+		points(Eday$doy[Eday$site=="hd"&Eday$year==2017],
+			Eday$T.L.day[Eday$site=="hd"&Eday$year==2017],pch=19,
+			col=colH,cex=5 )		
+		arrows(Eday$doy[Eday$year==2017],
+				Eday$T.L.day[Eday$year==2017]-
+				Eday$T.se[Eday$year==2017],
+				Eday$doy[Eday$year==2017],
+				Eday$T.L.day[Eday$year==2017]+
+				Eday$T.se[Eday$year==2017],lwd=3, code=0)
+		axis(4, seq(ylT,yhT, by=.1 ), las=2, cex.axis=axisC, lwd.ticks=3)		
+			
+			
+	box(which="plot")
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(ylG,yhG),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	points(gsDave$doy[gsDave$site=="ld"&gsDave$year==2016],
+		gsDave$gc.mmol.s[gsDave$site=="ld"&gsDave$year==2016],pch=19,
+		col=colL,cex=5, type="b", lwd=3 )	
+	points(gsDave$doy[gsDave$site=="hd"&gsDave$year==2016],
+		gsDave$gc.mmol.s[gsDave$site=="hd"&gsDave$year==2016],pch=19,
+		col=colH,cex=5, type="b", lwd=3 )	
+	arrows(gsDave$doy[gsDave$year==2016],
+				gsDave$gc.mmol.s[gsDave$year==2016]-
+				gsDave$gc.se[gsDave$year==2016],
+			gsDave$doy[gsDave$year==2016],
+				gsDave$gc.mmol.s[gsDave$year==2016]+
+				gsDave$gc.se[gsDave$year==2016],lwd=3, code=0)	
+				
+	axis(2, seq(50, yhG-50, by=50), las=2, cex.axis=axisC, lwd.ticks=3)			
+	box(which="plot")
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2017,xh2017), ylim=c(ylG,yhG),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	points(gsDave$doy[gsDave$site=="ld"&gsDave$year==2017],
+		gsDave$gc.mmol.s[gsDave$site=="ld"&gsDave$year==2017],pch=19,
+		col=colL,cex=5, type="b", lwd=3 )	
+	points(gsDave$doy[gsDave$site=="hd"&gsDave$year==2017],
+		gsDave$gc.mmol.s[gsDave$site=="hd"&gsDave$year==2017],pch=19,
+		col=colH,cex=5, type="b", lwd=3 )	
+	arrows(gsDave$doy[gsDave$year==2017],
+				gsDave$gc.mmol.s[gsDave$year==2017]-
+				gsDave$gc.se[gsDave$year==2017],
+			gsDave$doy[gsDave$year==2017],
+				gsDave$gc.mmol.s[gsDave$year==2017]+
+				gsDave$gc.se[gsDave$year==2017],lwd=3, code=0)	
+				
+	axis(4, seq(50, yhG-50, by=50), las=2, cex.axis=axisC, lwd.ticks=3)
+	box(which="plot")
+
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(ylA,yhA),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	
+	points(dayH$doy[dayH$doy<=xh2016&dayH$doy>=xl2016&dayH$year==2016], 
+			dayH$T[dayH$doy<=xh2016&dayH$doy>=xl2016&dayH$year==2016], type="l",
+			lwd=6, col=colH)
+		
+	points(dayL$doy[dayL$doy<=xh2016&dayL$doy>=xl2016&dayL$year==2016], 
+			dayL$T[dayL$doy<=xh2016&dayL$doy>=xl2016&dayL$year==2016], type="l",
+			lwd=6, col=colLt)
+	axis(2, seq(0,yhA-5, by=5), las=2, cex.axis=axisC, lwd.ticks=3)
+	box(which="plot")
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2017,xh2017), ylim=c(ylA,yhA),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	points(dayH$doy[dayH$doy<=xh2017&dayH$doy>=xl2017&dayH$year==2017], 
+			dayH$T[dayH$doy<=xh2017&dayH$doy>=xl2017&dayH$year==2017], type="l",
+			lwd=6, col=colH)
+		
+	points(dayL$doy[dayL$doy<=xh2017&dayL$doy>=xl2017&dayL$year==2017], 
+			dayL$T[dayL$doy<=xh2017&dayL$doy>=xl2017&dayL$year==2017], type="l",
+			lwd=6, col=colLt)
+	axis(4, seq(0,yhA-5, by=5), las=2, cex.axis=axisC, lwd.ticks=3)		
+			
+	box(which="plot")
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(ylD,yhD),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	box(which="plot")
+
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), xlim=c(xl2017,xh2017), ylim=c(ylD,yhD),type="n", axes=FALSE, xlab=" ", ylab=" ",
+			yaxs="i", xaxs="i")
+	box(which="plot")
+
+dev.off()
 
