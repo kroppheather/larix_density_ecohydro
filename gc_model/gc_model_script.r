@@ -302,7 +302,7 @@ parallel.bugs <- function(chain, x.data, params){
 	
 	# 5b. call openbugs
 	bugs(data=x.data, inits=inits, parameters.to.save=params,
-             n.iter=5000, n.chains=1, n.burnin=3000, n.thin=1,
+             n.iter=4000, n.chains=1, n.burnin=2000, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
              working.directory=folder)	
@@ -325,7 +325,7 @@ folder3 <- paste0(saveMdir, "\\chain3\\")
 # 9. pull coda back out
 codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						paste0(folder2, "\\CODAchain1.txt")
-						#,paste0(folder3, "\\CODAchain1.txt")
+						,paste0(folder3, "\\CODAchain1.txt")
 						))
 
 

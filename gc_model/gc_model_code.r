@@ -34,7 +34,7 @@ model{
 	for(i in 1:NstandDay){
 		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]
 		#+a3[stand[i]]*pastpr[Days[i],stand[i]]
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[stand[i]]
+		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]
 		#+b3[stand[i]]*pastpr[Days[i],stand[i]]
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
