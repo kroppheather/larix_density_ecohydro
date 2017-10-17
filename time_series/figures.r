@@ -62,6 +62,7 @@ E.temp <- list(El.L,El.L17,El.H,El.H17)
 E.dim <- numeric(0)
 E.temp2 <- list()
 E.temp3 <- list()
+E.tempwork <- list()
 for(i in 1:4){
 	E.dim[i] <- dim(E.temp[[i]])[2]
 	E.temp2[[i]] <- data.frame(E.temp[[i]][,1:3], E.temp[[i]][,4:E.dim[i]]*60*30)
@@ -71,7 +72,13 @@ for(i in 1:4){
 								E.hh = as.vector(data.matrix(E.temp2[[i]][,4:E.dim[i]])),
 								tree = rep(seq(1,E.dim[i]-3), each=dim(E.temp2[[i]])[1]))
 	E.temp3[[i]] <- na.omit(E.temp3[[i]])
+	E.tempwork[[i]] <- E.temp3[[i]]
+	E.tempwork[[i]]$E.ss <- E.temp3[[i]]$E.hh/(30*60)
+	E.tempwork[[i]]$dataset <- rep(i,dim(E.tempwork[[i]])[1])
 }
+Esshh <- ldply(E.tempwork,data.frame)
+#convert to mols
+Esshh$E.mmols <- Esshh$E.ss*18*1000
 
 #now aggregate to see how many observations in a day
 #and pull out data on days that have at least 3 trees
@@ -133,6 +140,19 @@ Eday$T.n <- EdayLl$x
 
 Eday$T.se <- Eday$T.sd/sqrt(Eday$T.n)
 
+#aggrate to half hourly
+Esshh$site <-ifelse(Esshh$dataset==1|Esshh$dataset==2, "ld", "hd")
+#filter unrealistic values
+Esshh <- Esshh[Esshh$E.mmols>700,]
+
+EHHave <- aggregate(Esshh$E.mmols, by=list(Esshh$hour,Esshh$doy,Esshh$year,Esshh$site), FUN="mean" )
+colnames(EHHave) <- c("hour","doy", "year","site", "E.hh")
+EHHsd <- aggregate(Esshh$E.mmols, by=list(Esshh$hour,Esshh$doy,Esshh$year,Esshh$site), FUN="sd" )
+EHHn <- aggregate(Esshh$E.mmols, by=list(Esshh$hour,Esshh$doy,Esshh$year,Esshh$site), FUN="length" )
+EHHave$E.sd <- EHHsd$x 
+EHHave$E.n <- EHHn$x
+EHHave$E.se <- EHHave$E.sd /sqrt(EHHave$E.n)
+
 
 
 #################################################################
@@ -171,6 +191,15 @@ for(i in 1:4){
 		
 }
 # alot of observations so no need to subset more
+# half hourly average across all trees
+	gcHHave <-aggregate(gctemp3$gc.h, by=list(gctemp3$hour,gctemp3$doy,gctemp3$year,gctemp3$datset), FUN="mean")
+	colnames(gcHHave) <- c("hour","doy", "year", "dataset","gc.mmol.s")
+	gcHHsd <-aggregate(gctemp3$gc.h, by=list(gctemp3$hour,gctemp3$doy,gctemp3$year,gctemp3$datset), FUN="sd")
+	gcHHn <-aggregate(gctemp3$gc.h, by=list(gctemp3$hour,gctemp3$doy,gctemp3$year,gctemp3$datset), FUN="length")
+	gcHHave$gc.sd <- gsHHsd$x
+	gcHHave$gc.n <- gsHHn$x
+	gcHHave$gc.se <- gsHHave$gc.sd/sqrt(gsHHave$gc.n)
+	
 #get the average daily gc across all trees
 
 
@@ -470,3 +499,7 @@ dev.off()
 ####make a panel of subset of half hourly                 #######      
 ####met and T and gc calc                                 #######
 #################################################################
+#datHmet and datLmet
+#EHHave and gcHHave
+
+
