@@ -311,25 +311,6 @@ parallel.bugs <- function(chain, x.data, params){
 #6. set parameters to monitor
 parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","l.slope","sig.gs","deltapr","pastpr","pr.temp","m")
 
-library(rjags)
-library(coda)
-#try a jags run
-temp.modI<-jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r",
-						data=datalist,
-						n.adapt=7000,
-						n.chains=3)
-
-
-print(paste("initialize done site number ",i ))		
-#specify sample run				
-n.iter.i=2000
-n.thin=1
-codaobj.init = coda.samples(temp.modI,variable.names=parms,
-                       n.iter=n.iter.i, thin=n.thin)
-					   
-
-
-mcmcplot(codaobj.init, dir=paste0(saveMdir,"\\jags"))
 
 # 7. calling the sfLapply function that will run
 # parallel.bugs on each of the 3 CPUs
