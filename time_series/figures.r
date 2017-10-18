@@ -270,6 +270,24 @@ dayHT <- aggregate(datHmet$Temp, by=list(datHmet$doy,datHmet$year), FUN="mean")
 colnames(dayHT) <- c("doy","year","T")
 dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
 
+#################################################################
+####filter gc to exclude measurements when D is too low   #######
+#################################################################
+#filter gc when D is less than 6
+#first combine met and include a site id
+
+datLmet1 <- datLmet
+datHmet1 <- datHmet
+
+datLmet1$site <- rep("ld", dim(datLmet)[1])
+datHmet1$site <- rep("hd", dim(datHmet)[1])
+
+datAj <- rbind(datLmet1, datHmet1)
+
+gcHHave <- join(gcHHave, datAj, by=c("doy","year","hour","site"), type="left")
+
+gcHHave$gc.mmol.sf <- ifelse(gcHHave$D<.1|gcHHave$PAR<5,NA,gcHHave$gc.mmol.s)
+
 	
 #################################################################
 ####make a panel of daily met and T and gc calc           #######
@@ -277,7 +295,7 @@ dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
 #filter out point that seems to have an erroneous meas
 Eday <- Eday[Eday$T.L.day<.4,]
 #day range for x axis 
-xl2016 <- 180
+xl2016 <- 1
 xh2016 <- 245
 xl2017 <- 155
 xh2017 <- 230
@@ -505,7 +523,9 @@ dev.off()
 #set up plot widths
 gcHHave$site <-ifelse(gcHHave$dataset==1|gcHHave$dataset==2,"ld","hd")
 
-wd <- 35
+
+
+wd <- 50
 hd <-20
 colL <- "royalblue"
 colH <- "tomato3"
@@ -515,10 +535,10 @@ colLt <- rgb(65/255,105/255,225/255,.5)
 
 #specify year to plot
 yrS <- 2016
-xS <- 215
-xE <- 220
+xS <- 210
+xE <- 225
 ylG <- 0
-yhG <- 400
+yhG <- 250
 ylT <- 0
 yhT <- 0.75
 ylD <- 0
@@ -526,48 +546,63 @@ yhD <- 3
 ylP <- 0
 yhP <- 2000
 
-jpeg(paste0(plotDI , "\\hh_210_233_16_summary.jpg"), width=2600, height=2200, units="px")
+jpeg(paste0(plotDI , "\\hh__summary.jpg"), width=2800, height=2600, units="px")
 	ab <- layout(matrix(seq(1,4), ncol=1, byrow=TRUE), width=rep(lcm(wd),8), height=rep(lcm(hd),8))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylG,yhG),type="n", axes=FALSE, xlab=" ", ylab=" ",
 			yaxs="i", xaxs="i")
-	points(gcHHave$doy[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"]+
-			(gcHHave$hour[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"]/24),
-			gcHHave$gc.mmol.s[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"],
-			 col=colL, pch=19, cex=3)
 	points(gcHHave$doy[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"]+
 			(gcHHave$hour[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"]/24),
-			gcHHave$gc.mmol.s[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"],
-			 col=colH, pch=19, cex=3)	
-	axis(2, seq(0,400,by=50),  las=2, cex.axis=axisC, lwd.ticks=3)
+			gcHHave$gc.mmol.sf[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="hd"],
+			 col=colH, pch=19, cex=3, type="b", lwd=3)		
+	
+	points(gcHHave$doy[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"]+
+			(gcHHave$hour[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"]/24),
+			gcHHave$gc.mmol.sf[gcHHave$doy>=xS&gcHHave$doy<=xE&gcHHave$year==yrS&gcHHave$site=="ld"],
+			 col=colL, pch=19, cex=3, type="b", lwd=3)
+	mtext("Canopy", side=2, line=32, cex=5)
+	mtext("stomatal conductance", side=2, line=22, cex=5)
+	mtext(expression(paste("(mmol m"^"-2","s"^"-1",")")), side=2, line=12, cex=5)
+	axis(2, seq(0,300,by=50),  las=2, cex.axis=axisC, lwd.ticks=3)
+	legend(xS+1,250, c("low density", "high density"), col=c(colL,colH), pch=19, lwd=3,bty="n", cex=5)
 	box(which="plot")
 	
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylT,yhT),type="n", axes=FALSE, xlab=" ", ylab=" ",
 			yaxs="i", xaxs="i")
-		points(EHHave$doy[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"]+
-			(EHHave$hour[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"]/24),
-			EHHave$E.hh[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"],
-			 col=colL, pch=19, cex=3)		
+	
 		points(EHHave$doy[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="hd"]+
 			(EHHave$hour[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="hd"]/24),
 			EHHave$E.hh[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="hd"],
-			 col=colH, pch=19, cex=3)		
+			 col=colH, pch=19, cex=3, type="b", lwd=3)	
+			 
+		points(EHHave$doy[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"]+
+			(EHHave$hour[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"]/24),
+			EHHave$E.hh[EHHave$doy>=xS&EHHave$doy<=xE&EHHave$year==yrS&EHHave$site=="ld"],
+			 col=colL, pch=19, cex=3, type="b", lwd=3)		
+	
 	axis(2, seq(0,.6,by=.1),  las=2, cex.axis=axisC, lwd.ticks=3)			
+		mtext("Canopy", side=2, line=32, cex=5)
+	mtext("transpiration", side=2, line=22, cex=5)
+	mtext(expression(paste("(mmol m"^"-2","s"^"-1",")")), side=2, line=12, cex=5)
+	
 	box(which="plot")
 	
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylD,yhD),type="n", axes=FALSE, xlab=" ", ylab=" ",
 			yaxs="i", xaxs="i")
+	points(datLmet$doy[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]+
+			(datLmet$hour[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]/24),
+			datLmet$D[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS],
+			col=colL, type="l", lwd=6)	
 	points(datHmet$doy[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS]+
 			(datHmet$hour[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS]/24),
 			datHmet$D[datHmet$doy>=xS&datHmet$doy<=xE&datHmet$year==yrS],
 			col=colH, type="l", lwd=6)
 			
-	points(datLmet$doy[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]+
-			(datLmet$hour[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]/24),
-			datLmet$D[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS],
-			col=colLt, type="l", lwd=6)
+	mtext("Vapor pressure", side=2, line=32, cex=5)
+	mtext("deficit", side=2, line=22, cex=5)
+	mtext("(kPa)", side=2, line=12, cex=5)
 	axis(2, seq(0,2.5, by=.5)	,  las=2, cex.axis=axisC, lwd.ticks=3)		
 	
 	box(which="plot")
@@ -585,8 +620,13 @@ jpeg(paste0(plotDI , "\\hh_210_233_16_summary.jpg"), width=2600, height=2200, un
 			datLmet$PAR[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS],
 			col=colLt, type="l", lwd=6)		
 	axis(2, seq(0,1500, by=500)	,  las=2, cex.axis=axisC, lwd.ticks=3)		
+	axis(1, seq(xS,xE, by=5),rep(" ", length(seq(xS,xE, by=5))),  las=2, cex.axis=axisC, lwd.ticks=3)	
+	mtext(seq(xS,xE, by=5),at=seq(xS,xE, by=5), line=4, side=1, cex=3)
 	box(which="plot")
-	
+	mtext("Day of year", side=1, line=10, cex=5)
+	mtext("Photosynthetically", side=2, line=32, cex=5)
+	mtext("active radiation", side=2, line=22, cex=5)
+	mtext(expression(paste("(",mu,"mol m"^"-2","s"^"-1",")")), side=2, line=12, cex=5)
 dev.off()	
 	
 	
