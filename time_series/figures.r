@@ -286,7 +286,7 @@ datAj <- rbind(datLmet1, datHmet1)
 
 gcHHave <- join(gcHHave, datAj, by=c("doy","year","hour","site"), type="left")
 
-gcHHave$gc.mmol.sf <- ifelse(gcHHave$D<.1|gcHHave$PAR<5,NA,gcHHave$gc.mmol.s)
+gcHHave$gc.mmol.sf <- ifelse(gcHHave$D<.6|gcHHave$PAR<5,NA,gcHHave$gc.mmol.s)
 
 	
 #################################################################
@@ -534,19 +534,19 @@ colLt <- rgb(65/255,105/255,225/255,.5)
 
 
 #specify year to plot
-yrS <- 2016
-xS <- 210
-xE <- 225
+yrS <- 2017
+xS <- 160
+xE <- 168
 ylG <- 0
-yhG <- 250
+yhG <- 100
 ylT <- 0
 yhT <- 0.75
 ylD <- 0
 yhD <- 3
 ylP <- 0
-yhP <- 2000
+yhP <- 1500
 
-jpeg(paste0(plotDI , "\\hh__summary.jpg"), width=2800, height=2600, units="px")
+jpeg(paste0(plotDI , "\\hh__summary6.jpg"), width=2800, height=2600, units="px")
 	ab <- layout(matrix(seq(1,4), ncol=1, byrow=TRUE), width=rep(lcm(wd),8), height=rep(lcm(hd),8))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), xlim=c(xS,xE), ylim=c(ylG,yhG),type="n", axes=FALSE, xlab=" ", ylab=" ",
@@ -563,8 +563,9 @@ jpeg(paste0(plotDI , "\\hh__summary.jpg"), width=2800, height=2600, units="px")
 	mtext("Canopy", side=2, line=32, cex=5)
 	mtext("stomatal conductance", side=2, line=22, cex=5)
 	mtext(expression(paste("(mmol m"^"-2","s"^"-1",")")), side=2, line=12, cex=5)
+	mtext(paste(yrS), side=3, line=7, cex=5)
 	axis(2, seq(0,300,by=50),  las=2, cex.axis=axisC, lwd.ticks=3)
-	legend(xS+1,250, c("low density", "high density"), col=c(colL,colH), pch=19, lwd=3,bty="n", cex=5)
+	legend(xS+1,yhG, c("low density", "high density"), col=c(colL,colH), pch=19, lwd=3,bty="n", cex=5)
 	box(which="plot")
 	
 	par(mai=c(0,0,0,0))
@@ -619,9 +620,9 @@ jpeg(paste0(plotDI , "\\hh__summary.jpg"), width=2800, height=2600, units="px")
 			(datLmet$hour[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS]/24),
 			datLmet$PAR[datLmet$doy>=xS&datLmet$doy<=xE&datLmet$year==yrS],
 			col=colLt, type="l", lwd=6)		
-	axis(2, seq(0,1500, by=500)	,  las=2, cex.axis=axisC, lwd.ticks=3)		
-	axis(1, seq(xS,xE, by=5),rep(" ", length(seq(xS,xE, by=5))),  las=2, cex.axis=axisC, lwd.ticks=3)	
-	mtext(seq(xS,xE, by=5),at=seq(xS,xE, by=5), line=4, side=1, cex=3)
+	axis(2, seq(0,1200, by=300)	,  las=2, cex.axis=axisC, lwd.ticks=3)		
+	axis(1, seq(xS,xE, by=1),rep(" ", length(seq(xS,xE, by=1))),  las=2, cex.axis=axisC, lwd.ticks=3)	
+	mtext(seq(xS,xE, by=1),at=seq(xS,xE, by=1), line=4, side=1, cex=3)
 	box(which="plot")
 	mtext("Day of year", side=1, line=10, cex=5)
 	mtext("Photosynthetically", side=2, line=32, cex=5)
