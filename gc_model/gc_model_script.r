@@ -338,3 +338,5 @@ modSum <-summary(codaobj1)
 
 write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
 write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
+write.table(standDay2, paste0(saveMdir, "\\out", "\\standDaydata.csv"), sep=",", row.names=TRUE)
+write.table(Days, paste0(saveMdir, "\\out", "\\Daysdata.csv"), sep=",", row.names=TRUE)
