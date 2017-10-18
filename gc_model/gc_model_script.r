@@ -326,15 +326,15 @@ folder3 <- paste0(saveMdir, "\\out\\chain3\\")
 # 9. pull coda back out
 codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1a.txt"),
 						paste0(folder2, "\\CODAchain1a.txt")
-						#,paste0(folder3, "\\CODAchain1a.txt")
+						,paste0(folder3, "\\CODAchain1a.txt")
 						))
 
 
 plot(codaobj1, ask=TRUE)
-mcmcplot(codaobj1, dir=saveMdir)
+mcmcplot(codaobj1, dir=paste0(saveMdir, "\\out"))
 
 modSum <-summary(codaobj1) 
 
 
-write.table(modSum$statistics, paste0(saveMdir, "\\mod_stats.csv"), sep=",", row.names=TRUE)
-write.table(modSum$quantiles, paste0(saveMdir, "\\mod_quants.csv"), sep=",", row.names=TRUE)
+write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
+write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
