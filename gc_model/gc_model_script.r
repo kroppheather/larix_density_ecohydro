@@ -316,9 +316,9 @@ parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
-folder1 <- paste0(saveMdir, "\\out\\chain1\\")
-folder2 <- paste0(saveMdir, "\\out\\chain2\\")
-folder3 <- paste0(saveMdir, "\\out\\chain3\\")
+folder1 <- paste0(saveMdir, "\\out\\ex_samp\\chain1\\")
+folder2 <- paste0(saveMdir, "\\out\\ex_samp\\chain2\\")
+folder3 <- paste0(saveMdir, "\\out\\ex_samp\\chain3\\")
 
 
 
@@ -331,12 +331,14 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1a.txt"),
 
 
 plot(codaobj1, ask=TRUE)
-mcmcplot(codaobj1, dir=paste0(saveMdir, "\\out"))
+mcmcplot(codaobj1, dir=paste0(saveMdir, "\\out\\ex_samp\\history"))
 
-modSum <-summary(codaobj1) 
+modSum <-summary(codaobj1, ra.rm=TRUE) 
 
 
 write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
 write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
-write.table(standDay2, paste0(saveMdir, "\\out", "\\standDaydata.csv"), sep=",", row.names=TRUE)
-write.table(Days, paste0(saveMdir, "\\out", "\\Daysdata.csv"), sep=",", row.names=TRUE)
+write.table(standDay2, paste0(saveMdir, "\\out", "\\standDaydata.csv"), sep=",", row.names=FALSE)
+write.table(Days, paste0(saveMdir, "\\out", "\\Daysdata.csv"), sep=",", row.names=FALSE)
+write.table(gcALL2, paste0(saveMdir, "\\out", "\\gcdata.csv"), sep=",", row.names=FALSE)
+#aggregate to compare means

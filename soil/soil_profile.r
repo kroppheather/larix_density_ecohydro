@@ -156,7 +156,7 @@ colOM <- "tomato2"
 colO <- "saddlebrown"
 axisC <-3
 
-jpeg(paste0(pdir, "summ_profile_all.jpg"), , width=2200, height=2200, units="px")
+jpeg(paste0(pdir, "summ_profile_all.jpg") , width=2400, height=2200, units="px")
 ab <- layout(matrix(seq(1,4), ncol=2, byrow=FALSE), width=rep(lcm(wd),4), height=rep(lcm(hd),4))
 
 par(mai=c(0,0,0,0))
@@ -183,8 +183,10 @@ plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(0,1), xlab=" ", ylab ="  ", xa
 			lty=c(1,1,NA), bty="n", cex=4)
 			
 	axis(2, seq(0,1, by=.2), las=2,  cex.axis=axisC, lwd.ticks=3)
-	mtext("Volumetric soil water (m3/m3)", side=2, outer=TRUE, line=-9, cex=4)	
-	mtext("Precipitation (mm)", side=4, outer=TRUE, line=-9, cex=4)	
+	mtext("Volumetric soil water (m3/m3)", side=2, outer=TRUE, line=-20, cex=4)	
+	mtext("Precipitation (mm)", side=4, outer=TRUE, line=-20, cex=4)	
+	mtext("Low density", side=2,  line=20, cex=4)
+	
 box(which="plot")
 
 
@@ -209,7 +211,7 @@ plot(c(0,1),c(0,1), xlim=c(xl2016,xh2016), ylim=c(0,1), xlab=" ", ylab ="  ", xa
 	axis(2, seq(0,.8, by=.2), las=2,  cex.axis=axisC, lwd.ticks=3)	
 legend(xl2016+5, 1, c("5 cm organic under tree", "Precipitation"), col=c(colT, "grey60"), lwd=c(6,NA),
 			lty=c(1,NA), pch=c(NA,15), bty="n", cex=4)	
-	
+	mtext("High density", side=2,  line=20, cex=4)
 box(which="plot")
 
 par(mai=c(0,0,0,0))
@@ -230,7 +232,8 @@ points(datDayM$doy[datDayM$stand=="ld"],datDayM$vwc[datDayM$stand=="ld"],
 axis(4, seq(0,1, by=.2),seq(0,1, by=.2)*(1/Prscale) , las=2,  cex.axis=axisC, lwd.ticks=3)
 legend(xl2017+12, 1, c("organic below moss","moss","organic", "Precipitation"), col=c(colOM,colM,  colO, "grey60"), 
 			lwd=c(6,6,6,NA),
-			lty=c(1,1,1,NA), pch=c(NA,NA,NA,15), bty="n", cex=4)		
+			lty=c(1,1,1,NA), pch=c(NA,NA,NA,15), bty="n", cex=4)
+			
 box(which="plot")
 
 
