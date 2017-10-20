@@ -223,14 +223,14 @@ standDay2 <- join(standDay2, Days, by=c("doy", "year"), type="left")
 precipmat <- matrix(rep(NA, dim(Days)[1]*21), ncol=21)
 
 for(i in 1:dim(Days)[1]){
-	for(j in 1:21){
+	for(j in 1:28){
 		precipmat[i,j] <- datAirP$Pr.mm[datAirP$doy==(Days$doy[i]-j)&datAirP$year==Days$year[i]]
 	
 	}
 }
 #set up lag periods
-lagStart <- c(1,2,4,6,8,15)
-lagEnd <- c(1,3,5,7,14,21)
+lagStart <- c(1,4,8,15,22)
+lagEnd <- c(3,7,14,21,28)
 
 #take averages over lag periods
 

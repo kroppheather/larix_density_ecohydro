@@ -26,7 +26,7 @@ model{
 	#*light[i]
 
 	#light scaling function
-	#light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
+	light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
 	
 	#oren model 1999 for mean gs
 	oren.mod[i]<-gref[standDay[i]]*(1-(S[standDay[i]]*log(D[i])))
@@ -35,10 +35,11 @@ model{
 	for(i in 1:NstandDay){
 		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*pastpr[Days[i],stand[i]]
 		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*pastpr[Days[i],stand[i]]
+		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*pastpr[Days[i],stand[i]]
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		#slope.temp[i]<-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*pastpr[Days[i],stand[i]]
-		#l.slope[i]<-exp(slope.temp[i])
+		l.slope[i]<-exp(slope.temp[i])
 	#conduct covariate centering to help with mixing
 
 	airTcent[i]<-airT[i]-airTmean	
@@ -80,16 +81,16 @@ model{
 	for(i in 1:Nstand){
 		a1[i]~dnorm(0,.001)
 		b1[i]~dnorm(0,.001)
-	#	d1[i]~dnorm(0,.0001)
-	#	d.trans1[i]<-exp(d1[i])
+		d1[i]~dnorm(0,.0001)
+		d.trans1[i]<-exp(d1[i])
 		a2[i]~dnorm(0,.001)
 		b2[i]~dnorm(0,.001)
-	#	d2[i]~dnorm(0,.0001)
-	#	d.trans2[i]<-exp(d2[i])
+		d2[i]~dnorm(0,.0001)
+		d.trans2[i]<-exp(d2[i])
 		a3[i]~dnorm(0,.001)
 		b3[i]~dnorm(0,.001)
-	#	d3[i]~dnorm(0,.0001)
-	#	d.trans3[i]<-exp(d3[i])
+		d3[i]~dnorm(0,.0001)
+		d.trans3[i]<-exp(d3[i])
 	}
 	tau.gs<-pow(sig.gs,-2)
 	sig.gs~dunif(0,1000)
