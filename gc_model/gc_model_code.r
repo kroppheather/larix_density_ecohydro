@@ -22,8 +22,7 @@ model{
 	gs[i]~dnorm(mu.gs[i],tau.gs)
 	#gs.rep[i]~dnorm(mu.gs[i],tau.gs)
 	#model for mean gs
-	mu.gs[i]<-oren.mod[i]
-	#*light[i]
+	mu.gs[i]<-oren.mod[i]*light[i]
 
 	#light scaling function
 	light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
@@ -33,16 +32,16 @@ model{
 
 	}
 	for(i in 1:NstandDay){
-		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*pastpr[Days[i],stand[i]]
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*pastpr[Days[i],stand[i]]
-		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*pastpr[Days[i],stand[i]]
+		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[Days[i],stand[i]]-5)
+		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[Days[i],stand[i]]-5)
+		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[Days[i],stand[i]]-5)
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
-		#slope.temp[i]<-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*pastpr[Days[i],stand[i]]
 		l.slope[i]<-exp(slope.temp[i])
 	#conduct covariate centering to help with mixing
 
 	airTcent[i]<-airT[i]-airTmean	
+
 	#calculate sensitivity
 
 	}
