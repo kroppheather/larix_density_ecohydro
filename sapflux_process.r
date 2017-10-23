@@ -20,11 +20,12 @@ library(caTools)
 
 #################################################################
 ## IMPORTANT: switch to flip on plot diagnostics               ##
+##  and table summary of allometry for the manuscript          ##
 ## set to 1 to run the code to generate all diagnostic plots   ##
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
 plotcheck <- 0
-
+tableout <- 1
 
 
 #################################################################
@@ -629,6 +630,17 @@ datSL$leafm2<-datSL$leaf*.0001
 datSL17$leafm2<-datSL17$leaf*.0001
 datSH$leafm2<-datSH$leaf*.0001
 datSH17$leafm2<-datSH17$leaf*.0001	
+
+#################################################################
+###### create output table for allometry and     ################
+###### other canopy and tree metrics             ################
+#################################################################	
+if(tableout==1){
+	#output the allometry values used
+	
+
+}
+
 
 
 #################################################################
