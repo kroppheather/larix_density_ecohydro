@@ -34,7 +34,8 @@ tableout <- 1
 #directory to save plot checks
 diagP <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\sapflux_diag"
 #sub folders in diagnostics: maxT, aspectV, allometry, El, gc
-
+#table directory
+tableP <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\sapflux_diag\\tables"
 
 #################################################################
 ####read in datafiles                                     #######
@@ -635,12 +636,98 @@ datSH17$leafm2<-datSH17$leaf*.0001
 ###### create output table for allometry and     ################
 ###### other canopy and tree metrics             ################
 #################################################################	
+
+
 if(tableout==1){
+	#plot sapwood allometry values 
+	jpeg(file=paste0(diagP, "\\allometry\\sapwood.jpg"), width=1500, height=1500, units="px")
+	par(mfrow=c(2,2))
+	plot(datSW$DBH[datSW$stand=="LDF2"],datSW$SWT[datSW$stand=="LDF2"],pch=19, xlab="Diameter breast height (cm)",
+			ylab="sapwood thickness",col="grey40", cex=2, cex.axis=2, cex.lab=2, main="low density") 
+	abline(lmSWL)
+	text(10,1.9, paste("sap =",round(coefficients(lmSWL)[1],3),"+",round(coefficients(lmSWL)[2],3),"*DBH"), cex=3)
+	text(10,1.8, paste("Rsquared=", round(summary(lmSWL)$r.squared,3)), cex=3)
+	plot(datSW$DBH[datSW$stand=="DAV"],datSW$SWT[datSW$stand=="DAV"],pch=19, xlab="Diameter breast height (cm)",
+			ylab="sapwood thickness", cex=2, cex.axis=2, cex.lab=2, main="high density") 	
+	text(6,1.2, paste("sap =",round(coefficients(lmSWH)[1],3),"+",round(coefficients(lmSWH)[2],3),"*DBH"), cex=3)
+	text(6,1.1, paste("Rsquared=", round(summary(lmSWH)$r.squared,3)), cex=3)
+	abline(lmSWH)
+	plot(datSW$DBH[datSW$stand=="LDF2"],datSW$Bark[datSW$stand=="LDF2"],pch=19, xlab="Diameter breast height (cm)",
+			ylab="bark thickness", cex=2, cex.axis=2, cex.lab=2, main="low density")
+
+	abline(lmBL)
+	text(10,.7, paste("sap =",round(coefficients(lmBL)[1],3),"+",round(coefficients(lmBL)[2],3),"*DBH"), cex=3)
+	text(10,.6, paste("Rsquared=", round(summary(lmBL)$r.squared,3)), cex=3)		
+	
+	plot(datSW$DBH[datSW$stand=="DAV"],datSW$Bark[datSW$stand=="DAV"],pch=19, xlab="Diameter breast height (cm)",
+			ylab="bark thickness", cex=2, cex.axis=2, cex.lab=2, main="high density") 	
+	abline(lmBH)
+	text(6,.7, paste("sap =",round(coefficients(lmBH)[1],3),"+",round(coefficients(lmBH)[2],3),"*DBH"), cex=3)
+	text(6,.6, paste("Rsquared=", round(summary(lmBH)$r.squared,3)), cex=3)	
+	
+	dev.off()
 	#output the allometry values used
 	
 
 }
+#output a table of allometry coefficients
+if(tableout==1){
+	#sapwood thickness
+	tabSH <- data.frame(summary(lmSWH)$coefficients)
+	tabSH$site <- rep("hd", dim(tabSH)[1])
+	tabSH$r.sq <- rep(summary(lmSWH)$r.squared, dim(tabSH)[1])
+	tabSL <- data.frame(summary(lmSWL)$coefficients)
+	tabSL$site <- rep("ld", dim(tabSL)[1])	
+	tabSL$r.sq <- rep(summary(lmSWL)$r.squared, dim(tabSL)[1])
+	sapThickC <- rbind(tabSH,tabSL)
 
+	write.table(sapThickC,paste0(tableP,"\\sapwoodAllom.csv"),sep=",", row.names=TRUE)
+	#sapwood to leaf mass
+	tabLH <- data.frame(summary(nlsHigh)$parameters)
+	tabLH$site <- rep("hd", dim(tabLH)[1])
+	tabLH$iterN <- rep(summary(nlsHigh)$convInfo$finIter, dim(tabLH)[1])
+	tabLH$finTol <- rep(summary(nlsHigh)$convInfo$finTol, dim(tabLH)[1])
+	tabLL <- data.frame(summary(nlsLow)$parameters)
+	tabLL$site <- rep("hd", dim(tabLL)[1])
+	tabLL$iterN <- rep(summary(nlsLow)$convInfo$finIter, dim(tabLL)[1])
+	tabLL$finTol <- rep(summary(nlsLow)$convInfo$finTol, dim(tabLL)[1])	
+	
+	leafWeightC <- rbind(tabLH,tabLL)
+	write.table(leafWeightC,paste0(tableP,"\\leafAllom.csv"),sep=",", row.names=TRUE)
+	
+	
+}
+
+
+#summarize the sensor trees
+# just focus on 2017
+#many of the trees should be the same
+#in high density, but there are a few that
+#likely aren't. Low density all but 1 should be the same
+#since there aren't more than 14 trees in distance of the sensors
+if(tableout==1){
+	#get the average sapoowd thickness
+	#don't double average trees with two sensors
+	canopySummLt <- datSL17[datSL17$Aspect=="N",]
+	canopySummHt <- datSH17[datSH17$Aspect=="N",]
+	canopySummLt$S.Lrat <- canopySummLt$leafm2/canopySummLt$sapA
+	canopySummHt$S.Lrat <- canopySummHt$leafm2/canopySummHt$sapA
+	#leaf SLA relationships cm2/g: lowSLA, highSLA, mean(datSLA$SLA[datSLA$stand=="ld"])
+	treeMetric <- data.frame(site=c("LD","HD"),SLA.mean.cm.g=c(lowSLA,highSLA), SLA.sd = c(sd(datSLA$SLA[datSLA$stand=="ld"]),
+					sd(datSLA$SLA[datSLA$stand=="hd"])), SLA.n =c(length(datSLA$SLA[datSLA$stand=="ld"]),
+					length(datSLA$SLA[datSLA$stand=="hd"])),
+					canLeaf.m2 = c(mean(canopySummLt$leafm2),mean(canopySummHt$leafm2)),
+					canLeaf.sd =c(sd(canopySummLt$leafm2),sd(canopySummHt$leafm2)),
+					canLeaf.n = c(length(canopySummLt$leafm2),length(canopySummHt$leafm2)),
+					sapA.cm2 =c(mean(canopySummLt$sapA),mean(canopySummHt$sapA)),
+					sapA.sd=c(sd(canopySummLt$sapA),sd(canopySummHt$sapA)),
+					sapA.n=c(length(canopySummLt$sapA),length(canopySummHt$sapA)),
+					LSrat =c(mean(canopySummLt$S.Lrat),mean(canopySummHt$S.Lrat)),
+					LSrat.sd =c(sd(canopySummLt$S.Lrat),sd(canopySummHt$S.Lrat)),
+					LSrat.n=c(length(canopySummLt$S.Lrat),length(canopySummHt$S.Lrat)))
+					
+	write.table(treeMetric,paste0(tableP,"\\treeSummary.csv"),sep=",", row.names=TRUE)
+}
 
 
 #################################################################
