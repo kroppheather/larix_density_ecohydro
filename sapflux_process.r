@@ -25,7 +25,7 @@ library(caTools)
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
 plotcheck <- 0
-tableout <- 0
+tableout <- 1
 
 
 #################################################################
@@ -641,26 +641,26 @@ datSH17$leafm2<-datSH17$leaf*.0001
 if(tableout==1){
 	#plot sapwood allometry values 
 	jpeg(file=paste0(diagP, "\\allometry\\sapwood.jpg"), width=1500, height=1500, units="px")
-	par(mfrow=c(2,2))
+	par(mfrow=c(2,2), mai=c(1,1.5,1,1))
 	plot(datSW$DBH[datSW$stand=="LDF2"],datSW$SWT[datSW$stand=="LDF2"],pch=19, xlab="Diameter breast height (cm)",
-			ylab="sapwood thickness",col="grey40", cex=2, cex.axis=2, cex.lab=2, main="low density") 
+			ylab="sapwood thickness (cm)",col="grey0", cex=2, cex.axis=2, cex.lab=2.5, cex.main=2.5,main="low density") 
 	abline(lmSWL)
-	text(10,1.9, paste("sap =",round(coefficients(lmSWL)[1],3),"+",round(coefficients(lmSWL)[2],3),"*DBH"), cex=3)
-	text(10,1.8, paste("Rsquared=", round(summary(lmSWL)$r.squared,3)), cex=3)
+	text(10,1.25, paste("sap =",round(coefficients(lmSWL)[1],3),"+",round(coefficients(lmSWL)[2],3),"*DBH"), cex=3)
+	text(10,1.15, paste("Rsquared=", round(summary(lmSWL)$r.squared,3)), cex=3)
 	plot(datSW$DBH[datSW$stand=="DAV"],datSW$SWT[datSW$stand=="DAV"],pch=19, xlab="Diameter breast height (cm)",
-			ylab="sapwood thickness", cex=2, cex.axis=2, cex.lab=2, main="high density") 	
+			ylab="sapwood thickness (cm)", cex=2, cex.axis=2, cex.lab=2.5,cex.main=2.5, main="high density") 	
 	text(6,1.2, paste("sap =",round(coefficients(lmSWH)[1],3),"+",round(coefficients(lmSWH)[2],3),"*DBH"), cex=3)
 	text(6,1.1, paste("Rsquared=", round(summary(lmSWH)$r.squared,3)), cex=3)
 	abline(lmSWH)
 	plot(datSW$DBH[datSW$stand=="LDF2"],datSW$Bark[datSW$stand=="LDF2"],pch=19, xlab="Diameter breast height (cm)",
-			ylab="bark thickness", cex=2, cex.axis=2, cex.lab=2, main="low density")
+			ylab="bark thickness (cm)", cex=2, cex.axis=2, cex.lab=2.5,cex.main=2.5, main="low density")
 
 	abline(lmBL)
 	text(10,.7, paste("sap =",round(coefficients(lmBL)[1],3),"+",round(coefficients(lmBL)[2],3),"*DBH"), cex=3)
 	text(10,.6, paste("Rsquared=", round(summary(lmBL)$r.squared,3)), cex=3)		
 	
 	plot(datSW$DBH[datSW$stand=="DAV"],datSW$Bark[datSW$stand=="DAV"],pch=19, xlab="Diameter breast height (cm)",
-			ylab="bark thickness", cex=2, cex.axis=2, cex.lab=2, main="high density") 	
+			ylab="bark thickness (cm)", cex=2, cex.axis=2, cex.lab=2.5,cex.main=2.5, main="high density") 	
 	abline(lmBH)
 	text(6,.7, paste("sap =",round(coefficients(lmBH)[1],3),"+",round(coefficients(lmBH)[2],3),"*DBH"), cex=3)
 	text(6,.6, paste("Rsquared=", round(summary(lmBH)$r.squared,3)), cex=3)	
