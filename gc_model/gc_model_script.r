@@ -12,6 +12,8 @@
 ############## stomatal conductance:gc.L, gc.L17, gc.H, gc.H17#############
 ############## tree info: datTreeL, datTreeL17, datTreeH,     #############
 ##############            datTreeH17                          #############
+############## from thaw depth:                               #############
+##############  TDall: by stand and year                      #############
 ###########################################################################
 ###########################################################################
 
@@ -22,11 +24,13 @@
 source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_process.r")
 #libraries loaded from source
 #plyr, lubridate,caTools
-
-
-# libraries for parallel processing
-library(snow)
-library(snowfall)
+#################################################################
+####read in thawdepth data                                  #######
+#################################################################
+source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\thaw_depth_process.r")
+# libraries
+library(rjags)
+library(coda)
 library(mcmcplots)
 
 
@@ -34,7 +38,7 @@ library(mcmcplots)
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run9")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r"
 
@@ -249,64 +253,15 @@ airTmean<- mean(standDay2$Tair)
 #################################################################
 ####model run                                             #######
 #################################################################
-# run 3 parallel chains in R2OpenBugs because nonlinear and
-# antecedent model will likely not run well with the sampler in JAGS
+#try running  model without stochastic antecedent precip in JAGS and with all variables
 
-#1. specify data list
+
+#data list
 
 datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, standDay=gcALL2$standDay, PAR=gcALL2$PAR,
 					D=gcALL2$D, NstandDay=dim(standDay2)[1], stand=standDay2$stand, airT=standDay2$Tair,
 					airTmean=airTmean,a.pr=precipL,Days=standDay2$Days,Nstand=2, Nlag=length(lagStart),
 					Ndays=dim(Days)[1])
-
-					
-# 2. setting the number of CPUs to be 3
-sfInit(parallel=TRUE, cpus=3)
- 
-# 3. and assigning the R2OpenBUGS library to each CPU
-sfLibrary(R2OpenBUGS)					
-
-# 4. creating separate directory for each CPU process
-folder1 <- paste0(saveMdir, "\\chain1")
-folder2 <- paste0(saveMdir, "\\chain2")
-folder3 <- paste0(saveMdir, "\\chain3")
-dir.create(folder1); dir.create(folder2); dir.create(folder3)	
-folderALL <- c(folder1, folder2, folder3)
-
-
-for (i in 1:length(folderALL)){
-
-	file.copy(modCode, paste0(folderALL[i], "\\model_code.txt"), overwrite=TRUE) 
-
-}	
-					
-# 5. defining the function that will run MCMC on each CPU
-# Arguments:
-# chain - will be 1, 2 or 3
-# x.data - the data list
-# params - parameters to be monitored
-#folder - folder to save output in
-#folder argument
-
-  
-
-
-parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8\\chain3"))
- 	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run8\\chain3\\inits.R")))
-	
-	# 5b. call openbugs
-	bugs(data=x.data, inits=inits, parameters.to.save=params,
-             n.iter=10, n.chains=1, n.burnin=1, n.thin=1,
-             model.file="model_code.txt", codaPkg=TRUE,
-             OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
-             working.directory=folder)	
-}			 
 
 #6. set parameters to monitor
 parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","l.slope","sig.gs","deltapr","pastpr","pr.temp","m")

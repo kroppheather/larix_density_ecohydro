@@ -25,7 +25,7 @@ library(caTools)
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
 plotcheck <- 0
-tableout <- 1
+tableout <- 0
 
 
 #################################################################
