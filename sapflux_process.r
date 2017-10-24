@@ -25,7 +25,7 @@ library(caTools)
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
 plotcheck <- 0
-tableout <- 1
+tableout <- 0
 
 
 #################################################################
@@ -301,25 +301,26 @@ summary(lmBL)
 #high
 lmBH <- lm(datSW$Bark[datSW$stand=="DAV"]~datSW$DBH[datSW$stand=="DAV"])
 summary(lmBH)
+#relationship is not significant for low density sap thickness so just use mean
 #looks like sapwood thickness varies with stand
 #predict the sapwood thickness for the trees that had sensors
 datS$SWT <- ifelse(datS$stand=="high", coefficients(lmSWH)[1]+(coefficients(lmSWH)[2]*datS$DBH),
-				coefficients(lmSWL)[1]+(coefficients(lmSWL)[2]*datS$DBH))
+				mean(datSW$SWT[datSW$stand=="LDF2"]))
 
 datS$Bark <- ifelse(datS$stand=="high", coefficients(lmBH)[1]+(coefficients(lmBH)[2]*datS$DBH),
 				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datS$DBH))		
 
 datS17$SWT <- ifelse(datS17$stand=="hd", coefficients(lmSWH)[1]+(coefficients(lmSWH)[2]*datS17$DBH..cm.),
-				coefficients(lmSWL)[1]+(coefficients(lmSWL)[2]*datS17$DBH..cm.))
+				mean(datSW$SWT[datSW$stand=="LDF2"]))
 
 datS17$Bark <- ifelse(datS$stand=="hd", coefficients(lmBH)[1]+(coefficients(lmBH)[2]*datS17$DBH..cm.),
-				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datS17$DBH..cm.))		
+				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datS$DBH))		
 
 				
 #calculate the heartwood 			
 datS$Htwd <- datS$DBH-(datS$Bark*2)-(datS$SWT*2)
 
-datS17$Htwd <- datS17$DBH-(datS17$Bark*2)-(datS17$SWT*2)
+datS17$Htwd <- datS17$DBH..cm.-(datS17$Bark*2)-(datS17$SWT*2)
 #calculate sapwood area
 datS$sapA <- (pi*(((datS$SWT/2)+(datS$Htwd/2))^2))-(pi*((datS$Htwd/2)^2))
 
