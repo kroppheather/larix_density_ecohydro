@@ -40,3 +40,10 @@ datptsA <- rbind(datTMp1,datTMp2)
 #reformat for a output gis and R table
 
 datptsOUT <- data.frame(site=datptsA$stand, treeID =datptsA$treeID, lat=datptsA$lat,long=datptsA$long)
+
+datptsOUT2 <- datptsOUT[order(datptsOUT$site, datptsOUT$treeID),]
+
+
+write.table(datptsOUT2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_out.csv", sep=",", row.names=FALSE)
+write.table(datptsOUT2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_out.txt", sep="\t", row.names=FALSE)
+
