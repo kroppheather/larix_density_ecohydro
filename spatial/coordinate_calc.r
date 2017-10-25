@@ -11,8 +11,9 @@ datTM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_d
 #declination for cherskii should be 7 degrees west
 #but the declination on the compass was set to 11E
 
-datTM$Azimuthf <- ifelse(datTM$Azimuth.from.reference<18,360-(18-datTM$Azimuth.from.reference),
-									datTM$Azimuth.from.reference-18)
+datTM$Azimuthf <- ifelse(datTM$year==2016,datTM$Azimuth.from.reference,
+				ifelse(datTM$Azimuth.from.reference<18,360-(18-datTM$Azimuth.from.reference),
+									datTM$Azimuth.from.reference-18))
 
 									
 #calculate coordinates for each tree that is from the tower
@@ -39,11 +40,11 @@ datptsA <- rbind(datTMp1,datTMp2)
 
 #reformat for a output gis and R table
 
-datptsOUT <- data.frame(site=datptsA$stand, treeID =datptsA$treeID, lat=datptsA$lat,long=datptsA$long)
+datptsOUT <- data.frame(year=datptsA$year,site=datptsA$stand, treeID =datptsA$treeID, lat=datptsA$lat,long=datptsA$long)
 
-datptsOUT2 <- datptsOUT[order(datptsOUT$site, datptsOUT$treeID),]
+datptsOUT2 <- datptsOUT[order(datptsOUT$year,datptsOUT$site, datptsOUT$treeID),]
 
 
 write.table(datptsOUT2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_out.csv", sep=",", row.names=FALSE)
-write.table(datptsOUT2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_out.txt", sep="\t", row.names=FALSE)
+write.table(datptsOUT2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_outGIS4.txt", sep="\t", row.names=FALSE)
 

@@ -16,7 +16,9 @@
 ###########################################################################
 
 model{
-#Model likelihood
+#################################
+#########Model likelihood########
+#################################
 	for(i in 1:Nobs){
 	#likelihood for each tree
 	gs[i]~dnorm(mu.gs[i],tau.gs)
@@ -25,16 +27,19 @@ model{
 	mu.gs[i]<-oren.mod[i]*light[i]
 
 	#light scaling function
-	light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
+	light[i]<-1-exp(-l.slope[standDayTree[i]]*PAR[i])
 	
 	#oren model 1999 for mean gs
-	oren.mod[i]<-gref[standDay[i]]*(1-(S[standDay[i]]*log(D[i])))
+	oren.mod[i]<-gref[standDayTree[i]]*(1-(S[standDayTree[i]]*log(D[i])))
 
 	}
-	for(i in 1:NstandDay){
-		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[Days[i],stand[i]]-5)
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[Days[i],stand[i]]-5)
-		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[Days[i],stand[i]]-5)
+#################################
+#########parameter model ########
+#################################	
+	for(i in 1:NstandDayTree){
+		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[i]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsA[tree[i]]
+		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[i]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsB[tree[i]]
+		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[i]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsD[tree[i]]
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
@@ -45,34 +50,88 @@ model{
 	#calculate sensitivity
 
 	}
-
-
-	#Antecedent calculations based on Ogle et al 2015
-	#calculate antecedent values for soil temp and soil water content
-	for(j in 1:Nstand){
-		for(m in 1:Nlag){
-			#weights for precip
-			deltapr[m,j]~dgamma(1,1)
-			wpr[m,j]<-deltapr[m,j]/sumpr[j]
-			#calculate weighted precip for each day in the past
-			for(i in 1:Ndays){
-				pr.temp[i,m,j]<-wpr[m,j]*a.pr[i,m]
-			}
-		}
-
+#################################
+######spatial random effects#####
+#################################
+	#define random effects
+	epsA[1:Ntree] ~ dmnorm(mu.epsA[1:Ntree],OmegaA[1:Ntree,1:Ntree])
+	epsB[1:Ntree] ~ dmnorm(mu.epsB[1:Ntree],OmegaB[1:Ntree,1:Ntree])
+	epsD[1:Ntree] ~ dmnorm(mu.epsD[1:Ntree],OmegaD[1:Ntree,1:Ntree])
+	
+	for(i in 1:Ntree){
+		#specify means
+		mu.epsA[i] <- 0
+		mu.epsB[i] <- 0
+		mu.epsD[i] <- 0
+		#specify identifiable parameters
+		epsA.star[i] <- epsA[i]-epsA.mean
+		epsB.star[i] <- epsB[i]-epsB.mean
+		epsD.star[i] <- epsD[i]-epsD.mean
 	}
-	#calculate sums of unweighted delta values
-
-	sumpr[1]<-sum(deltapr[,1])
-	sumpr[2]<-sum(deltapr[,2])
-
-	#final antecedent calculations for soil values
-	for(i in 1:Ndays){
-		pastpr[i,1]<-sum(pr.temp[i,,1])
-		pastpr[i,2]<-sum(pr.temp[i,,2])
+	#calculate mean for idetifiability
+	epsA.mean <- mean(epsA[])
+	epsB.mean <- mean(epsB[])
+	epsD.mean <- mean(epsD[])
+	#calculate identifiable intercept
+	for(i in 1:Nstand){
+		a1.star[i] <- a1[i]+epsA.mean
+		b1.star[i] <- b1[i]+epsB.mean
+		d1.star[i] <- d1[i]+epsD.mean
+		
 	}
 	
-	#priors
+	#spatial covariance model for tree random effect
+	OmegaA[1:Ntree,1:Ntree] <- inverse(SigmaA[1:Ntree,1:Ntree])
+	OmegaB[1:Ntree,1:Ntree] <- inverse(SigmaB[1:Ntree,1:Ntree])
+	OmegaD[1:Ntree,1:Ntree] <- inverse(SigmaD[1:Ntree,1:Ntree])
+	#standard deviation spatial covariance
+	for(m in 1:Ntree){
+		for(j in 1:Ntree){
+			SigmaA[m,j] <- (1/tauA)*exp(phiA*DistA[m,j])
+			SigmaB[m,j] <- (1/tauB)*exp(phiB*DistB[m,j])			
+			SigmaD[m,j] <- (1/tauD)*exp(phiD*DistD[m,j])
+		}
+	}
+	#priors for spatial covariance
+	#folded t for standard deviation
+	tauA <- pow(sigA,-2)
+	sigA <- abs(t.A)
+	t.A ~ dt(0,p.A, 2)
+	p.A <- 1/(v.A*v.A)
+	v.A ~ dunif(0,100)
+	
+	tauB <- pow(sigB,-2)
+	sigB <- abs(t.B)
+	t.B <- dt(0,p.B, 2)
+	p.B <- 1/(v.B*v.B)
+	v.B ~ dunif(0,100)
+	
+	tauD <- pow(sigD,-2)
+	sigD <- abs(t.D)
+	t.D <- dt(0,p.D, 2)
+	p.D <- 1/(v.D*v.D)
+	v.D ~ dunif(0,100)	
+	
+	#prior for autocorrelation
+	phiA <-  log(rhoA)
+	rhoA ~ dbeta(alphaA,betaA)
+	alphaA ~ dunif(0,100)
+	betaA v dunif(0,100)
+	
+	phiB <-  log(rhoB)
+	rhoB ~ dbeta(alphaB,betaB)
+	alphaB ~ dunif(0,100)
+	betaB ~ dunif(0,100)
+	
+	phiA <-  log(rhoA)
+	rhoA ~ dbeta(alphaA,betaA)
+	alphaB ~ dunif(0,100)
+	betaB ~ dunif(0,100)
+	
+	
+#################################
+#########priors          ########
+#################################	
 	#define prior distributions for parameters
 	#All parameters are given non-informative dist
 	

@@ -212,42 +212,58 @@ Tair <- rbind(TairH, TairL)
 #add air temp into the stand day da
 standDay2 <- join(standDay,Tair, by=c("doy","year", "stand"), type="left")
 
+#get 
 
 #subset to get unique days
 Days <- unique(data.frame(doy=standDay2$doy,year=standDay2$year))
 Days <- Days[order(Days$year,Days$doy ),]
 Days$Days <- seq(1, dim(Days)[1])
 
-#add the Days ID back into standDay
-
-standDay2 <- join(standDay2, Days, by=c("doy", "year"), type="left")
-
-
+#take averages over previous 2 weeks
 #now make a precip matrix that includes days into the past
-precipmat <- matrix(rep(NA, dim(Days)[1]*28), ncol=28)
+precipmat <- matrix(rep(NA, dim(Days)[1]*14), ncol=14)
 
 for(i in 1:dim(Days)[1]){
-	for(j in 1:28){
+	for(j in 1:14){
 		precipmat[i,j] <- datAirP$Pr.mm[datAirP$doy==(Days$doy[i]-j)&datAirP$year==Days$year[i]]
 	
 	}
 }
-#set up lag periods
-lagStart <- c(1,4,8,15,22)
-lagEnd <- c(3,7,14,21,28)
 
-#take averages over lag periods
+precipDF <- data.frame(doy=Days$doy,Days=Days$Days, year=Days$year,precipAve = rowMeans(precipmat))
 
-precipL <- matrix(rep(NA, dim(Days)[1]*length(lagStart)), ncol=length(lagStart))
-for(i in 1:dim(Days)[1]){
-	for(j in 1:length(lagStart)){
-		precipL[i,j] <- sum(precipmat[i,lagStart[j]:lagEnd[j]])
-	}	
+standDay3 <- join(standDay2, precipDF, by=c("doy","year"), type="left")
 
-}
+#match up thaw depth data
+#create a stand ID in thaw depth
+#take only relevant TD cols
+#TDall needs 2 more days for hd 2016
+TDchange <- TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==185]-TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==184]
+TDtemp <- data.frame(doy=c(182,183), year=c(2016,2016), site=c("hd","hd"), TD=c(NA,NA),
+		TDday=c(TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==184]-(TDchange*2),
+			TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==184]-TDchange))
+TDall <- rbind(TDtemp,TDall)
 
-#means for centering
+
+TDsub <- data.frame(doy =TDall$doy, year= TDall$year, stand = ifelse(TDall$site=="hd",2,1),TD=TDall$TDday)
+
+#join in stand day
+standDay4 <- join(standDay3, TDsub, by=c("doy","year","stand"), type="left")
+
+#variables for centering
+#air temp
 airTmean<- mean(standDay2$Tair)
+#thaw depth minimum
+TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="min")
+colnames(TDstart) <- c("stand", "TD")
+TDstart$TD <- floor(TDstart$TD)
+
+#just need to get the tree ID set up
+#get tree ID
+treeTable <- unique(data.frame(treeID=gcALL2$treeID,year=gcALL2$year,stand=gcALL2$stand))
+
+
+
 
 
 #################################################################
@@ -255,7 +271,7 @@ airTmean<- mean(standDay2$Tair)
 #################################################################
 #try running  model without stochastic antecedent precip in JAGS and with all variables
 
-
+#new data NstandDayTree, standDayTree, stand, tree, N tree, thawD, thawstart(stand), Nstand, DistA=sqrt(pow(xC[y]-xC[m],2)+ pow(y[r] - y[c], 2))
 #data list
 
 datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, standDay=gcALL2$standDay, PAR=gcALL2$PAR,
