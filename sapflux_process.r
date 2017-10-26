@@ -24,8 +24,8 @@ library(caTools)
 ## set to 1 to run the code to generate all diagnostic plots   ##
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
-plotcheck <- 0
-tableout <- 0
+plotcheck <- 1
+tableout <- 1
 
 
 #################################################################
@@ -88,6 +88,10 @@ datAirP <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\airport\\airp
 #canopy rh and temperature
 datRH <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\RH.VP4.csv")
 datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.csv")
+
+#read in tree information
+datTree <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\treeIDmatch.csv")
+
 #################################################################
 ####calculate maxdT                                       #######
 #################################################################
@@ -301,52 +305,82 @@ summary(lmBL)
 #high
 lmBH <- lm(datSW$Bark[datSW$stand=="DAV"]~datSW$DBH[datSW$stand=="DAV"])
 summary(lmBH)
+
+#################################################################
+####match up trees by year                                #######
+#################################################################
+#change treeID colnames
+
+colnames(datS)[2] <- "treeID.original"
+datS$stand <- ifelse(datS$stand=="high","hd","ld")
+
+#reformat datS17 to match datS
+datS17b <- data.frame(Sensor=datS17$Sensor.., treeID.original=datS17$Tree.., DBH=datS17$DBH..cm.,
+			Aspect=datS17$Aspect, Sensor.length=datS17$Sensor.length, stand=datS17$stand)
+
+
+datS$year <- rep(2016, dim(datS)[1])
+datS17b$year <- rep(2017, dim(datS17b)[1])
+#combine into one
+datSALL <- rbind(datS, datS17b)
+#subset to exclude sensors that sapflux wasn't used on in 2016 hd
+
+
+Toomit <- ifelse(datSALL$stand=="hd"&datSALL$year==2016&datSALL$treeID.original>7,1,0)
+datSALL <- datSALL[Toomit==0,]
+
+#now join with the matching table
+datTreeALL <- join( datSALL,datTree, by=c("year","stand","treeID.original"), type="left")
+
+#now aggregate the for the new dbH on trees that may have different measurements
+#from different people
+TreeDBHmean <- aggregate(datTreeALL$DBH[datTreeALL$Aspect=="N"], 
+						by=list(datTreeALL$treeID.new[datTreeALL$Aspect=="N"],datTreeALL$stand[datTreeALL$Aspect=="N"]), FUN="mean")
+colnames(TreeDBHmean) <-c("treeID.new","stand","DBHt")
+
+datTreeDF <- join(datTreeALL, TreeDBHmean, by=c("treeID.new","stand"), type="left")
+
+
+
+
 #relationship is not significant for low density sap thickness so just use mean
 #looks like sapwood thickness varies with stand
 #predict the sapwood thickness for the trees that had sensors
-datS$SWT <- ifelse(datS$stand=="high", coefficients(lmSWH)[1]+(coefficients(lmSWH)[2]*datS$DBH),
+datTreeDF $SWT <- ifelse(datTreeDF$stand=="hd", coefficients(lmSWH)[1]+(coefficients(lmSWH)[2]*datTreeDF$DBHt),
 				mean(datSW$SWT[datSW$stand=="LDF2"]))
 
-datS$Bark <- ifelse(datS$stand=="high", coefficients(lmBH)[1]+(coefficients(lmBH)[2]*datS$DBH),
-				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datS$DBH))		
-
-datS17$SWT <- ifelse(datS17$stand=="hd", coefficients(lmSWH)[1]+(coefficients(lmSWH)[2]*datS17$DBH..cm.),
-				mean(datSW$SWT[datSW$stand=="LDF2"]))
-
-datS17$Bark <- ifelse(datS$stand=="hd", coefficients(lmBH)[1]+(coefficients(lmBH)[2]*datS17$DBH..cm.),
-				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datS$DBH))		
+datTreeDF $Bark <- ifelse(datTreeDF$stand=="hd", coefficients(lmBH)[1]+(coefficients(lmBH)[2]*datTreeDF$DBHt),
+				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datTreeDF$DBHt))		
 
 				
 #calculate the heartwood 			
-datS$Htwd <- datS$DBH-(datS$Bark*2)-(datS$SWT*2)
+datTreeDF$Htwd <- datTreeDF$DBHt-(datTreeDF$Bark*2)-(datTreeDF$SWT*2)
 
-datS17$Htwd <- datS17$DBH..cm.-(datS17$Bark*2)-(datS17$SWT*2)
+
 #calculate sapwood area
-datS$sapA <- (pi*(((datS$SWT/2)+(datS$Htwd/2))^2))-(pi*((datS$Htwd/2)^2))
+datTreeDF$sapA <- (pi*(((datTreeDF$SWT/2)+(datTreeDF$Htwd/2))^2))-(pi*((datTreeDF$Htwd/2)^2))
 
-datS17$sapA <- (pi*(((datS17$SWT/2)+(datS17$Htwd/2))^2))-(pi*((datS17$Htwd/2)^2))		
+	
 								
 #now calculate the porportion of the sensor in sapwood
-SensDiff <- datS$Sensor.length-datS$SWT
+SensDiff <- datTreeDF$Sensor.length-datTreeDF$SWT
 	
-SensDiff17 <- datS17$Sensor.length-datS17$SWT	
+
 #if value is negative, it means that the sapwood is thicker than the sensor length
 #so it doesn't need to be corrected
 
 #b represents the proption of the probe not in sapwood
-datS$b <- ifelse(SensDiff>0,SensDiff/datS$Sensor.length,0)
-datS$a <- 1-datS$b
+datTreeDF$b <- ifelse(SensDiff>0,SensDiff/datTreeDF$Sensor.length,0)
+datTreeDF$a <- 1-datTreeDF$b
 
-datS17$b <- ifelse(SensDiff17>0,SensDiff17/datS17$Sensor.length,0)
-datS17$a <- 1-datS17$b
+
 #seperate df
-datSH <- datS[datS$stand=="high",]
-datSL <- datS[datS$stand=="low",]
+datSH <- datTreeDF[datTreeDF$stand=="hd"&datTreeDF$year==2016,]
+datSL <- datTreeDF[datTreeDF$stand=="ld"&datTreeDF$year==2016,]
 
-datSH17 <- datS17[datS17$stand=="hd",]
-datSL17 <- datS17[datS17$stand=="ld",]
-#only sensors 1-8 were at the right voltage
-datSH <- datSH[1:8,]
+datSH17 <- datTreeDF[datTreeDF$stand=="hd"&datTreeDF$year==2017,]
+datSL17 <- datTreeDF[datTreeDF$stand=="ld"&datTreeDF$year==2017,]
+
 
 #################################################################
 ####correct dT for  sensors                               #######
@@ -612,10 +646,10 @@ dev.off()
 
 
 #calculated expected canopy mass in g based on dbh of tree
-datSL$leafwt<-leaf.bio(datSL$DBH,summary(nlsLow)$coefficients[1,1],summary(nlsLow)$coefficients[2,1])	
-datSL17$leafwt<-leaf.bio(datSL17$DBH..cm.,summary(nlsLow)$coefficients[1,1],summary(nlsLow)$coefficients[2,1])	
-datSH$leafwt<-leaf.bio(datSH$DBH,summary(nlsHigh)$coefficients[1,1],summary(nlsHigh)$coefficients[2,1])	
-datSH17$leafwt<-leaf.bio(datSH17$DBH..cm.,summary(nlsHigh)$coefficients[1,1],summary(nlsHigh)$coefficients[2,1])	
+datSL$leafwt<-leaf.bio(datSL$DBHt,summary(nlsLow)$coefficients[1,1],summary(nlsLow)$coefficients[2,1])	
+datSL17$leafwt<-leaf.bio(datSL17$DBHt,summary(nlsLow)$coefficients[1,1],summary(nlsLow)$coefficients[2,1])	
+datSH$leafwt<-leaf.bio(datSH$DBHt,summary(nlsHigh)$coefficients[1,1],summary(nlsHigh)$coefficients[2,1])	
+datSH17$leafwt<-leaf.bio(datSH17$DBHt,summary(nlsHigh)$coefficients[1,1],summary(nlsHigh)$coefficients[2,1])	
 
 #calculate stand specific sla
 datSLA$SLA <- datSLA$leaf.area/datSLA$mass
@@ -639,7 +673,7 @@ datSH17$leafm2<-datSH17$leaf*.0001
 #################################################################	
 
 
-if(tableout==1){
+if(plotcheck==1){
 	#plot sapwood allometry values 
 	jpeg(file=paste0(diagP, "\\allometry\\sapwood.jpg"), width=1500, height=1500, units="px")
 	par(mfrow=c(2,2), mai=c(1,1.5,1,1))
@@ -727,7 +761,7 @@ if(tableout==1){
 					LSrat.sd =c(sd(canopySummLt$S.Lrat),sd(canopySummHt$S.Lrat)),
 					LSrat.n=c(length(canopySummLt$S.Lrat),length(canopySummHt$S.Lrat)))
 					
-	write.table(treeMetric,paste0(tableP,"\\treeSummary.csv"),sep=",", row.names=TRUE)
+	write.table(treeMetric,paste0(tableP,"\\treeSummary.csv"),sep=",", row.names=FALSE)
 }
 
 
