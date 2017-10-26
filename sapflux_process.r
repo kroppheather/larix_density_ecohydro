@@ -24,8 +24,8 @@ library(caTools)
 ## set to 1 to run the code to generate all diagnostic plots   ##
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
-plotcheck <- 1
-tableout <- 1
+plotcheck <- 0
+tableout <- 0
 
 
 #################################################################

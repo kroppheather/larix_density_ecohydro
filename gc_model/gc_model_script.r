@@ -25,14 +25,18 @@ source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_pr
 #libraries loaded from source
 #plyr, lubridate,caTools
 #################################################################
-####read in thawdepth data                                  #######
+####read in thawdepth data                                #######
 #################################################################
 source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\thaw_depth_process.r")
 # libraries
 library(rjags)
 library(coda)
 library(mcmcplots)
-
+#################################################################
+####indicate if this is a spatial model                   #######
+#################################################################
+#1 indicates uses coordinates 0 no
+spatialmodel <- 1
 
 #################################################################
 ####specify directories                                   #######
@@ -57,6 +61,9 @@ datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.
 
 #PAR
 datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS PAR.csv")
+
+#tree coordinates
+datTcoor <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_out.csv")
 
 #################################################################
 ####organize met data                                     #######
@@ -139,7 +146,7 @@ tgcL <- list()
 for(i in 1:dim(datTreeL)[1]){
 	tgcL[[i]] <- na.omit(data.frame(doy=m.gcL$doy, 
 					year=m.gcL$year, hour=m.gcL$hour,
-					g.c=m.gcL[,i+3], D=m.gcL$D,PAR=m.gcL$PAR,treeID=rep(datTreeL$Tree[i], dim(m.gcL)[1]),
+					g.c=m.gcL[,i+3], D=m.gcL$D,PAR=m.gcL$PAR,treeID.new=rep(datTreeL$treeID.new[i], dim(m.gcL)[1]),
 					stand=rep(1, dim(m.gcL)[1])))
 }
 
@@ -147,7 +154,7 @@ tgcL17 <- list()
 for(i in 1:dim(datTreeL17)[1]){
 	tgcL17[[i]] <- na.omit(data.frame(doy=m.gcL17$doy, 
 					year=m.gcL17$year, hour=m.gcL17$hour,
-					g.c=m.gcL17[,i+3], D=m.gcL17$D,PAR=m.gcL17$PAR,treeID=rep(datTreeL17$Tree[i], dim(m.gcL17)[1]),
+					g.c=m.gcL17[,i+3], D=m.gcL17$D,PAR=m.gcL17$PAR,treeID.new=rep(datTreeL17$treeID.new[i], dim(m.gcL17)[1]),
 					stand=rep(1, dim(m.gcL17)[1])))
 }
 
@@ -155,14 +162,14 @@ tgcH <- list()
 for(i in 1:dim(datTreeH)[1]){
 	tgcH[[i]] <- na.omit(data.frame(doy=m.gcH$doy, 
 					year=m.gcH$year, hour=m.gcH$hour,
-					g.c=m.gcH[,i+3], D=m.gcH$D,PAR=m.gcH$PAR,treeID=rep(datTreeH$Tree[i], dim(m.gcH)[1]),
+					g.c=m.gcH[,i+3], D=m.gcH$D,PAR=m.gcH$PAR,treeID.new=rep(datTreeH$treeID.new[i], dim(m.gcH)[1]),
 					stand=rep(2, dim(m.gcH)[1])))
 }
 tgcH17 <- list()
 for(i in 1:dim(datTreeH17)[1]){
 	tgcH17[[i]] <- na.omit(data.frame(doy=m.gcH17$doy, 
 					year=m.gcH17$year, hour=m.gcH17$hour,
-					g.c=m.gcH17[,i+3], D=m.gcH17$D,PAR=m.gcH17$PAR,treeID=rep(datTreeH17$Tree[i], dim(m.gcH17)[1]),
+					g.c=m.gcH17[,i+3], D=m.gcH17$D,PAR=m.gcH17$PAR,treeID.new=rep(datTreeH17$treeID.new[i], dim(m.gcH17)[1]),
 					stand=rep(2, dim(m.gcH17)[1])))
 }
 
@@ -175,8 +182,23 @@ highGC17 <-ldply(tgcH17, data.frame)
 
 gcALL <- rbind(lowGC,lowGC17,highGC,highGC17)
 
+#################################################
+#################################################
+##JUST for SPATIAL MODEL!!!!!!!!!!!!!! ##########
+#################################################
+#################################################
+#exclude non repeat tree from low density 2016 
+#since no spatial reference for it
+if(spatialmodel==1){
+	gcALL <- gcALL[gcALL$treeID.new<14,]
+
+}
+
+
+
+
 #first check how many tree X day X stand observations there are
-nCheck1 <- aggregate(gcALL$g.c, by=list(gcALL$doy,gcALL$year, gcALL$stand, gcALL$treeID), FUN="length")
+nCheck1 <- aggregate(gcALL$g.c, by=list(gcALL$doy,gcALL$year, gcALL$stand, gcALL$treeID.new), FUN="length")
 #check that there are at least multiple trees present in each day
 nCheck2 <- aggregate(nCheck1$x, by=list(nCheck1$Group.1,nCheck1$Group.2,nCheck1$Group.3), FUN="length")
 #check that there are how many measurements that are in each day
@@ -260,10 +282,35 @@ TDstart$TD <- floor(TDstart$TD)
 
 #just need to get the tree ID set up
 #get tree ID
-treeTable <- unique(data.frame(treeID=gcALL2$treeID,year=gcALL2$year,stand=gcALL2$stand))
+treeTable <- unique(data.frame(treeID.new=gcALL2$treeID,site=gcALL2$stand))
+
+#rename treeID
+colnames(datTcoor)[3] <- "treeID.new"
+datTcoor$site <- ifelse(datTcoor$site=="hd",2,1)
 
 
+#join corrdinates
 
+treeTableC <- join(treeTable, datTcoor, by=c("site","treeID.new"), type="left")
+treeTableC <- data.frame(treeTableC[,1:2], treeTableC[,4:5])
+treeTableC <- treeTableC[order(treeTableC$site, treeTableC$treeID.new),]
+
+#structure so it is in a matrix
+TreeXForMod <- matrix(c(treeTableC$long[treeTableC$site==1],treeTableC$long[treeTableC$site==2]),ncol=13,byrow=TRUE )
+TreeYForMod <- matrix(c(treeTableC$lat[treeTableC$site==1],treeTableC$lat[treeTableC$site==2]),ncol=13,byrow=TRUE )
+
+
+#need to get unique stand, day, tree combination
+
+standDayTree <- unique(data.frame(stand=gcALL2$stand,treeID.new=gcALL2$treeID.new, standDay=gcALL2$standDay))
+standDayTree <- standDayTree[order(standDayTree$stand,standDayTree$treeID.new,standDayTree$standDay),]
+standDayTree$standDayTreeID <- seq(1,dim(standDayTree)[1])
+
+#just need to join standDayTree id back into gc and standday to get id matching
+
+standDayTree2 <- join(standDayTree, standDay4, by=c("stand","standDay"), type="left" )
+
+gcALL3 <- join(gcALL2, standDayTree, by=c("stand", "treeID.new", "standDay"), type="left")
 
 
 #################################################################
@@ -271,37 +318,41 @@ treeTable <- unique(data.frame(treeID=gcALL2$treeID,year=gcALL2$year,stand=gcALL
 #################################################################
 #try running  model without stochastic antecedent precip in JAGS and with all variables
 
-#new data NstandDayTree, standDayTree, stand, tree, N tree, thawD, thawstart(stand), Nstand, DistA=sqrt(pow(xC[y]-xC[m],2)+ pow(y[r] - y[c], 2))
+#new data stand.obs, NstandDayTree, standDayTree, stand, tree, N tree, thawD, thawstart(stand), Nstand, xC[i,y] DistA=sqrt(pow(xC[y]-xC[m],2)+ pow(y[r] - y[c], 2))
 #data list
 
-datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, standDay=gcALL2$standDay, PAR=gcALL2$PAR,
-					D=gcALL2$D, NstandDay=dim(standDay2)[1], stand=standDay2$stand, airT=standDay2$Tair,
-					airTmean=airTmean,a.pr=precipL,Days=standDay2$Days,Nstand=2, Nlag=length(lagStart),
-					Ndays=dim(Days)[1])
+datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, standDayTree=gcALL3$standDay,
+					PAR=gcALL3$PAR,
+					D=gcALL3$D, NstandDayTree=dim(standDayTree)[1],
+					stand=standDayTree2$stand, airT=standDayTree2$Tair,
+					airTmean=airTmean,pastpr=standDayTree2$precipAve,
+					thawD=standDayTree2$TD, thawstart=TDstart$TD, Tree=standDayTree2$treeID.new,
+					Ntree=13, Nstand=2, xCA=TreeXForMod, yCA=TreeYForMod,
+					xCB=TreeXForMod, yCB=TreeYForMod,xCD=TreeXForMod, yCD=TreeYForMod)
 
-#6. set parameters to monitor
-parms <-c("wpr", "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","l.slope","sig.gs","deltapr","pastpr","pr.temp","m")
-
-
-# 7. calling the sfLapply function that will run
-# parallel.bugs on each of the 3 CPUs
-sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
-
-folder1 <- paste0(saveMdir, "\\out\\ex_samp\\chain1\\")
-folder2 <- paste0(saveMdir, "\\out\\ex_samp\\chain2\\")
-folder3 <- paste0(saveMdir, "\\out\\ex_samp\\chain3\\")
+# set parameters to monitor
+parms <-c( "a1.star", "a2", "a3", "b1.star", "b2", "b3",  "gref", "S", "d1.star","d2","d3","a4",
+				"b4","d4","l.slope",
+			"epsA.star","epsB.star","epsD.star","sigA","rhoA", "sigB","rhoB", "sigD","rhoD" )
 
 
 
 
-# 9. pull coda back out
-codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1a.txt"),
-						paste0(folder2, "\\CODAchain1a.txt")
-						,paste0(folder3, "\\CODAchain1a.txt")
-						))
 
+inits <- list(list(t.A=c(2,2), t.B=c(2,2), t.D=c(2,2), rhoA=c(.5,.5), rhoB=c(.5,.5),rhoD=c(.5,.5)),		
+		list(t.A=c(2.5,2.5), t.B=c(2.5,2.5), t.D=c(2.5,.52), rhoA=c(.55,.5), rhoB=c(.55,.55),rhoD=c(.55,.55)),
+		list(t.A=c(3,3), t.B=c(3,3), t.D=c(3,3), rhoA=c(.25,.25), rhoB=c(.25,.25),rhoD=c(.25,.25)))
+	
 
-plot(codaobj1, ask=TRUE)
+mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r",
+			data=datalist,inits=inits, n.adapt=3000, n.chains=3)
+			
+n.iter.i=40000
+n.thin=20
+
+coda.obj1 <- coda.samples(mod.1,variable.names=parms,
+                       n.iter=n.iter.i, thin=n.thin	
+
 mcmcplot(codaobj1, dir=paste0(saveMdir, "\\out\\ex_samp\\history"))
 
 modSum <-summary(codaobj1, ra.rm=TRUE) 

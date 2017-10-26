@@ -21,7 +21,7 @@ model{
 #################################
 	for(i in 1:Nobs){
 	#likelihood for each tree
-	gs[i]~dnorm(mu.gs[i],tau.gs)
+	gs[i]~dnorm(mu.gs[i],tau.gs[stand.obs[i]])
 	#gs.rep[i]~dnorm(mu.gs[i],tau.gs)
 	#model for mean gs
 	mu.gs[i]<-oren.mod[i]*light[i]
@@ -37,9 +37,9 @@ model{
 #########parameter model ########
 #################################	
 	for(i in 1:NstandDayTree){
-		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[i]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsA[tree[i]]
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[i]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsB[tree[i]]
-		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[i]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsD[tree[i]]
+		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[i]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsA[stand[i],Tree[i]]
+		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[i]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsB[stand[i],Tree[i]]
+		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[i]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])+epsD[stand[i],Tree[i]]
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
@@ -54,81 +54,98 @@ model{
 ######spatial random effects#####
 #################################
 	#define random effects
-	epsA[1:Ntree] ~ dmnorm(mu.epsA[1:Ntree],OmegaA[1:Ntree,1:Ntree])
-	epsB[1:Ntree] ~ dmnorm(mu.epsB[1:Ntree],OmegaB[1:Ntree,1:Ntree])
-	epsD[1:Ntree] ~ dmnorm(mu.epsD[1:Ntree],OmegaD[1:Ntree,1:Ntree])
-	
-	for(i in 1:Ntree){
-		#specify means
-		mu.epsA[i] <- 0
-		mu.epsB[i] <- 0
-		mu.epsD[i] <- 0
-		#specify identifiable parameters
-		epsA.star[i] <- epsA[i]-epsA.mean
-		epsB.star[i] <- epsB[i]-epsB.mean
-		epsD.star[i] <- epsD[i]-epsD.mean
-	}
-	#calculate mean for idetifiability
-	epsA.mean <- mean(epsA[])
-	epsB.mean <- mean(epsB[])
-	epsD.mean <- mean(epsD[])
-	#calculate identifiable intercept
 	for(i in 1:Nstand){
-		a1.star[i] <- a1[i]+epsA.mean
-		b1.star[i] <- b1[i]+epsB.mean
-		d1.star[i] <- d1[i]+epsD.mean
-		
+	epsA[i,1:Ntree] ~ dmnorm(mu.epsA[i,1:Ntree],OmegaA[i,1:Ntree,1:Ntree])
+	epsB[i,1:Ntree] ~ dmnorm(mu.epsB[i,1:Ntree],OmegaB[i,1:Ntree,1:Ntree])
+	epsD[i,1:Ntree] ~ dmnorm(mu.epsD[i,1:Ntree],OmegaD[i,1:Ntree,1:Ntree])
+	
+	for(j in 1:Ntree){
+		#specify means
+		mu.epsA[i,j] <- 0
+		mu.epsB[i,j] <- 0
+		mu.epsD[i,j] <- 0
+		#specify identifiable parameters
+		epsA.star[i,j] <- epsA[i,j]-epsA.mean[i]
+		epsB.star[i,j] <- epsB[i,j]-epsB.mean[i]
+		epsD.star[i,j] <- epsD[i,j]-epsD.mean[i]
 	}
+	
+	#calculate identifiable intercept
+
+	
+		a1.star[i] <- a1[i]+epsA.mean[i]
+		b1.star[i] <- b1[i]+epsB.mean[i]
+		d1.star[i] <- d1[i]+epsD.mean[i]	
+	
+}	
+	#calculate mean for idetifiability
+	epsA.mean[1] <- mean(epsA[1,])
+	epsB.mean[1] <- mean(epsB[1,])
+	epsD.mean[1] <- mean(epsD[1,])
+	epsA.mean[2] <- mean(epsA[2,])
+	epsB.mean[2] <- mean(epsB[2,])
+	epsD.mean[2] <- mean(epsD[2,])	
+	
 	
 	#spatial covariance model for tree random effect
-	OmegaA[1:Ntree,1:Ntree] <- inverse(SigmaA[1:Ntree,1:Ntree])
-	OmegaB[1:Ntree,1:Ntree] <- inverse(SigmaB[1:Ntree,1:Ntree])
-	OmegaD[1:Ntree,1:Ntree] <- inverse(SigmaD[1:Ntree,1:Ntree])
+	OmegaA[1,1:Ntree,1:Ntree] <- inverse(SigmaA[1,1:Ntree,1:Ntree])
+	OmegaB[1,1:Ntree,1:Ntree] <- inverse(SigmaB[1,1:Ntree,1:Ntree])
+	OmegaD[1,1:Ntree,1:Ntree] <- inverse(SigmaD[1,1:Ntree,1:Ntree])
+	OmegaA[2,1:Ntree,1:Ntree] <- inverse(SigmaA[2,1:Ntree,1:Ntree])
+	OmegaB[2,1:Ntree,1:Ntree] <- inverse(SigmaB[2,1:Ntree,1:Ntree])
+	OmegaD[2,1:Ntree,1:Ntree] <- inverse(SigmaD[2,1:Ntree,1:Ntree])
 	#standard deviation spatial covariance
-	for(m in 1:Ntree){
-		for(j in 1:Ntree){
-			SigmaA[m,j] <- (1/tauA)*exp(phiA*DistA[m,j])
-			SigmaB[m,j] <- (1/tauB)*exp(phiB*DistB[m,j])			
-			SigmaD[m,j] <- (1/tauD)*exp(phiD*DistD[m,j])
+	for(i in 1:Nstand){
+		for(m in 1:Ntree){
+			for(j in 1:Ntree){
+				SigmaA[i,m,j] <- (1/tauA[i])*exp(phiA[i]*DistA[i,m,j])
+				SigmaB[i,m,j] <- (1/tauB[i])*exp(phiB[i]*DistB[i,m,j])			
+				SigmaD[i,m,j] <- (1/tauD[i])*exp(phiD[i]*DistD[i,m,j])
+				DistA[i,m,j]=sqrt(pow(xCA[i,j]-xCA[i,m],2)+ pow(yCA[i,m] - yCA[i,j], 2))
+				DistB[i,m,j]=sqrt(pow(xCB[i,j]-xCB[i,m],2)+ pow(yCB[i,m] - yCB[i,j], 2))
+				DistD[i,m,j]=sqrt(pow(xCD[i,j]-xCD[i,m],2)+ pow(yCD[i,m] - yCD[i,j], 2))
+				
+			}
 		}
-	}
+	}	
 	#priors for spatial covariance
 	#folded t for standard deviation
-	tauA <- pow(sigA,-2)
-	sigA <- abs(t.A)
-	t.A ~ dt(0,p.A, 2)
-	p.A <- 1/(v.A*v.A)
-	v.A ~ dunif(0,100)
+	for(i in 1:Nstand){
+		tauA[i] <- pow(sigA[i],-2)
+		sigA[i] <- abs(t.A[i])
+		t.A[i] ~ dt(0,p.A[i], 2)
+		p.A[i] <- 1/(v.A[i]*v.A[i])
+		v.A[i] ~ dunif(0,100)
+		
+		tauB[i] <- pow(sigB[i],-2)
+		sigB[i] <- abs(t.B[i])
+		t.B[i] ~ dt(0,p.B[i], 2)
+		p.B[i] <- 1/(v.B[i]*v.B[i])
+		v.B[i] ~ dunif(0,100)
+		
+		tauD[i] <- pow(sigD[i],-2)
+		sigD[i] <- abs(t.D[i])
+		t.D[i] ~ dt(0,p.D[i], 2)
+		p.D[i] <- 1/(v.D[i]*v.D[i])
+		v.D[i] ~ dunif(0,100)	
+		
+		#prior for autocorrelation
+		phiA[i] <-  log(rhoA[i])
+		rhoA[i] ~ dbeta(alphaA[i],betaA[i])
+		alphaA[i] ~ dunif(0,100)
+		betaA[i] ~ dunif(0,100)
+		
+		phiB[i] <-  log(rhoB[i])
+		rhoB[i] ~ dbeta(alphaB[i],betaB[i])
+		alphaB[i] ~ dunif(0,100)
+		betaB[i] ~ dunif(0,100)
+		
+		phiD[i] <-  log(rhoD[i])
+		rhoD[i] ~ dbeta(alphaD[i],betaD[i])
+		alphaD[i] ~ dunif(0,100)
+		betaD[i] ~ dunif(0,100)
 	
-	tauB <- pow(sigB,-2)
-	sigB <- abs(t.B)
-	t.B <- dt(0,p.B, 2)
-	p.B <- 1/(v.B*v.B)
-	v.B ~ dunif(0,100)
-	
-	tauD <- pow(sigD,-2)
-	sigD <- abs(t.D)
-	t.D <- dt(0,p.D, 2)
-	p.D <- 1/(v.D*v.D)
-	v.D ~ dunif(0,100)	
-	
-	#prior for autocorrelation
-	phiA <-  log(rhoA)
-	rhoA ~ dbeta(alphaA,betaA)
-	alphaA ~ dunif(0,100)
-	betaA v dunif(0,100)
-	
-	phiB <-  log(rhoB)
-	rhoB ~ dbeta(alphaB,betaB)
-	alphaB ~ dunif(0,100)
-	betaB ~ dunif(0,100)
-	
-	phiA <-  log(rhoA)
-	rhoA ~ dbeta(alphaA,betaA)
-	alphaB ~ dunif(0,100)
-	betaB ~ dunif(0,100)
-	
-	
+	}
 #################################
 #########priors          ########
 #################################	
@@ -149,9 +166,19 @@ model{
 		b3[i]~dnorm(0,.001)
 		d3[i]~dnorm(0,.0001)
 		d.trans3[i]<-exp(d3[i])
+		a4[i]~dnorm(0,.001)
+		b4[i]~dnorm(0,.001)
+		d4[i]~dnorm(0,.0001)
+		d.trans4[i]<-exp(d4[i])		
+		
+		
+		
+		tau.gs[i]<-pow(sig.gs[i],-2)
+		sig.gs[i]~dunif(0,1000)	
+		
+		
 	}
-	tau.gs<-pow(sig.gs,-2)
-	sig.gs~dunif(0,1000)
+
 	
 	
 	
