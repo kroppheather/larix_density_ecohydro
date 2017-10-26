@@ -11,9 +11,9 @@ datTM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_d
 #declination for cherskii should be 7 degrees west
 #but the declination on the compass was set to 11E
 
-datTM$Azimuthf <- ifelse(datTM$year==2016,datTM$Azimuth.from.reference,
+datTM$Azimuthf <- 
 				ifelse(datTM$Azimuth.from.reference<18,360-(18-datTM$Azimuth.from.reference),
-									datTM$Azimuth.from.reference-18))
+									datTM$Azimuth.from.reference-18)
 
 									
 #calculate coordinates for each tree that is from the tower
