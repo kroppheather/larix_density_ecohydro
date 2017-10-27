@@ -98,30 +98,37 @@ model{
 	for(i in 1:Nstand){
 		for(m in 1:Ntree){
 			for(j in 1:Ntree){
-				SigmaA[i,m,j] <- (1/tauA[i])*exp(phiA[i]*DistA[i,m,j])
-				SigmaB[i,m,j] <- (1/tauB[i])*exp(phiB[i]*DistB[i,m,j])	
-				SigmaD[i,m,j] <- (1/tauD[i])*exp(phiD[i]*DistD[i,m,j])
-				DistA[i,m,j]<- sqrt(pow(xCA[i,j]-xCA[i,m],2)+ pow(yCA[i,m] - yCA[i,j], 2))
-				DistB[i,m,j]<-sqrt(pow(xCB[i,j]-xCB[i,m],2)+ pow(yCB[i,m] - yCB[i,j], 2))
-				DistD[i,m,j]<-sqrt(pow(xCD[i,j]-xCD[i,m],2)+ pow(yCD[i,m] - yCD[i,j], 2))
+				SigmaA[i,m,j] <- (1/tauA[i])*exp(phiA[i]*Dist[i,m,j])
+				SigmaB[i,m,j] <- (1/tauB[i])*exp(phiB[i]*Dist[i,m,j])	
+				SigmaD[i,m,j] <- (1/tauD[i])*exp(phiD[i]*Dist[i,m,j])
+				
 				
 			}
 		}
-	}	
+	}
+	for(m in 1:Ntree){
+			for(j in 1:Ntree){
+				Dist[1,m,j]<- sqrt(pow(xCAl[j]-xCAl[m],2)+ pow(yCAl[m] - yCAl[j], 2))
+
+				Dist[2,m,j]<- sqrt(pow(xCAh[j]-xCAh[m],2)+ pow(yCAh[m] - yCAh[j], 2))
+
+		}
+	}
+	
 	#priors for spatial covariance
 	#folded t for standard deviation
 	for(i in 1:Nstand){
 		tauA[i] <- pow(sigA[i],-2)
-		sigA[i] ~dunif(0,10)
+		sigA[i] ~dunif(0,100)
 
 
 		
 		tauB[i] <- pow(sigB[i],-2)
-		sigB[i] ~dunif(0,10)
+		sigB[i] ~dunif(0,100)
 
 
 		tauD[i] <- pow(sigD[i],-2)
-		sigD[i] ~dunif(0,10)
+		sigD[i] ~dunif(0,100)
 
 		
 		#prior for autocorrelation

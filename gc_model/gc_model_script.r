@@ -327,8 +327,8 @@ datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, sta
 					stand=standDayTree2$stand, airT=standDayTree2$Tair,
 					airTmean=airTmean,pastpr=standDayTree2$precipAve,
 					thawD=standDayTree2$TD, thawstart=TDstart$TD, Tree=standDayTree2$treeID.new,
-					Ntree=13, Nstand=2, xCA=TreeXForMod, yCA=TreeYForMod,
-					xCB=TreeXForMod, yCB=TreeYForMod,xCD=TreeXForMod, yCD=TreeYForMod)
+					Ntree=13, Nstand=2, xCAl=TreeXForMod[1,], yCAl=TreeYForMod[1,],
+					xCAh=TreeXForMod[2,], yCAh=TreeYForMod[2,])
 
 # set parameters to monitor
 parms <-c( "a1.star", "a2", "a3", "b1.star", "b2", "b3",  "gref", "S", "d1.star","d2","d3","a4",
@@ -336,36 +336,22 @@ parms <-c( "a1.star", "a2", "a3", "b1.star", "b2", "b3",  "gref", "S", "d1.star"
 			"epsA.star","epsB.star","epsD.star","sigA","rhoA", "sigB","rhoB", "sigD","rhoD" )
 
 
-
-
-
-inits <- list(list(t.A=c(2,2), t.B=c(2,2), t.D=c(2,2), rhoA=c(.05,.05), rhoB=c(.05,.05),rhoD=c(.05,.05), 
-						v.D=c(100,100),v.B=c(100,100), v.A=c(100,100)),		
-		list(t.A=c(2.5,2.5), t.B=c(2.5,2.5), t.D=c(2.5,.52), rhoA=c(.15,.15), rhoB=c(.15,.55),rhoD=c(.15,.15),
-				v.D=c(200,200),v.B=c(200,200), v.A=c(200,200)),
-		list(t.A=c(3,3), t.B=c(3,3), t.D=c(3,3), rhoA=c(.25,.25), rhoB=c(.25,.25),rhoD=c(.25,.25),
-			v.D=c(300,300),v.B=c(300,300), v.A=c(300,300)	))
 	
 
 mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r",
-			data=datalist,n.adapt=10000, n.chains=3)
+			data=datalist,n.adapt=20000, n.chains=3)
 			
-n.iter.i=10000
-n.thin=5
+n.iter.i=100000
+n.thin=15
 
 coda.obj1 <- coda.samples(mod.1,variable.names=parms,
                        n.iter=n.iter.i, thin=n.thin	)
 library(R2OpenBUGS)
 bugs.data(datalist,paste0(saveMdir)		)			   
-t.dist <- function(x,mu, tau, k){
-		(gamma((k+1)/2)/gamma(k/2))*sqrt(tau/(k*pi))*((1+((tau/k)*((x-mu)^2)))^(-(k+1)/2))
 
-}					   
-a<-500
-plot(seq(-100,100, by=.1), t.dist(seq(-100,100, by=.1),0,1/(a*a),2), type="l")					   
-					   
-plot(seq(0,1,by=.1), dbeta(seq(0,1,by=.1),1,100), type="l"	)				   
-mcmcplot(codaobj1, dir=paste0(saveMdir, "\\out\\ex_samp\\history"))
+plot(coda.obj1, ask=TRUE)
+		   
+mcmcplot(coda.obj1, dir=paste0(saveMdir, "\\history"))
 
 modSum <-summary(codaobj1, ra.rm=TRUE) 
 
