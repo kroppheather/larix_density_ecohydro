@@ -348,7 +348,7 @@ inits <- list(list(t.A=c(2,2), t.B=c(2,2), t.D=c(2,2), rhoA=c(.05,.05), rhoB=c(.
 	
 
 mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r",
-			data=datalist,inits=inits, n.adapt=3000, n.chains=3)
+			data=datalist,n.adapt=10000, n.chains=3)
 			
 n.iter.i=10000
 n.thin=5

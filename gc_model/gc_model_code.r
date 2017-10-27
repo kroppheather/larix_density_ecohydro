@@ -112,38 +112,30 @@ model{
 	#folded t for standard deviation
 	for(i in 1:Nstand){
 		tauA[i] <- pow(sigA[i],-2)
-		sigA[i] <- abs(t.A[i])
-		t.A[i] ~ dt(0,p.A[i], 2)
-		p.A[i] <- 1/(v.A[i]*v.A[i])
-		v.A[i] ~ dunif(0,500)
+		sigA[i] ~dunif(0,10)
+
+
 		
 		tauB[i] <- pow(sigB[i],-2)
-		sigB[i] <- abs(t.B[i])
-		t.B[i] ~ dt(0,p.B[i], 2)
-		p.B[i] <- 1/(v.B[i]*v.B[i])
-		v.B[i] ~ dunif(0,500)
-		
+		sigB[i] ~dunif(0,10)
+
+
 		tauD[i] <- pow(sigD[i],-2)
-		sigD[i] <- abs(t.D[i])
-		t.D[i] ~ dt(0,p.D[i], 2)
-		p.D[i] <- 1/(v.D[i]*v.D[i])
-		v.D[i] ~ dunif(0,500)	
+		sigD[i] ~dunif(0,10)
+
 		
 		#prior for autocorrelation
 		phiA[i] <-  log(rhoA[i])
-		rhoA[i] ~ dbeta(alphaA[i],betaA[i])T(,.5)
-		alphaA[i] ~ dunif(0,100)
-		betaA[i] ~ dunif(0,100)
+		rhoA[i] ~ dunif(0,1)
+
 		
 		phiB[i] <-  log(rhoB[i])
-		rhoB[i] ~ dbeta(alphaB[i],betaB[i])T(,.5)
-		alphaB[i] ~ dunif(0,100)
-		betaB[i] ~ dunif(0,100)
+		rhoB[i] ~ dunif(0,1)
+
 		
 		phiD[i] <-  log(rhoD[i])
-		rhoD[i] ~ dbeta(alphaD[i],betaD[i])T(,.5)
-		alphaD[i] ~ dunif(0,100)
-		betaD[i] ~ dunif(0,100)
+		rhoD[i] ~ dunif(0,1)
+
 	
 	}
 #################################
