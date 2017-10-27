@@ -339,20 +339,32 @@ parms <-c( "a1.star", "a2", "a3", "b1.star", "b2", "b3",  "gref", "S", "d1.star"
 
 
 
-inits <- list(list(t.A=c(2,2), t.B=c(2,2), t.D=c(2,2), rhoA=c(.5,.5), rhoB=c(.5,.5),rhoD=c(.5,.5)),		
-		list(t.A=c(2.5,2.5), t.B=c(2.5,2.5), t.D=c(2.5,.52), rhoA=c(.55,.5), rhoB=c(.55,.55),rhoD=c(.55,.55)),
-		list(t.A=c(3,3), t.B=c(3,3), t.D=c(3,3), rhoA=c(.25,.25), rhoB=c(.25,.25),rhoD=c(.25,.25)))
+inits <- list(list(t.A=c(2,2), t.B=c(2,2), t.D=c(2,2), rhoA=c(.05,.05), rhoB=c(.05,.05),rhoD=c(.05,.05), 
+						v.D=c(100,100),v.B=c(100,100), v.A=c(100,100)),		
+		list(t.A=c(2.5,2.5), t.B=c(2.5,2.5), t.D=c(2.5,.52), rhoA=c(.15,.15), rhoB=c(.15,.55),rhoD=c(.15,.15),
+				v.D=c(200,200),v.B=c(200,200), v.A=c(200,200)),
+		list(t.A=c(3,3), t.B=c(3,3), t.D=c(3,3), rhoA=c(.25,.25), rhoB=c(.25,.25),rhoD=c(.25,.25),
+			v.D=c(300,300),v.B=c(300,300), v.A=c(300,300)	))
 	
 
 mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r",
 			data=datalist,inits=inits, n.adapt=3000, n.chains=3)
 			
-n.iter.i=40000
-n.thin=20
+n.iter.i=10000
+n.thin=5
 
 coda.obj1 <- coda.samples(mod.1,variable.names=parms,
-                       n.iter=n.iter.i, thin=n.thin	
+                       n.iter=n.iter.i, thin=n.thin	)
+library(R2OpenBUGS)
+bugs.data(datalist,paste0(saveMdir)		)			   
+t.dist <- function(x,mu, tau, k){
+		(gamma((k+1)/2)/gamma(k/2))*sqrt(tau/(k*pi))*((1+((tau/k)*((x-mu)^2)))^(-(k+1)/2))
 
+}					   
+a<-500
+plot(seq(-100,100, by=.1), t.dist(seq(-100,100, by=.1),0,1/(a*a),2), type="l")					   
+					   
+plot(seq(0,1,by=.1), dbeta(seq(0,1,by=.1),1,100), type="l"	)				   
 mcmcplot(codaobj1, dir=paste0(saveMdir, "\\out\\ex_samp\\history"))
 
 modSum <-summary(codaobj1, ra.rm=TRUE) 
