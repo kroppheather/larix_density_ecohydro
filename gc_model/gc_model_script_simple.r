@@ -365,8 +365,7 @@ coda.obj1 <- coda.samples(mod.1,variable.names=parms,
                        n.iter=n.iter.i, thin=n.thin	)			
 			
 		   
-mcmcplot(coda.obj1,parms=c("a1.star", "a2", "a3", "b1.star", "b2", "b3","d1.star","d2","d3","a4",
-				"b4","d4","epsA.star","epsB.star","epsD.star","sig.epsA", "sig.epsB", "sig.epsD"), dir=paste0(saveMdir, "\\history"))
+mcmcplot(coda.obj1, dir=paste0(saveMdir, "\\jags_run\\history"))
 
 modSum <-summary(codaobj1, ra.rm=TRUE) 
 
