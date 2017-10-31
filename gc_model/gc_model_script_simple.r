@@ -29,7 +29,8 @@ source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_pr
 #################################################################
 source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\thaw_depth_process.r")
 # libraries
-library(rjags)
+library(snow)
+library(snowfall)
 library(coda)
 library(mcmcplots)
 #################################################################
@@ -42,9 +43,9 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run9")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10")
 #model code
-modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code.r"
+modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
 
 
 
@@ -334,21 +335,48 @@ parms <-c( "a1.star", "a2", "a3", "b1.star", "b2", "b3",  "gref", "S", "d1.star"
 				"b4","d4","l.slope",
 			"epsA.star","epsB.star","epsD.star","sig.epsA", "sig.epsB", "sig.epsD")
 
+# set the number of CPUs to be 3
+sfInit(parallel=TRUE, cpus=3)
 
+# assign the R2OpenBUGS library to each CPU
+sfLibrary(R2OpenBUGS)	
+
+
+#creating separate directory for each CPU process
+folder1 <- paste0(saveMdir, "\\chain1")
+folder2 <- paste0(saveMdir, "\\chain2")
+folder3 <- paste0(saveMdir, "\\chain3")
+dir.create(folder1); dir.create(folder2); dir.create(folder3)	
+folderALL <- c(folder1, folder2, folder3)
+#copy model code
+for (i in 1:length(folderALL)){
+
+	file.copy(modCode, paste0(folderALL[i], "\\model_code.txt"), overwrite=TRUE) 
+
+}	
+
+#get model started but run manually
+parallel.bugs <- function(chain, x.data, params){
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain3"))
+ 	
+	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain1\\inits.R"),
+				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain2\\inits.R"),
+					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\chain10\\inits.R")))
 	
+	# 5b. call openbugs
+	bugs(data=x.data,inits=inits, parameters.to.save=params,
+             n.iter=1, n.chains=1, n.burnin=1, n.thin=1,
+             model.file="model_code.txt", codaPkg=TRUE,
+             OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
+             working.directory=folder)	
+}			 
 
-mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r",
-			data=datalist,n.adapt=5000, n.chains=3)
-			
-n.iter.i=2000
-n.thin=1
 
-coda.obj1 <- coda.samples(mod.1,variable.names=parms,
-                       n.iter=n.iter.i, thin=n.thin	)
-library(R2OpenBUGS)
-bugs.data(datalist,paste0(saveMdir)		)			   
+# parallel.bugs on each of the 3 CPUs
+sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
-plot(coda.obj1, ask=TRUE)
 		   
 mcmcplot(coda.obj1,parms=c("a1.star", "a2", "a3", "b1.star", "b2", "b3","d1.star","d2","d3","a4",
 				"b4","d4","epsA.star","epsB.star","epsD.star","sig.epsA", "sig.epsB", "sig.epsD"), dir=paste0(saveMdir, "\\history"))
