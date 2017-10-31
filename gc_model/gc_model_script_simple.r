@@ -33,6 +33,7 @@ library(snow)
 library(snowfall)
 library(coda)
 library(mcmcplots)
+library(rjags)
 #################################################################
 ####indicate if this is a spatial model                   #######
 #################################################################
@@ -43,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
 
@@ -281,37 +282,6 @@ TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="min")
 colnames(TDstart) <- c("stand", "TD")
 TDstart$TD <- floor(TDstart$TD)
 
-#just need to get the tree ID set up
-#get tree ID
-treeTable <- unique(data.frame(treeID.new=gcALL2$treeID,site=gcALL2$stand))
-
-#rename treeID
-colnames(datTcoor)[3] <- "treeID.new"
-datTcoor$site <- ifelse(datTcoor$site=="hd",2,1)
-
-
-#join corrdinates
-
-treeTableC <- join(treeTable, datTcoor, by=c("site","treeID.new"), type="left")
-treeTableC <- data.frame(treeTableC[,1:2], treeTableC[,4:5])
-treeTableC <- treeTableC[order(treeTableC$site, treeTableC$treeID.new),]
-
-#structure so it is in a matrix
-TreeXForMod <- matrix(c(treeTableC$long[treeTableC$site==1],treeTableC$long[treeTableC$site==2]),ncol=13,byrow=TRUE )
-TreeYForMod <- matrix(c(treeTableC$lat[treeTableC$site==1],treeTableC$lat[treeTableC$site==2]),ncol=13,byrow=TRUE )
-
-
-#need to get unique stand, day, tree combination
-
-standDayTree <- unique(data.frame(stand=gcALL2$stand,treeID.new=gcALL2$treeID.new, standDay=gcALL2$standDay))
-standDayTree <- standDayTree[order(standDayTree$stand,standDayTree$treeID.new,standDayTree$standDay),]
-standDayTree$standDayTreeID <- seq(1,dim(standDayTree)[1])
-
-#just need to join standDayTree id back into gc and standday to get id matching
-
-standDayTree2 <- join(standDayTree, standDay4, by=c("stand","standDay"), type="left" )
-
-gcALL3 <- join(gcALL2, standDayTree, by=c("stand", "treeID.new", "standDay"), type="left")
 
 
 #################################################################
@@ -322,16 +292,16 @@ gcALL3 <- join(gcALL2, standDayTree, by=c("stand", "treeID.new", "standDay"), ty
 #new data stand.obs, NstandDayTree, standDayTree, stand, tree, N tree, thawD, thawstart(stand), Nstand, xC[i,y] DistA=sqrt(pow(xC[y]-xC[m],2)+ pow(y[r] - y[c], 2))
 #data list
 
-datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, standDayTree=gcALL3$standDay,
-					PAR=gcALL3$PAR,
-					D=gcALL3$D, NstandDayTree=dim(standDayTree)[1],
-					stand=standDayTree2$stand, airT=standDayTree2$Tair,
-					airTmean=airTmean,pastpr=standDayTree2$precipAve,
-					thawD=standDayTree2$TD, thawstart=TDstart$TD, Tree=standDayTree2$treeID.new,
-					Ntree=13, Nstand=2)
+datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, standDay=gcALL2$standDay,
+					PAR=gcALL2$PAR,
+					D=gcALL2$D, NstandDay=dim(standDay4)[1],
+					stand=standDay4$stand, airT=standDay4$Tair,
+					airTmean=airTmean,pastpr=standDay4$precipAve,
+					thawD=standDay4$TD, thawstart=TDstart$TD, 
+					 Nstand=2)
 
 # set parameters to monitor
-parms <-c( "a1.star", "a2", "a3", "b1.star", "b2", "b3",  "gref", "S", "d1.star","d2","d3","a4",
+parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
 				"b4","d4","l.slope",
 			"epsA.star","epsB.star","epsD.star","sig.epsA", "sig.epsB", "sig.epsD")
 
@@ -357,17 +327,17 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11\\chain3"))
  	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run10\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\chain10\\inits.R")))
+	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11\\chain1\\inits.R"),
+				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11\\chain2\\inits.R"),
+					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run11\\chain3\\inits.R")))
 	
 	# 5b. call openbugs
 	bugs(data=x.data,inits=inits, parameters.to.save=params,
-             n.iter=1, n.chains=1, n.burnin=1, n.thin=1,
+             n.iter=5000, n.chains=1, n.burnin=2000, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
              working.directory=folder)	
@@ -377,6 +347,23 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
+#read back in bugs output
+codaobjB <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
+						paste0(folder2, "\\CODAchain1.txt")
+						,paste0(folder3, "\\CODAchain1.txt")
+						))
+mcmcplot(codaobjB, dir=paste0(saveMdir, "\\history"))
+
+
+#run simultaneously in jags to see if it is any better without random effects
+mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r",
+			data=datalist,n.adapt=10000, n.chains=3)
+n.iter.i=40000
+n.thin=20
+
+coda.obj1 <- coda.samples(mod.1,variable.names=parms,
+                       n.iter=n.iter.i, thin=n.thin	)			
+			
 		   
 mcmcplot(coda.obj1,parms=c("a1.star", "a2", "a3", "b1.star", "b2", "b3","d1.star","d2","d3","a4",
 				"b4","d4","epsA.star","epsB.star","epsD.star","sig.epsA", "sig.epsB", "sig.epsD"), dir=paste0(saveMdir, "\\history"))
