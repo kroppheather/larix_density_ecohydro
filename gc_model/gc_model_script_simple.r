@@ -386,7 +386,7 @@ parallel.bugs <- function(chain, x.data, params){
 	
 	# 5b. call openbugs
 	bugs(data=x.data,inits=inits, parameters.to.save=params,
-             n.iter=5000, n.chains=1, n.burnin=2000, n.thin=1,
+             n.iter=10, n.chains=1, n.burnin=1, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
              working.directory=folder)	
@@ -396,25 +396,25 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 
-#read back in bugs output
-codaobjB <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
+
+
+folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
+
+
+
+
+# 9. pull coda back out
+codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						paste0(folder2, "\\CODAchain1.txt")
 						,paste0(folder3, "\\CODAchain1.txt")
 						))
-mcmcplot(codaobjB, dir=paste0(saveMdir, "\\history"))
 
 
-#run simultaneously in jags to see if it is any better without random effects
-mod.1 <- jags.model(file="c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r",
-			data=datalist,n.adapt=10000, n.chains=3)
-n.iter.i=40000
-n.thin=20
+mcmcplot(codaobj1, dir=paste0(saveMdir, "\\history"))
 
-coda.obj1 <- coda.samples(mod.1,variable.names=parms,
-                       n.iter=n.iter.i, thin=n.thin	)			
-			
-		   
-mcmcplot(coda.obj1, dir=paste0(saveMdir, "\\jags_run\\history"))
+
 
 modSum <-summary(codaobj1, ra.rm=TRUE) 
 
