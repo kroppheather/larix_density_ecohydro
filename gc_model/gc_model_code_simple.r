@@ -22,10 +22,12 @@ model{
 	for(i in 1:Nobs){
 	#likelihood for each tree
 	gs[i]~dnorm(mu.gs[i],tau.gs[stand.obs[i]])
+	rep.gs[i]~dnorm(mu.gs[i],tau.gs[stand.obs[i]])
+	
 	#gs.rep[i]~dnorm(mu.gs[i],tau.gs)
 	#model for mean gs
 	mu.gs[i]<-oren.mod[i]*light[i]
-
+	
 	#light scaling function
 	light[i]<-1-exp(-l.slope[standDayTree[i]]*PAR[i])
 	
