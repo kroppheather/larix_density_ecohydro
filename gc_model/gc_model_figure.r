@@ -10,19 +10,18 @@
 library(plyr)
 
 #set plot directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run7"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run13"
 
 
 #read in stand day data
-mugc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\out\\mu.gs.csv")
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\out\\standDaydata.csv")
-dayS <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\out\\Daysdata.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\out\\gcdata.csv")
+
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\standDayTreedata.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\gcdata.csv")
 #################################################################
 ####read in parameters                                    #######
 #################################################################
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\out\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run7\\out\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\mod_quants.csv")
 
 #stand index of 1 is low
 
@@ -40,17 +39,24 @@ datC$Sig <- ifelse(datC$X2.5.<0&datC$X97.5.<0,1,
 
 datS <- datC[datC$parms3=="S",]
 datgref <- datC[datC$parms3=="gref",]
+datlslope <- datC[datC$parms3=="lsope",]
+datrep <- datC[datC$parms3=="repgs",]
 #add ind
 datS <- cbind(datS,daySD)
 datgref <- cbind(datgref,daySD)
-datparm <- datC[datC$parms3=="a"|datC$parms3=="b",]
-datAntPr <- datC[datC$parms3=="pastpr",]
-datAntPr$Days <- rep(dayS$Days, each=2)
-datAntPr$stand <- rep(seq(1,2), times=68)
-colnames(datAntPr)[1:13] <- paste0("p",colnames(datAntPr)[1:13])
-datw <- datC[datC$parms3=="wpr",]
-#now join into datgref
-datgrefA <- join(datgref, datAntPr, by=c("Days","stand"), type="left")
+datparm <- datC[datC$parms3=="a"|datC$parms3=="b"|datC$parms3=="d",]
+
+#################################################################
+####goodness of fit plots                                 #######
+#################################################################
+plot(datgc$g.c,datrep$Mean, pch=19, xlim=c(0,200), ylim=c(0,200))
+fit<-lm(datrep$Mean~datgc$g.c)
+summary(fit)
+
+plot(datgc$g.c[datgc$treeID.new==13],datrep$Mean[datgc$treeID.new==13], pch=19, xlim=c(0,400), ylim=c(0,400))
+fit2<-lm(datrep$Mean[datgc$treeID.new==13]~datgc$g.c[datgc$treeID.new=13])
+summary(fit2)
+
 
 #Tair mean =13.5
 #################################################################

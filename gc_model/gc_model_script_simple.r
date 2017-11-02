@@ -399,9 +399,9 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #and then I update thinning every 25.
 
 
-folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODAout\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODAout\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODAout\\chain3\\")
 
 
 
@@ -413,11 +413,12 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1,, parms=c("a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
+				"b4","d4","l.slope","a5","b5","d5"),  dir=paste0(saveMdir, "\\history"))
 
 
 
-modSum <-summary(codaobj1, ra.rm=TRUE) 
+modSum <-summary(codaobj1) 
 
 
 write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
