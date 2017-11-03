@@ -44,9 +44,9 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15")
 #model code
-modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
+modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_tree.r"
 
 
 
@@ -286,18 +286,63 @@ TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="min")
 colnames(TDstart) <- c("stand", "TD")
 TDstart$TD <- floor(TDstart$TD)
 
-#aggregate
-gcALL3p1 <- aggregate(gcALL2$g.c, by=list(gcALL2$doy,gcALL2$year,gcALL2$hour,gcALL2$stand,gcALL2$standDay),FUN="mean")
-gcALL3p2 <- aggregate(gcALL2$D, by=list(gcALL2$doy,gcALL2$year,gcALL2$hour,gcALL2$stand,gcALL2$standDay),FUN="mean")
-gcALL3p3 <- aggregate(gcALL2$PAR, by=list(gcALL2$doy,gcALL2$year,gcALL2$hour,gcALL2$stand,gcALL2$standDay),FUN="mean")
-colnames(gcALL3p1) <- c("doy","year","hour","stand","standDay","g.c")
-colnames(gcALL3p2) <- c("doy","year","hour","stand","standDay","D")
-colnames(gcALL3p3) <- c("doy","year","hour","stand","standDay","PAR")
+#just need to get the tree ID set up
+#get tree ID
+treeTable <- unique(data.frame(treeID.new=gcALL2$treeID,site=gcALL2$stand))
 
-gcALL3p4 <- join(gcALL3p1,gcALL3p2, by=c("doy","year","hour","stand","standDay"), type="full")
-gcALL3 <- join(gcALL3p4,gcALL3p3, by=c("doy","year","hour","stand","standDay"), type="full")
+#rename treeID
+colnames(datTcoor)[3] <- "treeID.new"
+datTcoor$site <- ifelse(datTcoor$site=="hd",2,1)
 
 
+#join corrdinates
+
+treeTableC <- join(treeTable, datTcoor, by=c("site","treeID.new"), type="left")
+treeTableC <- data.frame(treeTableC[,1:2], treeTableC[,4:5])
+treeTableC <- treeTableC[order(treeTableC$site, treeTableC$treeID.new),]
+#unique stand tree id
+treeTableC$standTree <- seq(1, dim(treeTableC)[1])
+
+
+#structure so it is in a matrix
+TreeXForMod <- matrix(c(treeTableC$long[treeTableC$site==1],treeTableC$long[treeTableC$site==2]),ncol=13,byrow=TRUE )
+TreeYForMod <- matrix(c(treeTableC$lat[treeTableC$site==1],treeTableC$lat[treeTableC$site==2]),ncol=13,byrow=TRUE )
+
+
+#need to get unique stand, day, tree combination
+
+standDayTree <- unique(data.frame(stand=gcALL2$stand,treeID.new=gcALL2$treeID.new, standDay=gcALL2$standDay))
+standDayTree <- standDayTree[order(standDayTree$stand,standDayTree$treeID.new,standDayTree$standDay),]
+standDayTree$standDayTreeID <- seq(1,dim(standDayTree)[1])
+
+#just need to join standDayTree id back into gc and standday to get id matching
+
+standDayTree2 <- join(standDayTree, standDay4, by=c("stand","standDay"), type="left" )
+
+gcALL3 <- join(gcALL2, standDayTree, by=c("stand", "treeID.new", "standDay"), type="left")
+
+#datLdist
+
+#aggregate H neighbor density
+Hneighb <- aggregate(datHdens$distance.cm, by=list(datHdens$treeID), FUN="length")
+colnames(Hneighb) <- c("treeID", "neighbor")
+
+Hn <- Hneighb[gsub("\\d","",Hneighb$treeID)=="t", ]
+Hn$new.treeID <- gsub("\\D", "",Hn$treeID)
+
+#now make a data frame to combine
+Nindex <- data.frame(stand=rep(c(1,2), each=13), treeID.new=c(datLdist$treeID, Hn$new.treeID),
+						NearI=c(datLdist$NEAR_DIST,Hn$neighbor))
+
+#join back into stand day
+standDayTree3 <- join(standDayTree2, Nindex, by=c("stand","treeID.new"), type="left")
+
+#join tree, stand id
+colnames(treeTableC)[2] <-"stand"
+standDayTree4 <- join(standDayTree3,treeTableC, by=c("stand", "treeID.new"), type="left")
+
+#join tree, stand id into likelihood
+gcALL4 <- join(gcALL3, treeTableC, by=c("stand", "treeID.new"), type="left")
 
 #################################################################
 ####model run                                             #######
@@ -307,17 +352,19 @@ gcALL3 <- join(gcALL3p4,gcALL3p3, by=c("doy","year","hour","stand","standDay"), 
 #new data stand.obs, NstandDayTree, standDayTree, stand, tree, N tree, thawD, thawstart(stand), Nstand, xC[i,y] DistA=sqrt(pow(xC[y]-xC[m],2)+ pow(y[r] - y[c], 2))
 #data list
 
-datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, standDay=gcALL3$standDay,
-					PAR=gcALL3$PAR,
-					D=gcALL3$D, NstandDay=dim(standDay4)[1],
-					stand=standDay4$stand, airT=standDay4$Tair,
-					airTmean=airTmean,pastpr=standDay4$precipAve,
-					thawD=standDay4$TD, thawstart=TDstart$TD, 
-					 Nstand=2)
+datalist <- list(Nobs=dim(gcALL4)[1], gs=gcALL4$g.c, treeID=gcALL4$standTree, standDayTree=gcALL3$standDayTreeID,
+					PAR=gcALL4$PAR,
+					D=gcALL4$D, NstandDayTree=dim(standDayTree4)[1],
+					stand=standDayTree4$stand, airT=standDayTree4$Tair,
+					airTmean=airTmean,pastpr=standDayTree4$precipAve, tree=standDayTree4$standTree,
+					thawD=standDayTree4$TD, thawstart=TDstart$TD, 
+					 Nstand=2,  Ntrees=dim(treeTableC)[1], standT=treeTableC$stand)
 
 # set parameters to monitor
 parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","rep.gs")
+				"b4","d4","l.slope","rep.gs", "sig.a1", "sig.a2", "sig.a3", "sig.a4", "mu.a1", "mu.a2","mu.a3","mu.a4",
+				 "sig.b1", "sig.b2", "sig.b3", "sig.b4", "mu.b1", "mu.b2","mu.b3","mu.b4",
+				  "sig.d1", "sig.d2", "sig.d3", "sig.d4", "mu.d1", "mu.d2","mu.d3","mu.d4")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -341,13 +388,13 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain3"))
  	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain3\\inits.R")))
+	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain1\\inits.R"),
+				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain2\\inits.R"),
+					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain3\\inits.R")))
 	
 	# 5b. call openbugs
 	bugs(data=x.data,inits=inits, parameters.to.save=params,
@@ -378,8 +425,10 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1,, parms=c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1,, parms=c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1.star","d2","d3","a4",
+				"b4","d4","l.slope", "sig.a1", "sig.a2", "sig.a3", "sig.a4", "mu.a1", "mu.a2","mu.a3","mu.a4",
+				 "sig.b1", "sig.b2", "sig.b3", "sig.b4", "mu.b1", "mu.b2","mu.b3","mu.b4",
+				  "sig.d1", "sig.d2", "sig.d3", "sig.d4", "mu.d1", "mu.d2","mu.d3","mu.d4"),  dir=paste0(saveMdir, "\\history"))
 
 
 
