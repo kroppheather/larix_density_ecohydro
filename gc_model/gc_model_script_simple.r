@@ -364,9 +364,9 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #and then I update thinning every 25.
 
 
-folder1 <- paste0(saveMdir, "\\CODAout\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODAout\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODAout\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
 
 
 

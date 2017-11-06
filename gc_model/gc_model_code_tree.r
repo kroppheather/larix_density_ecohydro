@@ -59,21 +59,21 @@ model{
 ######hierarchical model    #####
 #################################
 	for(i in 1:Ntrees){
-		a1[i]~dnorm(mu.a1[standT[i]],tau.a1[standT[i]])
-		b1[i]~dnorm(mu.b1[standT[i]],tau.b1[standT[i]])
-		d1[i]~dnorm(mu.d1[standT[i]],tau.d1[standT[i]])
+		a1[i]<- i.a1[standT[i]]+s.a1[standT[i]]*neighb[i]
+		b1[i]<-i.b1[standT[i]]+s.b1[standT[i]]*neighb[i]
+		d1[i]<-i.d1[standT[i]]+s.d1[standT[i]]*neighb[i]
 		d.trans1[i]<-exp(d1[i])
-		a2[i]~dnorm(mu.a2[standT[i]],tau.a2[standT[i]])
-		b2[i]~dnorm(mu.b2[standT[i]],tau.b2[standT[i]])
-		d2[i]~dnorm(mu.d2[standT[i]],tau.d2[standT[i]])
+		a2[i]<- i.a2[standT[i]]+s.a2[standT[i]]*neighb[i]
+		b2[i]<- i.b2[standT[i]]+s.b2[standT[i]]*neighb[i]
+		d2[i]<- i.d2[standT[i]]+s.d2[standT[i]]*neighb[i]
 		d.trans2[i]<-exp(d2[i])
-		a3[i]~dnorm(mu.a3[standT[i]],tau.a3[standT[i]])
-		b3[i]~dnorm(mu.b3[standT[i]],tau.b3[standT[i]])
-		d3[i]~dnorm(mu.d3[standT[i]],tau.d3[standT[i]])
+		a3[i]<-i.a3[standT[i]]+s.a3[standT[i]]*neighb[i]
+		b3[i]<- i.b3[standT[i]]+s.b3[standT[i]]*neighb[i]
+		d3[i]<- i.d3[standT[i]]+s.d3[standT[i]]*neighb[i]
 		d.trans3[i]<-exp(d3[i])
-		a4[i]~dnorm(mu.a4[standT[i]],tau.a4[standT[i]])
-		b4[i]~dnorm(mu.b4[standT[i]],tau.b4[standT[i]])
-		d4[i]~dnorm(mu.d4[standT[i]],tau.d4[standT[i]])
+		a4[i]<-i.a4[standT[i]]+s.a4[standT[i]]*neighb[i]
+		b4[i]<-i.b4[standT[i]]+s.b4[standT[i]]*neighb[i]
+		d4[i]<-i.d4[standT[i]]+s.d4[standT[i]]*neighb[i]
 		d.trans4[i]<-exp(d4[i])	
 		
 		#likelihood variance
@@ -90,57 +90,37 @@ model{
 	
 
 	for(i in 1:Nstand){
-		#mean hyper priors
-		mu.a1[i]~dnorm(0,.001)
-		mu.b1[i]~dnorm(0,.001)
-		mu.d1[i]~dnorm(0,.0001)
-		mu.d.trans1[i]<-exp(mu.d1[i])
-		mu.a2[i]~dnorm(0,.001)
-		mu.b2[i]~dnorm(0,.001)
-		mu.d2[i]~dnorm(0,.0001)
-		mu.d.trans2[i]<-exp(mu.d2[i])
-		mu.a3[i]~dnorm(0,.001)
-		mu.b3[i]~dnorm(0,.001)
-		mu.d3[i]~dnorm(0,.0001)
-		mu.d.trans3[i]<-exp(mu.d3[i])
-		mu.a4[i]~dnorm(0,.001)
-		mu.b4[i]~dnorm(0,.001)
-		mu.d4[i]~dnorm(0,.0001)
-		mu.d.trans4[i]<-exp(mu.d4[i])		
-		#variance hyper priors
-		tau.a1[i] <- pow(sig.a1[i],-2)
-		tau.a2[i] <- pow(sig.a2[i],-2)
-		tau.a3[i] <- pow(sig.a3[i],-2)
-		tau.a4[i] <- pow(sig.a4[i],-2)
+		
+		i.a1[i]~dnorm(0,.001)
+		i.b1[i]~dnorm(0,.001)
+		i.d1[i]~dnorm(0,.0001)
+		i.a2[i]~dnorm(0,.001)
+		i.b2[i]~dnorm(0,.001)
+		i.d2[i]~dnorm(0,.0001)
+		i.a3[i]~dnorm(0,.001)
+		i.b3[i]~dnorm(0,.001)
+		i.d3[i]~dnorm(0,.0001)
+
+		i.a4[i]~dnorm(0,.001)
+		i.b4[i]~dnorm(0,.001)
+		i.d4[i]~dnorm(0,.0001)
 	
-		tau.b1[i] <- pow(sig.b1[i],-2)
-		tau.b2[i] <- pow(sig.b2[i],-2)
-		tau.b3[i] <- pow(sig.b3[i],-2)
-		tau.b4[i] <- pow(sig.b4[i],-2)
+		s.a1[i] ~dnorm(0,.001)
+		s.a2[i]~dnorm(0,.001)
+		s.a3[i]~dnorm(0,.001)
+		s.a4[i] ~dnorm(0,.001)
+	
+		s.b1[i]~dnorm(0,.001)
+		s.b2[i] ~dnorm(0,.001)
+		s.b3[i] ~dnorm(0,.001)
+		s.b4[i]~dnorm(0,.001)
 
 		
-		tau.d1[i] <- pow(sig.d1[i],-2)
-		tau.d2[i] <- pow(sig.d2[i],-2)
-		tau.d3[i] <- pow(sig.d3[i],-2)
-		tau.d4[i] <- pow(sig.d4[i],-2)
-		
-		sig.a1[i]~dunif(0,100)
-		sig.b1[i]~dunif(0,100)
-		sig.d1[i]~dunif(0,100)
-		
-		sig.a2[i]~dunif(0,100)
-		sig.b2[i]~dunif(0,100)
-		sig.d2[i]~dunif(0,100)
-		
-		sig.a3[i]~dunif(0,100)
-		sig.b3[i]~dunif(0,100)
-		sig.d3[i]~dunif(0,100)	
-		
-		sig.a4[i]~dunif(0,100)
-		sig.b4[i]~dunif(0,100)
-		sig.d4[i]~dunif(0,100)		
-
-		
+		s.d1[i] ~dnorm(0,.001)
+		s.d2[i] ~dnorm(0,.001)
+		s.d3[i] ~dnorm(0,.001)
+		s.d4[i] ~dnorm(0,.001)
+	
 		
 	}
 

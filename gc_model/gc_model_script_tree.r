@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_tree.r"
 
@@ -344,6 +344,10 @@ standDayTree4 <- join(standDayTree3,treeTableC, by=c("stand", "treeID.new"), typ
 #join tree, stand id into likelihood
 gcALL4 <- join(gcALL3, treeTableC, by=c("stand", "treeID.new"), type="left")
 
+
+treeTableC <- join(treeTableC, Nindex, by=c("stand", "treeID.new"), type="left")
+
+
 #################################################################
 ####model run                                             #######
 #################################################################
@@ -358,13 +362,13 @@ datalist <- list(Nobs=dim(gcALL4)[1], gs=gcALL4$g.c, treeID=gcALL4$standTree, st
 					stand=standDayTree4$stand, airT=standDayTree4$Tair,
 					airTmean=airTmean,pastpr=standDayTree4$precipAve, tree=standDayTree4$standTree,
 					thawD=standDayTree4$TD, thawstart=TDstart$TD, 
-					 Nstand=2,  Ntrees=dim(treeTableC)[1], standT=treeTableC$stand)
+					 Nstand=2,  Ntrees=dim(treeTableC)[1], standT=treeTableC$stand, neighb=treeTableC$NearI)
 
 # set parameters to monitor
 parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","rep.gs", "sig.a1", "sig.a2", "sig.a3", "sig.a4", "mu.a1", "mu.a2","mu.a3","mu.a4",
-				 "sig.b1", "sig.b2", "sig.b3", "sig.b4", "mu.b1", "mu.b2","mu.b3","mu.b4",
-				  "sig.d1", "sig.d2", "sig.d3", "sig.d4", "mu.d1", "mu.d2","mu.d3","mu.d4")
+				"b4","d4","l.slope","rep.gs", "s.a1", "s.a2", "s.a3", "s.a4", "i.a1", "i.a2","i.a3","i.a4",
+				 "s.b1", "s.b2", "s.b3", "s.b4", "i.b1", "i.b2","i.b3","i.b4",
+				  "s.d1", "s.d2", "s.d3", "s.d4", "i.d1", "i.d2","i.d3","i.d4")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -388,13 +392,13 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain3"))
  	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run15\\chain3\\inits.R")))
+	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain1\\inits.R"),
+				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain2\\inits.R"),
+					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain3\\inits.R")))
 	
 	# 5b. call openbugs
 	bugs(data=x.data,inits=inits, parameters.to.save=params,
@@ -411,9 +415,9 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #and then I update thinning every 25.
 
 
-folder1 <- paste0(saveMdir, "\\CODAout\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODAout\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODAout\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
 
 
 
@@ -425,10 +429,10 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1,, parms=c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1.star","d2","d3","a4",
-				"b4","d4","l.slope", "sig.a1", "sig.a2", "sig.a3", "sig.a4", "mu.a1", "mu.a2","mu.a3","mu.a4",
-				 "sig.b1", "sig.b2", "sig.b3", "sig.b4", "mu.b1", "mu.b2","mu.b3","mu.b4",
-				  "sig.d1", "sig.d2", "sig.d3", "sig.d4", "mu.d1", "mu.d2","mu.d3","mu.d4"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1, parms=c("a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
+				"b4","d4","l.slope","s.a1", "s.a2", "s.a3", "s.a4", "i.a1", "i.a2","i.a3","i.a4",
+				 "s.b1", "s.b2", "s.b3", "s.b4", "i.b1", "i.b2","i.b3","i.b4",
+				  "s.d1", "s.d2", "s.d3", "s.d4", "i.d1", "i.d2","i.d3","i.d4"),  dir=paste0(saveMdir, "\\history"))
 
 
 
