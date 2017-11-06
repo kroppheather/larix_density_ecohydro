@@ -41,16 +41,16 @@ model{
 	for(i in 1:NstandDayTree){
 	#met variables vary be stand, day
 	#response varies by tree
-		gref[i]~dnorm(mu.gref[standDay[i]],tau.gref[standD[i]])
-		S[i]~dnorm(mu.S[standDay[i]],tau.S[standD[i]])
-		slope.temp[i] ~dnorm(mu.L[standDay[i]],tau.L[standD[i]])
+		gref[i]<-a1[tree[i]]+a2[tree[i]]*airTcent[i]+a3[tree[i]]*(pastpr[i]-5)+a4[tree[i]]*(thawD[i]-thawstart[tree[i]])
+		S[i]<-b1[tree[i]]+b2[tree[i]]*airTcent[i]+b3[tree[i]]*(pastpr[i]-5)+b4[tree[i]]*(thawD[i]-thawstart[tree[i]])
+		slope.temp[i] <-d1[tree[i]]+d2[tree[i]]*airTcent[i]+d3[tree[i]]*(pastpr[i]-5)+d4[tree[i]]*(thawD[i]-thawstart[tree[i]])
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
 	#conduct covariate centering to help with mixing
 
 		
-
+	airTcent[i]<-airT[i]-airTmean
 	#calculate sensitivity
 
 	}
@@ -64,13 +64,7 @@ model{
 #################################
 ######hierarchical model    #####
 #################################
-	for(i in 1:NstandDay){}
-		mu.gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[i]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		mu.S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[i]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		mu.slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[i]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		mu.l.slope[i]<-exp(mu.slope.temp[i])
-		
-		airTcent[i]<-airT[i]-airTmean
+	
 	}	
 	for(i in 1:Nstand){
 		a1[i]~dnorm(0,.001)
