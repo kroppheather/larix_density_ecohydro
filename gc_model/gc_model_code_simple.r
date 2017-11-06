@@ -39,9 +39,9 @@ model{
 #########parameter model ########
 #################################	
 	for(i in 1:NstandDay){
-		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[i]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[i]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[i]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])
+		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[days[i],stand[i]]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])
+		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[days[i],stand[i]]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])
+		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[days[i],stand[i]]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
@@ -52,8 +52,34 @@ model{
 	#calculate sensitivity
 
 	}
-	
+#################################
+#########antecedent model########
+#################################	
+#Antecedent calculations based on Ogle et al 2015
+	#calculate antecedent values for soil temp and soil water content
+	for(j in 1:Nstand){
+		for(m in 1:Nlag){
+			#weights for precip
+			deltapr[m,j]~dgamma(1,1)
+			wpr[m,j]<-deltapr[m,j]/sumpr[j]
+			#calculate weighted precip for each day in the past
+			for(i in 1:Ndays){
+				pr.temp[i,m,j]<-wpr[m,j]*a.pr[i,m]
+			}
+		}
 
+	}
+	#calculate sums of unweighted delta values
+
+	sumpr[1]<-sum(deltapr[,1])
+	sumpr[2]<-sum(deltapr[,2])
+
+	#final antecedent calculations for soil values
+	for(i in 1:Ndays){
+		pastpr[i,1]<-sum(pr.temp[i,,1])
+		pastpr[i,2]<-sum(pr.temp[i,,2])
+	}
+	
 		
 
 #################################

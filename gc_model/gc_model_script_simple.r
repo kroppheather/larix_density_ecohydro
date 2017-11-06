@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
 
@@ -249,18 +249,30 @@ Days$Days <- seq(1, dim(Days)[1])
 
 #take averages over previous 2 weeks
 #now make a precip matrix that includes days into the past
-precipmat <- matrix(rep(NA, dim(Days)[1]*14), ncol=14)
+precipmat <- matrix(rep(NA, dim(Days)[1]*28), ncol=28)
 
 for(i in 1:dim(Days)[1]){
-	for(j in 1:14){
+	for(j in 1:28){
 		precipmat[i,j] <- datAirP$Pr.mm[datAirP$doy==(Days$doy[i]-j)&datAirP$year==Days$year[i]]
 	
 	}
 }
 
-precipDF <- data.frame(doy=Days$doy,Days=Days$Days, year=Days$year,precipAve = rowMeans(precipmat))
+#set up lag periods
+lagStart <- c(1,4,8,15,22)
+lagEnd <- c(3,7,14,21,28)
 
-standDay3 <- join(standDay2, precipDF, by=c("doy","year"), type="left")
+#take averages over lag periods
+
+precipL <- matrix(rep(NA, dim(Days)[1]*length(lagStart)), ncol=length(lagStart))
+for(i in 1:dim(Days)[1]){
+	for(j in 1:length(lagStart)){
+		precipL[i,j] <- sum(precipmat[i,lagStart[j]:lagEnd[j]])
+	}	
+
+}
+
+standDay3  <- join(standDay2, Days, by=c("doy", "year"), type="left")
 
 #match up thaw depth data
 #create a stand ID in thaw depth
@@ -311,13 +323,12 @@ datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, sta
 					PAR=gcALL3$PAR,
 					D=gcALL3$D, NstandDay=dim(standDay4)[1],
 					stand=standDay4$stand, airT=standDay4$Tair,
-					airTmean=airTmean,pastpr=standDay4$precipAve,
-					thawD=standDay4$TD, thawstart=TDstart$TD, 
-					 Nstand=2)
+					airTmean=airTmean,thawD=standDay4$TD, thawstart=TDstart$TD, 
+					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1] )
 
 # set parameters to monitor
 parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","rep.gs")
+				"b4","d4","l.slope","rep.gs", "wpr","deltapr","pastpr")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -341,13 +352,13 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain3"))
  	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\chain3\\inits.R")))
+	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain1\\inits.R"),
+				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain2\\inits.R"),
+					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain3\\inits.R")))
 	
 	# 5b. call openbugs
 	bugs(data=x.data,inits=inits, parameters.to.save=params,
@@ -361,7 +372,7 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
-#and then I update thinning every 25.
+#and then I update thinning every 30.
 
 
 folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")

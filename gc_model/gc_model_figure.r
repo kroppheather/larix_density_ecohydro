@@ -10,18 +10,18 @@
 library(plyr)
 
 #set plot directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run13"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run16"
 
 
 #read in stand day data
 
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\standDayTreedata.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\gcdata.csv")
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\gcdata.csv")
 #################################################################
 ####read in parameters                                    #######
 #################################################################
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run13\\out\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\mod_quants.csv")
 
 #stand index of 1 is low
 
