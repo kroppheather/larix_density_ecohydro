@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_tree.r"
 
@@ -362,13 +362,11 @@ datalist <- list(Nobs=dim(gcALL4)[1], gs=gcALL4$g.c, treeID=gcALL4$standTree, st
 					stand=standDayTree4$stand, airT=standDayTree4$Tair,
 					airTmean=airTmean,pastpr=standDayTree4$precipAve, tree=standDayTree4$standTree,
 					thawD=standDayTree4$TD, thawstart=TDstart$TD, 
-					 Nstand=2,  Ntrees=dim(treeTableC)[1], standT=treeTableC$stand, neighb=treeTableC$NearI)
+					 Nstand=2,  Ntrees=dim(treeTableC)[1], standT=treeTableC$stand)
 
 # set parameters to monitor
 parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","rep.gs", "s.a1", "s.a2", "s.a3", "s.a4", "i.a1", "i.a2","i.a3","i.a4",
-				 "s.b1", "s.b2", "s.b3", "s.b4", "i.b1", "i.b2","i.b3","i.b4",
-				  "s.d1", "s.d2", "s.d3", "s.d4", "i.d1", "i.d2","i.d3","i.d4")
+				"b4","d4","l.slope","rep.gs")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -392,16 +390,19 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18\\chain3"))
  	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run17\\chain3\\inits.R")))
+	inits <- function(){
+	list(a1=rnorm(26,50,20), a2=rnorm(26,.3,.1), a3=rnorm(26,.3,.1), a4=rnorm(26,.3,.1),
+		b1=rnorm(26,1,.2), b2=rnorm(26,.05,.1), b3=rnorm(26,.05,.1), b4=rnorm(26,.05,.1),
+		d1=rnorm(26,-4.5,1), d2=rnorm(26,.3,.1), d3=rnorm(26,.3,.1), d4=rnorm(26,.3,.1),
+		sig.gs=rnorm(26,30,5))
+	}
 	
 	# 5b. call openbugs
-	bugs(data=x.data,inits=inits, parameters.to.save=params,
+	bugs(data=x.data, parameters.to.save=params,
              n.iter=10, n.chains=1, n.burnin=1, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
@@ -430,9 +431,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 
 
 mcmcplot(codaobj1, parms=c("a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","s.a1", "s.a2", "s.a3", "s.a4", "i.a1", "i.a2","i.a3","i.a4",
-				 "s.b1", "s.b2", "s.b3", "s.b4", "i.b1", "i.b2","i.b3","i.b4",
-				  "s.d1", "s.d2", "s.d3", "s.d4", "i.d1", "i.d2","i.d3","i.d4"),  dir=paste0(saveMdir, "\\history"))
+				"b4","d4","l.slope"),  dir=paste0(saveMdir, "\\history"))
 
 
 

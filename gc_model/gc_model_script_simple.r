@@ -388,6 +388,6 @@ modSum <-summary(codaobj1)
 
 write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
 write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
-write.table(standDayTree3, paste0(saveMdir, "\\out", "\\standDayTreedata.csv"), sep=",", row.names=FALSE)
+write.table(standDay4, paste0(saveMdir, "\\out", "\\standDay.csv"), sep=",", row.names=FALSE)
 write.table(gcALL3, paste0(saveMdir, "\\out", "\\gcdata.csv"), sep=",", row.names=FALSE)
 #aggregate to compare means

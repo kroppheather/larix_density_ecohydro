@@ -59,21 +59,21 @@ model{
 ######hierarchical model    #####
 #################################
 	for(i in 1:Ntrees){
-		a1[i]<- i.a1[standT[i]]+s.a1[standT[i]]*neighb[i]
-		b1[i]<-i.b1[standT[i]]+s.b1[standT[i]]*neighb[i]
-		d1[i]<-i.d1[standT[i]]+s.d1[standT[i]]*neighb[i]
+		a1[i]~dnorm(0,.001)
+		b1[i]~dnorm(0,.001)
+		d1[i]~dnorm(0,.001)
 		d.trans1[i]<-exp(d1[i])
-		a2[i]<- i.a2[standT[i]]+s.a2[standT[i]]*neighb[i]
-		b2[i]<- i.b2[standT[i]]+s.b2[standT[i]]*neighb[i]
-		d2[i]<- i.d2[standT[i]]+s.d2[standT[i]]*neighb[i]
+		a2[i]~dnorm(0,.001)
+		b2[i]~dnorm(0,.001)
+		d2[i]~dnorm(0,.001)
 		d.trans2[i]<-exp(d2[i])
-		a3[i]<-i.a3[standT[i]]+s.a3[standT[i]]*neighb[i]
-		b3[i]<- i.b3[standT[i]]+s.b3[standT[i]]*neighb[i]
-		d3[i]<- i.d3[standT[i]]+s.d3[standT[i]]*neighb[i]
+		a3[i]~dnorm(0,.001)
+		b3[i]~dnorm(0,.001)
+		d3[i]~dnorm(0,.001)
 		d.trans3[i]<-exp(d3[i])
-		a4[i]<-i.a4[standT[i]]+s.a4[standT[i]]*neighb[i]
-		b4[i]<-i.b4[standT[i]]+s.b4[standT[i]]*neighb[i]
-		d4[i]<-i.d4[standT[i]]+s.d4[standT[i]]*neighb[i]
+		a4[i]~dnorm(0,.001)
+		b4[i]~dnorm(0,.001)
+		d4[i]~dnorm(0,.001)
 		d.trans4[i]<-exp(d4[i])	
 		
 		#likelihood variance
@@ -82,49 +82,6 @@ model{
 	
 	}
 
-#################################
-#########hyper priors    ########
-#################################	
-	#define prior distributions for parameters
-	#All parameters are given non-informative dist
-	
-
-	for(i in 1:Nstand){
-		
-		i.a1[i]~dnorm(0,.001)
-		i.b1[i]~dnorm(0,.001)
-		i.d1[i]~dnorm(0,.0001)
-		i.a2[i]~dnorm(0,.001)
-		i.b2[i]~dnorm(0,.001)
-		i.d2[i]~dnorm(0,.0001)
-		i.a3[i]~dnorm(0,.001)
-		i.b3[i]~dnorm(0,.001)
-		i.d3[i]~dnorm(0,.0001)
-
-		i.a4[i]~dnorm(0,.001)
-		i.b4[i]~dnorm(0,.001)
-		i.d4[i]~dnorm(0,.0001)
-	
-		s.a1[i] ~dnorm(0,.001)
-		s.a2[i]~dnorm(0,.001)
-		s.a3[i]~dnorm(0,.001)
-		s.a4[i] ~dnorm(0,.001)
-	
-		s.b1[i]~dnorm(0,.001)
-		s.b2[i] ~dnorm(0,.001)
-		s.b3[i] ~dnorm(0,.001)
-		s.b4[i]~dnorm(0,.001)
-
-		
-		s.d1[i] ~dnorm(0,.001)
-		s.d2[i] ~dnorm(0,.001)
-		s.d3[i] ~dnorm(0,.001)
-		s.d4[i] ~dnorm(0,.001)
-	
-		
-	}
-
-	
 	
 	
 }	
