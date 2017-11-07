@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run21")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_tree.r"
 
@@ -201,25 +201,29 @@ if(spatialmodel==1){
 }
 
 
-
-
 #first check how many tree X day X stand observations there are
 nCheck1 <- aggregate(gcALL$g.c, by=list(gcALL$doy,gcALL$year, gcALL$stand, gcALL$treeID.new), FUN="length")
-#check that there are at least multiple trees present in each day
-nCheck2 <- aggregate(nCheck1$x, by=list(nCheck1$Group.1,nCheck1$Group.2,nCheck1$Group.3), FUN="length")
-#check that there are how many measurements that are in each day
-nCheck3 <- aggregate(gcALL$g.c, by=list(gcALL$doy,gcALL$year, gcALL$stand), FUN="length")
-#this check is a better filter, because as long at there are at least 15 measurements the day is reasonable
-colnames(nCheck3) <- c("doy", "year", "stand", "count") 
 
-nCheck3 <- nCheck3[nCheck3$count>=15,]
+#remove any day and tree observations where there are 4 or less observations
+nCheck1  <- nCheck1[nCheck1$x>4,]
+
+#check that each tree has enough days
+nCheck3 <- aggregate(nCheck1$x, by=list(nCheck1$Group.4), FUN="length")
+
+#change column names
+colnames(nCheck1) <- c("doy","year","stand","treeID.new","count")
+
+#days range from 27-91 so not a problem
+
 #now filter days that don't have at least 15 observations out
-nfilter <- nCheck3[,1:3]
+nfilter <- nCheck1[,1:4]
 
-gcALLf <- join(gcALL, nfilter, by=c("doy", "year", "stand"), type="inner")
+gcALLf <- join(gcALL, nfilter, by=c("doy", "year", "stand", "treeID.new"), type="inner")
 
 #get unique combinations to generate IDS
 #standDayIDS
+
+
 standDay <- unique(data.frame(doy=gcALLf$doy,year=gcALLf$year,stand=gcALLf$stand))
 standDay$standDay <-seq(1, dim(standDay)[1])
 
@@ -365,8 +369,7 @@ datalist <- list(Nobs=dim(gcALL4)[1], gs=gcALL4$g.c, treeID=gcALL4$standTree, st
 					 Nstand=2,  Ntrees=dim(treeTableC)[1], standT=treeTableC$stand)
 
 # set parameters to monitor
-parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","rep.gs")
+parms <-c(   "gref", "S","a","b","d", "mu.a", "mu.b", "mu.d", "sig.betaA" , "sig.betaB" , "sig.betaD" ,"l.slope","rep.gs")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -390,19 +393,14 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run18\\chain3"))
- 	
-	inits <- function(){
-	list(a1=rnorm(26,50,20), a2=rnorm(26,.3,.1), a3=rnorm(26,.3,.1), a4=rnorm(26,.3,.1),
-		b1=rnorm(26,1,.2), b2=rnorm(26,.05,.1), b3=rnorm(26,.05,.1), b4=rnorm(26,.05,.1),
-		d1=rnorm(26,-4.5,1), d2=rnorm(26,.3,.1), d3=rnorm(26,.3,.1), d4=rnorm(26,.3,.1),
-		sig.gs=rnorm(26,30,5))
-	}
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run21\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run21\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run21\\chain3"))
+
+	
 	
 	# 5b. call openbugs
-	bugs(data=x.data, inits=inits, parameters.to.save=params,
+	bugs(data=x.data, inits=NULL, parameters.to.save=params,
              n.iter=10, n.chains=1, n.burnin=1, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,
