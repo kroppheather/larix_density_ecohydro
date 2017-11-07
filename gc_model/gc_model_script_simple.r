@@ -390,7 +390,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 
 
 mcmcplot(codaobj1,, parms=c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope"),  dir=paste0(saveMdir, "\\history"))
+				"b4","d4","l.slope", "wpr"),  dir=paste0(saveMdir, "\\history"))
 
 
 
