@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
 
@@ -324,11 +324,10 @@ datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, sta
 					D=gcALL3$D, NstandDay=dim(standDay4)[1],
 					stand=standDay4$stand, airT=standDay4$Tair,
 					airTmean=airTmean,thawD=standDay4$TD, thawstart=TDstart$TD, 
-					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1] )
+					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4 )
 
 # set parameters to monitor
-parms <-c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope","rep.gs", "wpr","deltapr","pastpr")
+parms <-c( "aa.star", "bb.star", "dd.star","l.slope","rep.gs", "wpr","deltapr","pastpr")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -352,16 +351,13 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20\\chain3"))
  	
-	inits <- ifelse(chain==1,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain1\\inits.R"),
-				ifelse(chain==2,source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain2\\inits.R"),
-					source("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run19\\chain3\\inits.R")))
 	
 	# 5b. call openbugs
-	bugs(data=x.data,inits=inits, parameters.to.save=params,
+	bugs(data=x.data, inits=NULL,parameters.to.save=params,
              n.iter=10, n.chains=1, n.burnin=1, n.thin=1,
              model.file="model_code.txt", codaPkg=TRUE,
              OpenBUGS.pgm="C:/Program Files (x86)/OpenBUGS/OpenBUGS323/OpenBUGS.exe",debug=TRUE,

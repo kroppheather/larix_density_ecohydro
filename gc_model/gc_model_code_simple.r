@@ -39,9 +39,9 @@ model{
 #########parameter model ########
 #################################	
 	for(i in 1:NstandDay){
-		gref[i]<-a1[stand[i]]+a2[stand[i]]*airTcent[i]+a3[stand[i]]*(pastpr[days[i],stand[i]]-5)+a4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		S[i]<-b1[stand[i]]+b2[stand[i]]*airTcent[i]+b3[stand[i]]*(pastpr[days[i],stand[i]]-5)+b4[stand[i]]*(thawD[i]-thawstart[stand[i]])
-		slope.temp[i] <-d1[stand[i]]+d2[stand[i]]*airTcent[i]+d3[stand[i]]*(pastpr[days[i],stand[i]]-5)+d4[stand[i]]*(thawD[i]-thawstart[stand[i]])
+		gref[i]<-a[1,stand[i]]+a[2,stand[i]]*airTcent[i]+a[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+a[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
+		S[i]<-b[1,stand[i]]+b[2,stand[i]]*airTcent[i]+b[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+b[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
+		slope.temp[i] <-d[1,stand[i]]+d[2,stand[i]]*airTcent[i]+d[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+d[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
@@ -90,27 +90,6 @@ model{
 	
 
 	for(i in 1:Nstand){
-		a1[i]~dnorm(0,.001)
-		b1[i]~dnorm(0,.001)
-		d1[i]~dnorm(0,.0001)
-		d.trans1[i]<-exp(d1[i])
-		a2[i]~dnorm(0,.001)
-		b2[i]~dnorm(0,.001)
-		d2[i]~dnorm(0,.0001)
-		d.trans2[i]<-exp(d2[i])
-		a3[i]~dnorm(0,.001)
-		b3[i]~dnorm(0,.001)
-		d3[i]~dnorm(0,.0001)
-		d.trans3[i]<-exp(d3[i])
-		a4[i]~dnorm(0,.001)
-		b4[i]~dnorm(0,.001)
-		d4[i]~dnorm(0,.0001)
-		d.trans4[i]<-exp(d4[i])		
-		a5[i]~dnorm(0,.001)
-		b5[i]~dnorm(0,.001)
-		d5[i]~dnorm(0,.0001)
-		d.trans5[i]<-exp(d5[i])		
-		#
 		
 		tau.gs[i]<-pow(sig.gs[i],-2)
 		sig.gs[i]~dunif(0,1000)	
@@ -118,7 +97,34 @@ model{
 		
 	}
 
+#################################
+#########antecedent model########
+#########mixing tricks   ########
+#################################
+for(i in 1:Nstand){
+	for(j in 1:Nparm){
+	a[j,i] ~dnorm(aa[j,i], tau.aa[j,i])
+	aa.star[j,i]<- a[j,i]*(noAnt[j]*sumDeltas[i])
+	aa[j,i] ~dnorm(0,.001)
+	tau.aa[j,i] <- pow(sig.aa[j,i],-2)
+	sig.aa[j,i] ~ dunif(0,100)
+	b[j,i] ~dnorm(bb[j,i], tau.bb[j,i])
+	bb.star[j,i]<- b[j,i]*(noAnt[j]*sumDeltas[i])
+	bb[j,i] ~dnorm(0,.001)
+	tau.bb[j,i] <- pow(sig.bb[j,i],-2)
+	sig.bb[j,i] ~ dunif(0,100)
+	d[j,i] ~dnorm(dd[j,i], tau.dd[j,i])
+	dd.star[j,i]<- d[j,i]*(noAnt[j]*sumDeltas[i])
+	dd[j,i] ~dnorm(0,.001)
+	tau.dd[j,i] <- pow(sig.dd[j,i],-2)
+	sig.dd[j,i] ~ dunif(0,100)
 	
+	}
 	
+	sumDeltas[i] <- sumpr[i]
+}
+for(j in 1:Nparm){
+	noAnt[j] <- equals(j,3)
+}	
 	
 }	
