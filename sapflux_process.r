@@ -85,7 +85,7 @@ datAllom <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individua
 # airport pressure and precip data
 datAirP <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\airport\\airport.csv")
 
-#canopy rh and temperature
+#canopy rh and temperature and PAR
 datRH <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\RH.VP4.csv")
 datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.csv")
 
@@ -853,6 +853,8 @@ if(plotcheck==1){
 
 #########End Transpiration (T) calcs ####################
 
+
+
 #################################################################
 ###### calculate canopy stomatal conductance    #################
 #################################################################
@@ -866,7 +868,7 @@ datH17c1<-data.frame(El.H17[,1:3], El.H17[,4:(3+length(NorthH17keep))]/1000)
 #only canopy met was pulled
 #subset and match
 datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
-datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
+datLTCmet<- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
 
 datHRHmet <- data.frame(datRH[datRH$site=="hd",1:3], RH=datRH$RH.VP4[datRH$site=="hd"])
 datHTCmet <- data.frame(datTC[datTC$site=="hd",1:3], Temp=datTC$TempC.VP4[datTC$site=="hd"])
@@ -879,6 +881,147 @@ datHmet <- join(datHRHmet, datHTCmet, by=c("doy","year","hour"),type="inner")
 
 datLmet <- join(datLmet, datAirP, by=c("doy","year"), type="left")
 datHmet <- join(datHmet, datAirP, by=c("doy","year"), type="left")
+
+
+datLmet$RH.fix <-ifelse(datLmet$RH>=1,.999,datLmet$RH)
+datLmet$e.sat<-0.611*exp((17.502*datLmet$Temp)/(datLmet$Temp+240.97))
+datLmet$D<-(datLmet$e.sat-(datLmet$RH.fix*datLmet$e.sat))
+
+datHmet$RH.fix <-ifelse(datHmet$RH>=1,.999,datHmet$RH)
+datHmet$e.sat<-0.611*exp((17.502*datHmet$Temp)/(datHmet$Temp+240.97))
+datHmet$D<-(datHmet$e.sat-(datHmet$RH.fix*datHmet$e.sat))
+
+
+
+
+
+
+#################################################################
+###### check for hysteresis                     #################
+#################################################################
+
+
+if(plotcheck==1){
+datLmetD1 <- data.frame(doy=ifelse(datLmet$hour==0,datLmet$doy-1,datLme$doy), year=datLmet$year, hour=datLmet$hour-.5, D.D1=datLmet$D)
+datLmetD2 <- data.frame(doy=ifelse(datLme$hour<=1,datLmet$doy-1,datLmet$doy), year=datLmet$year, hour=datLmet$hour-1, D.D2=datLmet$D)
+datLmetD3 <- data.frame(doy=ifelse(datLme$hour<=1.5,datLmet$doy-1,datLmet$doy), year=datLmet$year, hour=datLmet$hour-1.5, D.D3=datLmet$D)
+
+datHmetD1 <- data.frame(doy=ifelse(datHmet$hour==0,datHmet$doy-1,datHmet$doy), year=datHmet$year, hour=datHmet$hour-.5, D.D1=datHmet$D)
+datHmetD2 <- data.frame(doy=ifelse(datHmet$hour<=1,datHmet$doy-1,datHmet$doy), year=datHmet$year, hour=datHmet$hour-1, D.D2=datHmet$D)
+datHmetD3 <- data.frame(doy=ifelse(datHmet$hour<=1.5,datHmet$doy-1,datHmet$doy), year=datHmet$year, hour=datHmet$hour-1.5, D.D3=datHmet$D)
+
+datLhystT <- list(datLmet,datLmetD1,datLmetD2,datLmetD3 )
+datHhystT <- list(datHmet,datHmetD1,datHmetD2,datHmetD3 )
+
+datLhyst <- join_all(datLhystT, by=c("doy","year","hour"), type="left")
+datHhyst <- join_all(datHhystT, by=c("doy","year","hour"), type="left")
+
+#join met data into each
+datELmet <- join(El.L,datLhyst, by=c("doy","year","hour"), type="left")
+datEHmet <- join(El.H,datHhyst, by=c("doy","year","hour"), type="left")
+datELmet17 <- join(El.L17,datLhyst, by=c("doy","year","hour"), type="left")
+datEHmet17 <- join(El.H17,datHhyst, by=c("doy","year","hour"), type="left")
+
+ElUdays <- unique(datELmet$doy)
+
+
+j<-7	
+	
+	for(i in 1:13){
+	#look at an example for a hystereses loop
+	jpeg(file=paste0(diagP, "\\hysteresis\\low2016day",ElUdays[j],"sensor",i,".jpg"), width=1500, height=1000, units="px")
+	plot(c(0,1),c(0,1), ylim=c(0,0.01), xlim=c(0,1.5),type="n", pch=19, xlab= "D", ylab="Transpiration (g m-2 s-1)",
+			main=paste("doy",ElUdays[i]))
+	
+		points(datELmet$D[datELmet$doy==ElUdays[j]],datELmet[datELmet$doy==ElUdays[j],(i+3)], col="black", pch=19, type="b")
+		points(datELmet$D.D1[datELmet$doy==ElUdays[j]],datELmet[datELmet$doy==ElUdays[j],(i+3)], col="red", pch=19)
+		points(datELmet$D.D2[datELmet$doy==ElUdays[j]],datELmet[datELmet$doy==ElUdays[j],(i+3)], col="cornflowerblue", pch=19)	
+		points(datELmet$D.D3[datELmet$doy==ElUdays[j]],datELmet[datELmet$doy==ElUdays[j],(i+3)], col="darkgreen", pch=19)
+			
+		
+
+	dev.off()
+	}
+	jpeg(file=paste0(diagP, "\\hysteresis\\allLLow.jpg"), width=1500, height=1000, units="px")
+	par(mfrow=c(1,2))
+	plot(datELmet$D,rowMeans(datELmet[,4:17], na.rm=TRUE), pch=19)
+	points(datELmet$D.D1,rowMeans(datELmet[,4:17], na.rm=TRUE), pch=19, col="orangered3")
+	points(datELmet$D.D2,rowMeans(datELmet[,4:17], na.rm=TRUE), pch=19, col="cornflowerblue")
+	points(datELmet$D.D3,rowMeans(datELmet[,4:17], na.rm=TRUE), pch=19, col="darkgreen")	
+	
+	plot(log(datELmet$D[datELmet$D>.6]),rowMeans(datELmet[,4:17], na.rm=TRUE)[datELmet$D>.6], pch=19)
+	points(log(datELmet$D.D1[datELmet$D.D1>.6]),rowMeans(datELmet[,4:17], na.rm=TRUE)[datELmet$D.D1>.6], pch=19, col="orangered3")
+	points(log(datELmet$D.D2[datELmet$D.D2>.6]),rowMeans(datELmet[,4:17], na.rm=TRUE)[datELmet$D.D2>.6], pch=19, col="cornflowerblue")
+	points(log(datELmet$D.D3[datELmet$D.D3>.6]),rowMeans(datELmet[,4:17], na.rm=TRUE)[datELmet$D.D3>.6], pch=19, col="darkgreen")
+	dev.off()
+	
+	
+		jpeg(file=paste0(diagP, "\\hysteresis\\allHigh.jpg"), width=1500, height=1000, units="px")
+	par(mfrow=c(1,2))
+	plot(datEHmet$D,rowMeans(datEHmet[,4:10]), pch=19)
+	points(datEHmet$D.D1,rowMeans(datEHmet[,4:10]), pch=19, col="orangered3")
+	points(datEHmet$D.D2,rowMeans(datEHmet[,4:10]), pch=19, col="cornflowerblue")
+	points(datEHmet$D.D3,rowMeans(datEHmet[,4:10]), pch=19, col="darkgreen")	
+	
+	plot(log(datEHmet$D[datEHmet$D>.6]),rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D>.6], pch=19)
+	points(log(datEHmet$D.D1[datEHmet$D.D1>.6]),rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D.D1>.6], pch=19, col="orangered3")
+	points(log(datEHmet$D.D2[datEHmet$D.D2>.6]),rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D.D2>.6], pch=19, col="cornflowerblue")
+	points(log(datEHmet$D.D3[datEHmet$D.D3>.6]),rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D.D3>.6], pch=19, col="darkgreen")
+	dev.off()
+	
+	
+		jpeg(file=paste0(diagP, "\\hysteresis\\allHigh17.jpg"), width=1500, height=1000, units="px")
+	par(mfrow=c(1,2))
+	plot(datEHmet17$D,rowMeans(datEHmet17[,4:17]), pch=19)
+	points(datEHmet17$D.D1,rowMeans(datEHmet17[,4:17], na.rm=TRUE), pch=19, col="orangered3")
+	points(datEHmet17$D.D2,rowMeans(datEHmet17[,4:17], na.rm=TRUE), pch=19, col="cornflowerblue")
+	points(datEHmet17$D.D3,rowMeans(datEHmet17[,4:17], na.rm=TRUE), pch=19, col="darkgreen")	
+	
+	plot(log(datEHmet17$D[datEHmet17$D>.6]),rowMeans(datEHmet17[,4:17], na.rm=TRUE)[datEHmet17$D>.6], pch=19)
+	points(log(datEHmet17$D.D1[datEHmet17$D.D1>.6]),rowMeans(datEHmet17[,4:17], na.rm=TRUE)[datEHmet17$D.D1>.6], pch=19, col="orangered3")
+	points(log(datEHmet17$D.D2[datEHmet17$D.D2>.6]),rowMeans(datEHmet17[,4:17], na.rm=TRUE)[datEHmet17$D.D2>.6], pch=19, col="cornflowerblue")
+	points(log(datEHmet17$D.D3[datEHmet17$D.D3>.6]),rowMeans(datEHmet17[,4:17], na.rm=TRUE)[datEHmet17$D.D3>.6], pch=19, col="darkgreen")
+	dev.off()	
+	
+	jpeg(file=paste0(diagP, "\\hysteresis\\allHigh17.jpg"), width=1500, height=1000, units="px")
+	par(mfrow=c(1,2))
+	plot(datELmet17$D,rowMeans(datELmet17[,4:17]), pch=19)
+	points(datELmet17$D.D1,rowMeans(datELmet17[,4:17], na.rm=TRUE), pch=19, col="orangered3")
+	points(datELmet17$D.D2,rowMeans(datELmet17[,4:17], na.rm=TRUE), pch=19, col="cornflowerblue")
+	points(datELmet17$D.D3,rowMeans(datELmet17[,4:17], na.rm=TRUE), pch=19, col="darkgreen")	
+	
+	plot(log(datELmet17$D[datELmet17$D>.6]),rowMeans(datELmet17[,4:17], na.rm=TRUE)[datELmet17$D>.6], pch=19)
+	points(log(datELmet17$D.D1[datELmet17$D.D1>.6]),rowMeans(datELmet17[,4:17], na.rm=TRUE)[datELmet17$D.D1>.6], pch=19, col="orangered3")
+	points(log(datELmet17$D.D2[datELmet17$D.D2>.6]),rowMeans(datELmet17[,4:17], na.rm=TRUE)[datELmet17$D.D2>.6], pch=19, col="cornflowerblue")
+	points(log(datELmet17$D.D3[datELmet17$D.D3>.6]),rowMeans(datELmet17[,4:17], na.rm=TRUE)[datELmet17$D.D3>.6], pch=19, col="darkgreen")
+	dev.off()	
+	
+	fitLD <- lm(rowMeans(datELmet[,4:10], na.rm=TRUE)[datELmet$D>.6]~log(datELmet$D[datELmet$D>.6]))
+	summary(fitLD)
+	fitLD1 <- lm(rowMeans(datELmet[,4:10], na.rm=TRUE)[datELmet$D.D1>.6]~log(datELmet$D.D1[datELmet$D.D1>.6]))
+	summary(fitLD1)
+	fitLD2 <- lm(rowMeans(datELmet[,4:10], na.rm=TRUE)[datELmet$D.D1>.6]~log(datELmet$D.D2[datELmet$D.D1>.6]))
+	summary(fitLD2)
+	# same fit between 0 and .5 lag, slightly worse 1 hour
+	
+	fitHD <- lm(rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D>.6]~log(datEHmet$D[datEHmet$D>.6]))
+	summary(fitHD)
+	fitHD1 <- lm(rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D.D1>.6]~log(datEHmet$D.D1[datEHmet$D.D1>.6]))
+	summary(fitHD1)
+	fitHD2 <- lm(rowMeans(datEHmet[,4:10], na.rm=TRUE)[datEHmet$D.D2>.6]~log(datEHmet$D.D2[datEHmet$D.D2>.6]))
+	summary(fitHD2)
+	# exact same fit between all 3
+	
+	fitH17D <- lm(rowMeans(datEHmet17[,4:10], na.rm=TRUE)[datEHmet17$D>.6]~log(datEHmet17$D[datEHmet17$D>.6]))
+	summary(fitH17D)
+	fitH17D1 <- lm(rowMeans(datEHmet17[,4:10], na.rm=TRUE)[datEHmet17$D.D1>.6]~log(datEHmet17$D.D1[datEHmet17$D.D1>.6]))
+	summary(fitH17D1)
+	fitHD2 <- lm(rowMeans(datEHmet17[,4:10], na.rm=TRUE)[datEHmet17$D.D2>.6]~log(datEHmet17$D.D2[datEHmet17$D.D2>.6]))
+	summary(fitHD2)
+	#same fit all three
+}
+
+
 
 #join met data to T
 datLtkg<-join(datLc1,datLmet, by=c("doy","year","hour"), type="left")
