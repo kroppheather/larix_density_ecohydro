@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
 
@@ -309,7 +309,9 @@ colnames(gcALL3p3) <- c("doy","year","hour","stand","standDay","PAR")
 gcALL3p4 <- join(gcALL3p1,gcALL3p2, by=c("doy","year","hour","stand","standDay"), type="full")
 gcALL3 <- join(gcALL3p4,gcALL3p3, by=c("doy","year","hour","stand","standDay"), type="full")
 
+#calculate ave pr for antecedent mixing trick
 
+aprmix <- colMeans(precipL)
 
 #################################################################
 ####model run                                             #######
@@ -324,10 +326,11 @@ datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, sta
 					D=gcALL3$D, NstandDay=dim(standDay4)[1],
 					stand=standDay4$stand, airT=standDay4$Tair,
 					airTmean=airTmean,thawD=standDay4$TD, thawstart=TDstart$TD, 
-					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4 )
+					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4,
+					a.prbar=aprmix )
 
 # set parameters to monitor
-parms <-c( "aa.star", "bb.star", "dd.star","l.slope","rep.gs", "wpr","deltapr","pastpr")
+parms <-c( "aa.star", "bb.star", "dd.star","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -351,9 +354,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run20\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22\\chain3"))
  	
 	
 	# 5b. call openbugs
@@ -385,8 +388,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1,, parms=c( "a1", "a2", "a3", "b1", "b2", "b3",  "gref", "S", "d1","d2","d3","a4",
-				"b4","d4","l.slope", "wpr"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1, parms=c( "aa.star", "bb.star", "dd.star","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
 
 
 

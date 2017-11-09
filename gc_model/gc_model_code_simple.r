@@ -39,9 +39,9 @@ model{
 #########parameter model ########
 #################################	
 	for(i in 1:NstandDay){
-		gref[i]<-a[1,stand[i]]+a[2,stand[i]]*airTcent[i]+a[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+a[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
-		S[i]<-b[1,stand[i]]+b[2,stand[i]]*airTcent[i]+b[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+b[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
-		slope.temp[i] <-d[1,stand[i]]+d[2,stand[i]]*airTcent[i]+d[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+d[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
+		gref[i]<-a[1,stand[i]]+a[2,stand[i]]*airTcent[i]+a[3,stand[i]]*(pastpr[days[i],stand[i]]-pastpr.bar[stand[i]])+a[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
+		S[i]<-b[1,stand[i]]+b[2,stand[i]]*airTcent[i]+b[3,stand[i]]*(pastpr[days[i],stand[i]]-pastpr.bar[stand[i]])+b[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
+		slope.temp[i] <-d[1,stand[i]]+d[2,stand[i]]*airTcent[i]+d[3,stand[i]]*(pastpr[days[i],stand[i]]-pastpr.bar[stand[i]])+d[4,stand[i]]*(thawD[i]-thawstart[stand[i]])
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
@@ -80,7 +80,14 @@ model{
 		pastpr[i,2]<-sum(pr.temp[i,,2])
 	}
 	
-		
+	#nonidentifiable 
+	for(i in 1:Nstand){
+		for(m in 1:Nlag){
+			pastpr.barTemp[m,i] <- deltapr[m,i]*a.prbar[m]
+		}
+	}
+	pastpr.bar[1] <- sum(pastpr.barTemp[,1])
+	pastpr.bar[2] <- sum(pastpr.barTemp[,2])
 
 #################################
 #########priors          ########
