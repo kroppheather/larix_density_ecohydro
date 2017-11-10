@@ -44,9 +44,9 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run26")
 #model code
-modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
+modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_noant.r"
 
 
 
@@ -188,43 +188,50 @@ highGC17 <-ldply(tgcH17, data.frame)
 
 gcALL <- rbind(lowGC,lowGC17,highGC,highGC17)
 
-#################################################
-#################################################
-##JUST for SPATIAL MODEL!!!!!!!!!!!!!! ##########
-#################################################
-#################################################
-#exclude non repeat tree from low density 2016 
-#since no spatial reference for it
-if(spatialmodel==1){
-	gcALL <- gcALL[gcALL$treeID.new<14,]
+#aggregate to by stand
+gcALLag <- aggregate(gcALL$g.c, by=list(gcALL$hour,gcALL$doy,gcALL$year,gcALL$stand), FUN="mean")
+gcALLn <- aggregate(gcALL$g.c, by=list(gcALL$hour,gcALL$doy,gcALL$year,gcALL$stand), FUN="length")
+#doesn't need to be averaged since the same but just for matching
+gcALLagD <- aggregate(gcALL$D, by=list(gcALL$hour,gcALL$doy,gcALL$year,gcALL$stand), FUN="mean")
+gcALLagP <- aggregate(gcALL$PAR, by=list(gcALL$hour,gcALL$doy,gcALL$year,gcALL$stand), FUN="mean")
+colnames(gcALLag) <- c("hour","doy","year","stand","g.c")
+gcALLag$D <- gcALLagD$x
+gcALLag$PAR <- gcALLagP$x
 
-}
+#eliminate half hours where there weren't at least 3 measurements in a stand
+gcALLsamp <-gcALLag[gcALLn$x>=3,]
 
 
-
+#now make sure there are enough observaions in the day
 
 #first check how many tree X day X stand observations there are
-nCheck1 <- aggregate(gcALL$g.c, by=list(gcALL$doy,gcALL$year, gcALL$stand, gcALL$treeID.new), FUN="length")
-#check that there are at least multiple trees present in each day
-nCheck2 <- aggregate(nCheck1$x, by=list(nCheck1$Group.1,nCheck1$Group.2,nCheck1$Group.3), FUN="length")
-#check that there are how many measurements that are in each day
-nCheck3 <- aggregate(gcALL$g.c, by=list(gcALL$doy,gcALL$year, gcALL$stand), FUN="length")
-#this check is a better filter, because as long at there are at least 15 measurements the day is reasonable
-colnames(nCheck3) <- c("doy", "year", "stand", "count") 
+nCheck1 <- aggregate(gcALLsamp$g.c, by=list(gcALLsamp$doy,gcALLsamp$year, gcALLsamp$stand), FUN="length")
+colnames(nCheck1) <- c("doy", "year","stand", "n")
+nCheck1 <- nCheck1[nCheck1$n>=4,]
+#now filter days that don't at least 4 observations
+nfilter <- nCheck1[,1:3]
 
-nCheck3 <- nCheck3[nCheck3$count>=15,]
-#now filter days that don't have at least 15 observations out
-nfilter <- nCheck3[,1:3]
+gcALLf <- join(gcALLsamp, nfilter, by=c("doy", "year", "stand"), type="inner")
 
-gcALLf <- join(gcALL, nfilter, by=c("doy", "year", "stand"), type="inner")
+#lastly filter days that don't at least get to 0.75 D
+
+Dmax <- aggregate(gcALLf$D, by=list(gcALLf$doy,gcALLf$year,gcALLf$stand), FUN="max")
+colnames(Dmax) <- c("doy","year","stand","Dmax")
+Dmaxsub <- Dmax[Dmax$Dmax>=0.75,]
+
+DmaxJ <- Dmaxsub[,1:3]
+
+#now make sure only higher D days are included:
+gcALLft <- join(gcALLf,DmaxJ, by=c("doy", "year", "stand"), type="inner")
+
 
 #get unique combinations to generate IDS
 #standDayIDS
-standDay <- unique(data.frame(doy=gcALLf$doy,year=gcALLf$year,stand=gcALLf$stand))
+standDay <- unique(data.frame(doy=gcALLft$doy,year=gcALLft$year,stand=gcALLft$stand))
 standDay$standDay <-seq(1, dim(standDay)[1])
 
 #join back into gcAll
-gcALL2 <- join(gcALLf, standDay, by=c("doy", "year", "stand"), type="left")
+gcALL2 <- join(gcALLft, standDay, by=c("doy", "year", "stand"), type="left")
 
 #get average daily temperature for a covariate
 TairH <- aggregate(datHmet$Temp, by=list(datHmet$doy,datHmet$year), FUN="mean")
@@ -259,8 +266,8 @@ for(i in 1:dim(Days)[1]){
 }
 
 #set up lag periods
-lagStart <- c(1,4,8,15,22)
-lagEnd <- c(3,7,14,21,28)
+lagStart <- c(1,14)
+lagEnd <- c(7,28)
 
 #take averages over lag periods
 
@@ -298,21 +305,11 @@ TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="min")
 colnames(TDstart) <- c("stand", "TD")
 TDstart$TD <- floor(TDstart$TD)
 
-#aggregate
-gcALL3p1 <- aggregate(gcALL2$g.c, by=list(gcALL2$doy,gcALL2$year,gcALL2$hour,gcALL2$stand,gcALL2$standDay),FUN="mean")
-gcALL3p2 <- aggregate(gcALL2$D, by=list(gcALL2$doy,gcALL2$year,gcALL2$hour,gcALL2$stand,gcALL2$standDay),FUN="mean")
-gcALL3p3 <- aggregate(gcALL2$PAR, by=list(gcALL2$doy,gcALL2$year,gcALL2$hour,gcALL2$stand,gcALL2$standDay),FUN="mean")
-colnames(gcALL3p1) <- c("doy","year","hour","stand","standDay","g.c")
-colnames(gcALL3p2) <- c("doy","year","hour","stand","standDay","D")
-colnames(gcALL3p3) <- c("doy","year","hour","stand","standDay","PAR")
 
-gcALL3p4 <- join(gcALL3p1,gcALL3p2, by=c("doy","year","hour","stand","standDay"), type="full")
-gcALL3 <- join(gcALL3p4,gcALL3p3, by=c("doy","year","hour","stand","standDay"), type="full")
+precipL1 <- data.frame(doy=Days$doy,year=Days$year,lag1=c(precipL[,1]),lag2=c(precipL[,2]))
 
-#calculate ave pr for antecedent mixing trick
-
-aprmix <- colMeans(precipL)
-
+standDay5 <- join(standDay4, precipL1, by=c("doy","year"), type="left")
+pastprmean<- mean(precipL1$lag1)
 #################################################################
 ####model run                                             #######
 #################################################################
@@ -321,16 +318,16 @@ aprmix <- colMeans(precipL)
 #new data stand.obs, NstandDayTree, standDayTree, stand, tree, N tree, thawD, thawstart(stand), Nstand, xC[i,y] DistA=sqrt(pow(xC[y]-xC[m],2)+ pow(y[r] - y[c], 2))
 #data list
 
-datalist <- list(Nobs=dim(gcALL3)[1], gs=gcALL3$g.c, stand.obs=gcALL3$stand, standDay=gcALL3$standDay,
-					PAR=gcALL3$PAR,
-					D=gcALL3$D, NstandDay=dim(standDay4)[1],
-					stand=standDay4$stand, airT=standDay4$Tair,
-					airTmean=airTmean,thawD=standDay4$TD, thawstart=TDstart$TD, 
-					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4,
-					a.prbar=aprmix )
+datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, standDay=gcALL2$standDay,
+					PAR=gcALL2$PAR,
+					D=gcALL2$D, NstandDay=dim(standDay5)[1],
+					stand=standDay5$stand, airT=standDay5$Tair,
+					airTmean=airTmean,thawD=standDay5$TD, thawstart=TDstart$TD, 
+					 Nstand=2,Nlag=length(lagStart),Nparm=4,
+						pastpr1=standDay5$lag1, pastprmean=pastprmean)
 
 # set parameters to monitor
-parms <-c( "aa.star", "bb.star", "dd.star","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
+parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -354,9 +351,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run22\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run26\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run26\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run26\\chain3"))
  	
 	
 	# 5b. call openbugs
@@ -388,7 +385,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "aa.star", "bb.star", "dd.star","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1, parms=c(  "a", "b", "d"),  dir=paste0(saveMdir, "\\history"))
 
 
 
