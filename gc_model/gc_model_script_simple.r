@@ -362,12 +362,12 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
-#and then I update thinning every 30.
+#and then I update thinning every 100. Ran for 10,000 then added mu. gs. ran for another 2,000 to only get the last 2,000.
 
 
-folder1 <- paste0(saveMdir, "\\CODA_out2\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out2\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out2\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out3\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out3\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out3\\chain3\\")
 
 
 
@@ -379,7 +379,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history2"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history3"))
 
 
 
