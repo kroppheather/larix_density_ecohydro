@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run29")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_simple.r"
 
@@ -256,18 +256,19 @@ Days$Days <- seq(1, dim(Days)[1])
 
 #take averages over previous 2 weeks
 #now make a precip matrix that includes days into the past
-precipmat <- matrix(rep(NA, dim(Days)[1]*28), ncol=28)
+Npast <- 60
+precipmat <- matrix(rep(NA, dim(Days)[1]*Npast), ncol=Npast)
 
 for(i in 1:dim(Days)[1]){
-	for(j in 1:28){
+	for(j in 1:Npast){
 		precipmat[i,j] <- datAirP$Pr.mm[datAirP$doy==(Days$doy[i]-j)&datAirP$year==Days$year[i]]
 	
 	}
 }
 
 #set up lag periods
-lagStart <- c(1,4,8,15)
-lagEnd <- c(3,7,14,28)
+lagStart <- c(1,4,8,15,29)
+lagEnd <- c(3,7,14,28,60)
 
 #take averages over lag periods
 
@@ -345,9 +346,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run29\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run29\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run29\\chain3"))
  	
 	
 	# 5b. call openbugs
@@ -367,9 +368,9 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #have to start on 10,012, not 10,0011 because mu.gs wasn't monitored until then. 
 
 
-folder1 <- paste0(saveMdir, "\\CODA_out3\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out3\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out3\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out2\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out2\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out2\\chain3\\")
 
 
 
@@ -381,28 +382,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history3"))
-
-codamat1 <- matrix(codaobj1[[1]], byrow=FALSE, ncol=4174)
-colnames(codamat1)<- dimnames(codaobj1[[1]])[[2]]
-rownames(codamat1)<- dimnames(codaobj1[[1]])[[1]]
-codamat2 <- matrix(codaobj1[[2]], byrow=FALSE, ncol=4174)
-colnames(codamat2)<- dimnames(codaobj1[[2]])[[2]]
-rownames(codamat2)<- dimnames(codaobj1[[2]])[[1]]
-codamat3 <- matrix(codaobj1[[3]], byrow=FALSE, ncol=4174)
-colnames(codamat3)<- dimnames(codaobj1[[3]])[[2]]
-rownames(codamat3)<- dimnames(codaobj1[[3]])[[1]]
-
-codafix1 <- codamat1[-1,]
-codafix2 <-codamat2[-1,]
-codafix3 <-codamat3[-1,]
-
-codam1 <- mcmc(codafix1)
-codam2 <- mcmc(codafix2)
-codam3 <- mcmc(codafix3)
-
-
-codam2 <- mcmc.list(codam1,codam2,codam3)
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
 
 
 modSum <-summary(codam2, na.rm=TRUE) 

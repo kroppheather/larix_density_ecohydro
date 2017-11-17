@@ -10,18 +10,18 @@
 library(plyr)
 
 #set plot directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run16"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run27"
 
 
 #read in stand day data
 
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\standDay.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\gcdata.csv")
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\out\\gcdata.csv")
 #################################################################
 ####read in parameters                                    #######
 #################################################################
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run16\\out\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run27\\out\\mod_quants.csv")
 
 #stand index of 1 is low
 
@@ -41,6 +41,9 @@ datS <- datC[datC$parms3=="S",]
 datgref <- datC[datC$parms3=="gref",]
 datlslope <- datC[datC$parms3=="lsope",]
 datrep <- datC[datC$parms3=="repgs",]
+datmugs<- datC[datC$parms3=="mugs",]
+datprecip<- datC[datC$parms3=="pastpr",]
+datprecip$Days <- seq(1, dim(datprecip)[1])
 #add ind
 datS <- cbind(datS,daySD)
 datgref <- cbind(datgref,daySD)
@@ -52,12 +55,17 @@ datparm <- datC[datC$parms3=="a"|datC$parms3=="b"|datC$parms3=="d",]
 plot(datgc$g.c,datrep$Mean, pch=19, xlim=c(0,200), ylim=c(0,200))
 fit<-lm(datrep$Mean~datgc$g.c)
 summary(fit)
+abline(fit)
+abline(0,1, lwd=2, col="red")
 
-plot(datgc$g.c[datgc$treeID.new==13],datrep$Mean[datgc$treeID.new==13], pch=19, xlim=c(0,400), ylim=c(0,400))
-fit2<-lm(datrep$Mean[datgc$treeID.new==13]~datgc$g.c[datgc$treeID.new=13])
-summary(fit2)
-
-
+resd<-datgc$g.c-datmugs$Mean
+#check for bias in covariates
+datALLD <- join(datgc, daySD, by=c("standDay"), type="left")
+datALLD$resd <-resd
+datPR <- join(datALLD, datprecip, by="Days", type="left")
+plot(datALLD$Tair,resd)
+plot(datALLD$TD,resd)
+plot(datPR$Mean, datPR$resd)
 #Tair mean =13.5
 #################################################################
 ####parameter plots                                       #######
