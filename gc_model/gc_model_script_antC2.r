@@ -363,14 +363,15 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
-#and then I update thinning every 100. Ran for 10,000 then added mu. gs. ran for another 2,000 to only get the last 2,000.
-#burn in was 10,000*100+11 and total run was 12000*100 +11 and total sample size was 2,000 for three chains thinned by 100
-#have to start on 10,012, not 10,0011 because mu.gs wasn't monitored until then. 
+#and then I update thinning every 100. Ran for 4,000 then added mu. gs. ran for another 2,000 thinning by 150 to only get the last 2,000.
+#burn in was 2000*150+4,000*100+11 and total run was 2000*250+2000*150+4000*100 +11 and total sample size was 2,000 for three chains thinned by 100
+#have to start on 8,012,  
+#now running for another 2,000 thinning by 250
 
 
-folder1 <- paste0(saveMdir, "\\CODA_out2\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out2\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out2\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out4\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out4\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out4\\chain3\\")
 
 
 
@@ -382,14 +383,14 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history4"))
 
 
-modSum <-summary(codam2, na.rm=TRUE) 
+modSum <-summary(codaobj1) 
 
 
-write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
-write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
-write.table(standDay4, paste0(saveMdir, "\\out", "\\standDay.csv"), sep=",", row.names=FALSE)
-write.table(gcALL2, paste0(saveMdir, "\\out", "\\gcdata.csv"), sep=",", row.names=FALSE)
+write.table(modSum$statistics, paste0(saveMdir, "\\out2", "\\mod_stats.csv"), sep=",", row.names=TRUE)
+write.table(modSum$quantiles, paste0(saveMdir, "\\out2", "\\mod_quants.csv"), sep=",", row.names=TRUE)
+write.table(standDay4, paste0(saveMdir, "\\out2", "\\standDay.csv"), sep=",", row.names=FALSE)
+write.table(gcALL2, paste0(saveMdir, "\\out2", "\\gcdata.csv"), sep=",", row.names=FALSE)
 #aggregate to compare means
