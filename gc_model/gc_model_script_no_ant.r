@@ -44,7 +44,7 @@ spatialmodel <- 1
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run33")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_no_ant.r"
 
@@ -256,7 +256,7 @@ Days$Days <- seq(1, dim(Days)[1])
 
 #take averages over previous 2 weeks
 #now make a precip matrix that includes days into the past
-Npast <- 14
+Npast <- 21
 precipmat <- matrix(rep(NA, dim(Days)[1]*Npast), ncol=Npast)
 
 for(i in 1:dim(Days)[1]){
@@ -268,12 +268,14 @@ for(i in 1:dim(Days)[1]){
 
 
 
-precipLt <- numeric(0)
+precipLt1 <- numeric(0)
+precipLt2 <- numeric(0)
 for(i in 1:dim(Days)[1]){
 
-		precipLt[i] <- sum(precipmat[i,])
+		precipLt1[i] <- mean(precipmat[i,1:7])
+		precipLt2[i] <- mean(precipmat[i,8:21])
 	}	
-precipL <- data.frame(precipL=precipLt,Days=seq(1,dim(Days)[1]))
+precipL <- data.frame(precipL1=precipLt1,precipL2=precipLt2,Days=seq(1,dim(Days)[1]))
 
 
 standDay3  <- join(standDay2, Days, by=c("doy", "year"), type="left")
@@ -305,8 +307,8 @@ TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="mean")
 colnames(TDstart) <- c("stand", "TD")
 TDstart$TD <- floor(TDstart$TD)
 #precip
-PrecipMean <- floor(mean(precipL$precipL))
-
+PrecipMean1 <- floor(mean(precipL$precipL1))
+PrecipMean2 <- floor(mean(precipL$precipL2))
 #################################################################
 ####model run                                             #######
 #################################################################
@@ -319,11 +321,12 @@ datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, sta
 					PAR=gcALL2$PAR,
 					D=gcALL2$D, NstandDay=dim(standDay5)[1],
 					stand=standDay5$stand, airT=standDay5$Tair,
-					airTmean=airTmean,thawD=standDay5$TD, thawstart=TDstart$TD, prmean=PrecipMean,pastpr=standDay5$precipL,
-					 Nstand=2,Nparm=4 )
+					airTmean=airTmean,thawD=standDay5$TD, thawstart=TDstart$TD, prmean1=PrecipMean1,pastpr1=standDay5$precipL1,
+					 prmean2=PrecipMean1,pastpr2=standDay5$precipL2,
+					 Nstand=2,Nparm=11)
 
 # set parameters to monitor
-parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
+parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs")
 
 # set the number of CPUs to be 3
 sfInit(parallel=TRUE, cpus=3)
@@ -347,9 +350,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run33\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run33\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run33\\chain3"))
  	
 	
 	# 5b. call openbugs
@@ -364,7 +367,7 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
-#and then I update thinning every 100 for 8000. 
+#and then I update thinning every 150 for 10000. 
 
 
 folder1 <- paste0(saveMdir, "\\CODA_out2\\chain1\\")
