@@ -785,10 +785,20 @@ T.gL17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
 T.gLf17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
 T.gH<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
 T.gHf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
+T.Hq<-numeric(0)
+T.Hq17<-numeric(0)
+T.Lq<-numeric(0)
+T.Lq17<-numeric(0)
+T.nqL<- numeric(0)
+T.nqL17<- numeric(0)
+T.nqH<- numeric(0)
+T.nqH17<- numeric(0)
+#get number of 
 for(i in 1:8){
 	T.gH[,i]<-F.hf[,i]/datSH$leafm2[i]
 	T.gHf[,i]<-ifelse(T.gH[,i]<quantile(T.gH[,i],probs=c(0.95),na.rm=TRUE),T.gH[,i],NA)
-	
+	T.Hq[i]<-quantile(T.gH[,i],probs=c(0.95),na.rm=TRUE)
+	T.nqH[i]<- length(na.omit(T.gH[,i]))
 }
 for(i in 1:16){
 	T.gL[,i]<-F.lf[,i]/datSL$leafm2[i]	
@@ -797,8 +807,22 @@ for(i in 1:16){
 	T.gLf17[,i]<-ifelse(T.gL17[,i]<quantile(T.gL17[,i],probs=c(0.95),na.rm=TRUE),T.gL17[,i],NA)
 	T.gH17[,i]<-F.hf17[,i]/datSH17$leafm2[i]
 	T.gHf17[,i]<-ifelse(T.gH17[,i]<quantile(T.gH17[,i],probs=c(0.95),na.rm=TRUE),T.gH17[,i],NA)
+	T.Lq[i]<-quantile(T.gL[,i],probs=c(0.95),na.rm=TRUE)
+	T.Lq17[i]<-quantile(T.gL17[,i],probs=c(0.95),na.rm=TRUE)
+	T.Hq17[i]<-quantile(T.gH17[,i],probs=c(0.95),na.rm=TRUE)
+	T.nqH17[i]<- length(na.omit(T.gH17[,i]))
+	T.nqL17[i]<- length(na.omit(T.gL17[,i]))
+	T.nqL[i]<- length(na.omit(T.gL[,i]))
 }
-
+hist(c(T.Lq,T.Lq17))
+hist(c(T.Hq,T.Hq17))
+AQ <- quantile(c(as.vector(T.gH),as.vector(T.gH17),as.vector(T.gL),as.vector(T.gL17)), probs=c(0.95),na.rm=TRUE)
+HQ <- quantile(c(as.vector(T.gH),as.vector(T.gH17)), probs=c(0.95),na.rm=TRUE)
+LQ <- quantile(c(as.vector(T.gL),as.vector(T.gL17)), probs=c(0.95),na.rm=TRUE)
+plot(c(T.Lq,T.Lq17,T.Hq,T.Hq17), pch=19, col=c(rep("royalblue",16),rep("royalblue",16),rep("tomato3",8),rep("tomato3",16)))
+abline(h=AQ)
+abline(h=HQ, col="tomato3")
+abline(h=LQ, col="royalblue")
 #remove south facing measurements
 AllSeqSens <- seq(1,16)
 AllSeqSensH <- seq(1,8)
@@ -823,26 +847,26 @@ El.L17<-data.frame(doy=datDTL17$doy, year=rep(2017,length(datDTL17$doy)),hour=da
 
 if(plotcheck==1){
 	for(i in 1:length(NorthHkeep)){
-		jpeg(file=paste0(diagP, "\\El\\high2016sensor",NorthHkeep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\El\\high2016sensor",NorthHkeep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(El.H$doy+(El.H$hour/24),El.H[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
 			main=paste("sensor",NorthHkeep[i]))
 		dev.off()
 	}
 		for(i in 1:length(NorthH17keep)){
-		jpeg(file=paste0(diagP, "\\El\\high2017sensor",NorthH17keep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\El\\high2017sensor",NorthH17keep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(El.H17$doy+(El.H17$hour/24),El.H17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
 			main=paste("sensor",NorthH17keep[i]))
 		dev.off()
 	}
 	
 	for(i in 1:length(NorthL17keep)){
-		jpeg(file=paste0(diagP, "\\El\\low2017sensor",NorthL17keep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\El\\low2017sensor",NorthL17keep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(El.L17$doy+(El.L17$hour/24),El.L17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
 			main=paste("sensor",NorthL17keep[i]))
 		dev.off()
 	}
 	for(i in 1:length(NorthLkeep)){
-		jpeg(file=paste0(diagP, "\\El\\low2016sensor",NorthLkeep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\El\\low2016sensor",NorthLkeep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(El.L$doy+(El.L$hour/24),El.L[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="Transpiration (g m-2 s-1)",
 			main=paste("sensor",NorthLkeep[i]))
 		dev.off()

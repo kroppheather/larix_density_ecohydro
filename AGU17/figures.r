@@ -233,6 +233,9 @@ EALLf$e.sat <- 0.611*exp((17.502*EALLf$Temp)/(EALLf$Temp+240.97))
 EALLf$RHfix <- ifelse(EALLf$RH>=1,.999,EALLf$RH)
 EALLf$D <- (EALLf$e.sat -(EALLf$RHfix*EALLf$e.sat ))
 
+#filter precip out
+EALLf <- join(EALLf, datPrecip, by=c("doy","year"), type="left")
+EALLf <- EALLf[EALLf$Pr.mm<=1,]
 #################################################################
 ####filter for spikes since don't have any of the met filters####
 ####used to filter out bad gc data.                          ####
@@ -240,6 +243,12 @@ EALLf$D <- (EALLf$e.sat -(EALLf$RHfix*EALLf$e.sat ))
 ####to filter based on a threshold unlike gc                 ####
 #################################################################
 #get the total number of days for each categ
+#make a 
+
+
+
+
+
 Edc <- aggregate(EALLf$E, by=list(EALLf$doy,EALLf$year, EALLf$stand, EALLf$sensor), FUN="length")
 colnames(Edc) <- c("doy","year","stand","sensor","n")
 Epeaks <- numeric(0)
@@ -256,6 +265,9 @@ for(i in 1:dim(Edc)[1]){
 }
 
 EALLf1 <- ldply(Etemp,data.frame)
+
+
+
 EALLf <- na.omit(EALLf1)
 
 #################################################################
@@ -351,12 +363,12 @@ xseq2016 <- seq(xl16, xh16, by=10)
 yseq <- seq(yl,yh, by=.1)
 xseq2017 <- seq(xl17, xh17, by=10)
 hhyl <- 0
-hhyh <- .02
+hhyh <- .05
 hhyseq <- seq(hhyl,hhyh, by=.01)
-hhxl16 <-190
-hhxh16 <- 195
-hhxl17 <-165
-hhxh17 <- 170
+hhxl16 <-180
+hhxh16 <- 190
+hhxl17 <-170
+hhxh17 <- 180
 jpeg(paste0(dirP , "\\transpiraiton.jpg"), width=2800, height=2000, units="px", quality=100)
 	ab <- layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(wd),4), height=rep(lcm(hd),4))
 	par(mai=c(0,0,0,0))
