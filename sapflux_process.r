@@ -785,44 +785,31 @@ T.gL17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
 T.gLf17<-matrix(rep(0,dim(KL17)[1]*16), ncol=16)
 T.gH<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
 T.gHf<-matrix(rep(0,dim(KH)[1]*8), ncol=8)
-T.Hq<-numeric(0)
-T.Hq17<-numeric(0)
-T.Lq<-numeric(0)
-T.Lq17<-numeric(0)
-T.nqL<- numeric(0)
-T.nqL17<- numeric(0)
-T.nqH<- numeric(0)
-T.nqH17<- numeric(0)
-#get number of 
+
+#calculate T in g m-2 s-1
 for(i in 1:8){
 	T.gH[,i]<-F.hf[,i]/datSH$leafm2[i]
-	T.gHf[,i]<-ifelse(T.gH[,i]<quantile(T.gH[,i],probs=c(0.95),na.rm=TRUE),T.gH[,i],NA)
-	T.Hq[i]<-quantile(T.gH[,i],probs=c(0.95),na.rm=TRUE)
-	T.nqH[i]<- length(na.omit(T.gH[,i]))
-}
+}	
+	
 for(i in 1:16){
 	T.gL[,i]<-F.lf[,i]/datSL$leafm2[i]	
-	T.gLf[,i]<-ifelse(T.gL[,i]<quantile(T.gL[,i],probs=c(0.95),na.rm=TRUE),T.gL[,i],NA)
 	T.gL17[,i]<-F.lf17[,i]/datSL17$leafm2[i]	
-	T.gLf17[,i]<-ifelse(T.gL17[,i]<quantile(T.gL17[,i],probs=c(0.95),na.rm=TRUE),T.gL17[,i],NA)
-	T.gH17[,i]<-F.hf17[,i]/datSH17$leafm2[i]
-	T.gHf17[,i]<-ifelse(T.gH17[,i]<quantile(T.gH17[,i],probs=c(0.95),na.rm=TRUE),T.gH17[,i],NA)
-	T.Lq[i]<-quantile(T.gL[,i],probs=c(0.95),na.rm=TRUE)
-	T.Lq17[i]<-quantile(T.gL17[,i],probs=c(0.95),na.rm=TRUE)
-	T.Hq17[i]<-quantile(T.gH17[,i],probs=c(0.95),na.rm=TRUE)
-	T.nqH17[i]<- length(na.omit(T.gH17[,i]))
-	T.nqL17[i]<- length(na.omit(T.gL17[,i]))
-	T.nqL[i]<- length(na.omit(T.gL[,i]))
-}
-hist(c(T.Lq,T.Lq17))
-hist(c(T.Hq,T.Hq17))
-AQ <- quantile(c(as.vector(T.gH),as.vector(T.gH17),as.vector(T.gL),as.vector(T.gL17)), probs=c(0.95),na.rm=TRUE)
+	T.gH17[,i]<-F.hf17[,i]/datSH17$leafm2[i]	
+}	
+#get quantile filters
 HQ <- quantile(c(as.vector(T.gH),as.vector(T.gH17)), probs=c(0.95),na.rm=TRUE)
 LQ <- quantile(c(as.vector(T.gL),as.vector(T.gL17)), probs=c(0.95),na.rm=TRUE)
-plot(c(T.Lq,T.Lq17,T.Hq,T.Hq17), pch=19, col=c(rep("royalblue",16),rep("royalblue",16),rep("tomato3",8),rep("tomato3",16)))
-abline(h=AQ)
-abline(h=HQ, col="tomato3")
-abline(h=LQ, col="royalblue")
+for(i in 1:8){	
+	T.gHf[,i]<-ifelse(T.gH[,i]<HQ,T.gH[,i],NA)
+
+}
+
+for(i in 1:16){
+	T.gLf17[,i]<-ifelse(T.gL17[,i]<LQ,T.gL17[,i],NA)		
+	T.gLf[,i]<-ifelse(T.gL[,i]<LQ,T.gL[,i],NA)	
+	T.gHf17[,i]<-ifelse(T.gH17[,i]<HQ,T.gH17[,i],NA)
+}
+
 #remove south facing measurements
 AllSeqSens <- seq(1,16)
 AllSeqSensH <- seq(1,8)

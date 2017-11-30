@@ -236,39 +236,6 @@ EALLf$D <- (EALLf$e.sat -(EALLf$RHfix*EALLf$e.sat ))
 #filter precip out
 EALLf <- join(EALLf, datPrecip, by=c("doy","year"), type="left")
 EALLf <- EALLf[EALLf$Pr.mm<=1,]
-#################################################################
-####filter for spikes since don't have any of the met filters####
-####used to filter out bad gc data.                          ####
-####The spikes here are also harder                          ####
-####to filter based on a threshold unlike gc                 ####
-#################################################################
-#get the total number of days for each categ
-#make a 
-
-
-
-
-
-Edc <- aggregate(EALLf$E, by=list(EALLf$doy,EALLf$year, EALLf$stand, EALLf$sensor), FUN="length")
-colnames(Edc) <- c("doy","year","stand","sensor","n")
-Epeaks <- numeric(0)
-Etemp <- list()
-ESpikes <- list()
-for(i in 1:dim(Edc)[1]){
-	Etemp[[i]] <- EALLf[EALLf$doy==Edc$doy[i]&EALLf$year==Edc$year[i]&EALLf$stand==Edc$stand[i]&EALLf$sensor==Edc$sensor[i],]
-	Epeaks[i] <- quantile(Etemp[[i]]$E, prob=.95)
-	ESpikes[[i]] <- which(Etemp[[i]]$E>Epeaks[i])
-	Etemp[[i]]$Efilter <- Etemp[[i]]$E
-	if(length(ESpikes[[i]])>0){
-		Etemp[[i]]$Efilter[ESpikes[[i]]] <- NA
-	}	
-}
-
-EALLf1 <- ldply(Etemp,data.frame)
-
-
-
-EALLf <- na.omit(EALLf1)
 
 #################################################################
 ####aggregate T to stand half hourly                      #######
@@ -301,7 +268,7 @@ colnames(Ecount2) <- c("doy","year","stand","n")
 dayUse <- join(Ecount, Ecount2, by=c("doy","year","stand"), type="inner")
 #subset to only grab the days that have enough observations
 
-EALLs1 <- join(EALLf1, Ecount2, by=c("doy","year","stand"), type="inner")
+EALLs1 <- join(EALLf, Ecount2, by=c("doy","year","stand"), type="inner")
 #fill in the data missing from the spikes
 dayUseFill <- data.frame(doy=rep(dayUse$doy, each=48),year=rep(dayUse$year, each=48),
 						stand=rep(dayUse$stand, each=48),sensor=rep(dayUse$sensor, each=48),
@@ -309,7 +276,8 @@ dayUseFill <- data.frame(doy=rep(dayUse$doy, each=48),year=rep(dayUse$year, each
 
 EALLs2 <- join(EALLs1,dayUseFill, by=c("doy","year","stand","sensor","hour"), type="right")
 EALLs <- EALLs2
-EALLs$E.f<-na.approx(EALLs2$Efilter, method="linear" )
+library(zoo)
+EALLs$E.f<-na.approx(EALLs2$E)
 
 
 #convert E from g m-2 s-1 to g m-2 half hour -1
@@ -356,20 +324,20 @@ xh16 <- 245
 xl17 <- 155
 xh17 <- 225
 yl <-0
-yh <- .8
+yh <- .35
 colL <- "royalblue3"
 colH <- "tomato3"
 xseq2016 <- seq(xl16, xh16, by=10)
 yseq <- seq(yl,yh, by=.1)
 xseq2017 <- seq(xl17, xh17, by=10)
 hhyl <- 0
-hhyh <- .05
+hhyh <- .015
 hhyseq <- seq(hhyl,hhyh, by=.01)
-hhxl16 <-180
-hhxh16 <- 190
-hhxl17 <-170
-hhxh17 <- 180
-jpeg(paste0(dirP , "\\transpiraiton.jpg"), width=2800, height=2000, units="px", quality=100)
+hhxl16 <-185
+hhxh16 <- 200
+hhxl17 <-160
+hhxh17 <- 182
+jpeg(paste0(dirP , "\\transpiraiton_new_filter.jpg"), width=2800, height=2000, units="px", quality=100)
 	ab <- layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(wd),4), height=rep(lcm(hd),4))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(hhyl,hhyh), xlim=c(hhxl16,hhxh16), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
