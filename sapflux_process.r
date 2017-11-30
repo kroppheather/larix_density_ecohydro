@@ -1128,25 +1128,25 @@ gc.L17<-data.frame(doy=datLtkg17$doy, year=rep(2017,length(datLtkg17$doy)),hour=
 
 if(plotcheck==1){
 	for(i in 1:length(NorthHkeep)){
-		jpeg(file=paste0(diagP, "\\gc\\high2016sensor",NorthHkeep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\gc\\high2016sensor",NorthHkeep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(gc.H$doy+(gc.H$hour/24),gc.H[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
 			main=paste("sensor",NorthHkeep[i]))
 		dev.off()
 	}
 	for(i in 1:length(NorthH17keep)){
-		jpeg(file=paste0(diagP, "\\gc\\high2017sensor",NorthH17keep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\gc\\high2017sensor",NorthH17keep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(gc.H17$doy+(gc.H17$hour/24),gc.H17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
 			main=paste("sensor",NorthH17keep[i]))
 		dev.off()
 	}
 	for(i in 1:length(NorthLkeep)){
-		jpeg(file=paste0(diagP, "\\gc\\low2016sensor",NorthLkeep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\gc\\low2016sensor",NorthLkeep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(gc.L$doy+(gc.L$hour/24),gc.L[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
 			main=paste("sensor",NorthLkeep[i]))
 		dev.off()
 	}
 	for(i in 1:length(NorthL17keep)){
-		jpeg(file=paste0(diagP, "\\gc\\low2017sensor",NorthL17keep[i],".jpg"), width=1500, height=1000, units="px")
+		jpeg(file=paste0(diagP, "\\gc\\low2017sensor",NorthL17keep[i],".jpg"), width=4000, height=1000, units="px")
 			plot(gc.L17$doy+(gc.L17$hour/24),gc.L17[,(i+3)], type="b", pch=19, xlab= "Doy", ylab="gc (mmol m-2 s-1)",
 			main=paste("sensor",NorthLkeep[i]))
 		dev.off()

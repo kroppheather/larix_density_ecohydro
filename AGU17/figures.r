@@ -52,6 +52,17 @@ datHTCmet <- data.frame(datTC[datTC$site=="hd",1:3], Temp=datTC$TempC.VP4[datTC$
 datLmet <- join(datLRHmet, datLTCmet, by=c("doy","year","hour"),type="inner")
 datHmet <- join(datHRHmet, datHTCmet, by=c("doy","year","hour"),type="inner")
 
+#calculate D at the met level
+#calculate saturated vapor pressure
+datLmet$e.sat<-0.611*exp((17.502*datLmet$Temp)/(datLmet$Temp+240.97))
+datHmet$e.sat<-0.611*exp((17.502*datHmet$Temp)/(datHmet$Temp+240.97))
+#here rh is is in decimal form 
+datLmet$RHfix<-ifelse(datLmet$RH>=1,.999,datLmet$RH)
+datHmet$RHfix<-ifelse(datHmet$RH>=1,.999,datHmet$RH)
+#vpd
+datLmet$D<-(datLmet$e.sat-(datLmet$RHfix*datLmet$e.sat))
+datHmet$D<-(datHmet$e.sat-(datHmet$RHfix*datHmet$e.sat))
+
 #join into gc tables
 datgcL <- join(gc.L,datLmet, by=c("doy","year","hour"), type="left")
 datgcH <- join(gc.H,datHmet, by=c("doy","year","hour"), type="left")
@@ -243,10 +254,12 @@ EALLf <- EALLf[EALLf$Pr.mm<=1,]
 Ehh <- aggregate(EALLf$E, by=list(EALLf$hour,EALLf$doy,EALLf$year, EALLf$stand), FUN="mean")
 Ehhsd <-aggregate(EALLf$E, by=list(EALLf$hour,EALLf$doy,EALLf$year, EALLf$stand), FUN="sd")
 Ehhn <- aggregate(EALLf$E, by=list(EALLf$hour, EALLf$doy,EALLf$year,EALLf$stand), FUN="length")
+EhhD <- aggregate(EALLf$D, by=list(EALLf$hour, EALLf$doy,EALLf$year,EALLf$stand), FUN="mean")
 colnames(Ehh) <- c("hour","doy","year","stand","Ehh")
 Ehh$sd <- Ehhsd$x
 Ehh$n <- Ehhn$x
 Ehh$se <- Ehhsd$x/sqrt(Ehhn$x)
+Ehh$D <- EhhD$x
 Ehh <- Ehh[Ehh$n>=3,]
 
 #################################################################
@@ -337,7 +350,7 @@ hhxl16 <-185
 hhxh16 <- 200
 hhxl17 <-160
 hhxh17 <- 182
-jpeg(paste0(dirP , "\\transpiraiton_new_filter.jpg"), width=2800, height=2000, units="px", quality=100)
+jpeg(paste0(dirP , "\\transpiraiton_all.jpg"), width=2800, height=2000, units="px", quality=100)
 	ab <- layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(wd),4), height=rep(lcm(hd),4))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(hhyl,hhyh), xlim=c(hhxl16,hhxh16), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
@@ -397,4 +410,100 @@ jpeg(paste0(dirP , "\\transpiraiton_new_filter.jpg"), width=2800, height=2000, u
 	axis(4,yseq, lwd.ticks=3, cex.axis=3,las=2 )
 	box(which="plot")
 dev.off()	
+
+
+#################################################################
+####plot daily T  vs daily ave D                          #######
+#################################################################
+
+#aggregate to get daily
+DdayH <- aggregate(datHmet$D, by=list(datHmet$doy,datHmet$year),FUN="mean")
+DdayL <- aggregate(datLmet$D, by=list(datLmet$doy,datLmet$year),FUN="mean")
+colnames(DdayH)<- c("doy","year","Dave")
+colnames(DdayL)<- c("doy","year","Dave")
+
+DdayH$stand <- rep(2, dim(DdayH)[1])
+DdayL$stand <- rep(1, dim(DdayL)[1])
+
+Dday <- rbind(DdayL,DdayH)
+
+DLdf <- join(LTdaily, Dday, by=c("doy","year","stand"),type="left")
+
+colL <- "royalblue3"
+colH <- "tomato3"
+#now join into daily T
+plot(DLdf$Dave[DLdf$stand==1],DLdf$T.L[DLdf$stand==1], pch=19, col=colL)
+points(DLdf$Dave[DLdf$stand==2],DLdf$T.L[DLdf$stand==2], pch=19, col=colH)
+
+
+
+
+
+plot(Ehh$D[Ehh$stand==1], Ehh$Ehh[Ehh$stand==1], pch=19, col=colL, ylim=c(0,0.015))
+points(Ehh$D[Ehh$stand==2], Ehh$Ehh[Ehh$stand==2], pch=19, col=colH)
+
+
+#################################################################
+####side by side comparision of daily T                   #######
+#################################################################
+wd <- 50
+hd <- 50
+xl16 <- 180
+xh16 <- 230
+xl17 <- 154
+xh17 <- 184
+yl <-0
+yh <- .25
+colL <- "royalblue3"
+colH <- "tomato3"
+xseq2016 <- seq(xl16+1, xh16-3, by=2)
+yseq <- seq(yl,yh, by=.1)
+xseq2017 <- seq(xl17+1, xh17-3, by=2)
+xt16<- Tcomp$doy[Tcomp$year==2016]
+xt17<- Tcomp$doy[Tcomp$year==2017]
+#make a side by side comparision
+HdL <- DLdf[DLdf$stand==2,]
+LdL <- DLdf[DLdf$stand==1,]
+colnames(HdL)[3:8] <- paste0(colnames(HdL)[3:8],"H")
+colnames(LdL)[3:8] <- paste0(colnames(LdL)[3:8],"L")
+
+Tcomp <- join(HdL, LdL, by=c("doy","year"), type="inner")
+jpeg(paste0(dirP , "\\Tdaily_comp.jpg"), width=3000, height=2000, units="px", quality=100)
+ab <- layout(matrix(seq(1,2), ncol=2, byrow=TRUE), width=rep(lcm(wd),2), height=rep(lcm(hd),2))
+	par(mai=c(0,0,0,0))
 	
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl16,xh16), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")	
+	for(i in 1:length(xt16)){
+	polygon(c(xt16[i]-.5,xt16[i]-.5,xt16[i],xt16[i]),c(0,Tcomp$T.LH[Tcomp$year==2016][i],Tcomp$T.LH[Tcomp$year==2016][i],0), col=colH)
+	polygon(c(xt16[i],xt16[i],xt16[i]+.5,xt16[i]+.5),c(0,Tcomp$T.LL[Tcomp$year==2016][i],Tcomp$T.LL[Tcomp$year==2016][i],0), col=colL)
+	}
+	arrows(Tcomp$doy[Tcomp$year==2016]-.25,Tcomp$T.LH[Tcomp$year==2016]-Tcomp$seH[Tcomp$year==2016],
+		Tcomp$doy[Tcomp$year==2016]-.25,Tcomp$T.LH[Tcomp$year==2016]+Tcomp$seH[Tcomp$year==2016],code=0,lwd=2)
+	arrows(Tcomp$doy[Tcomp$year==2016]+.25,Tcomp$T.LL[Tcomp$year==2016]-Tcomp$seL[Tcomp$year==2016],
+		Tcomp$doy[Tcomp$year==2016]+.25,Tcomp$T.LL[Tcomp$year==2016]+Tcomp$seL[Tcomp$year==2016],code=0,lwd=2)
+	axis(1, xseq2016, lab=rep(" ", length(xseq2016)), lwd.ticks=3, cex.axis=2)
+	mtext(xseq2016, side=1, at=xseq2016, cex=2, line=2)
+	axis(2, yseq, cex.axis=2, las=2)
+	box(which="plot")
+	
+	
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl17,xh17), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")
+			
+	for(i in 1:length(xt17)){
+	polygon(c(xt17[i]-.5,xt17[i]-.5,xt17[i],xt17[i]),c(0,Tcomp$T.LH[Tcomp$year==2017][i],Tcomp$T.LH[Tcomp$year==2017][i],0), col=colH)
+	polygon(c(xt17[i],xt17[i],xt17[i]+.5,xt17[i]+.5),c(0,Tcomp$T.LL[Tcomp$year==2017][i],Tcomp$T.LL[Tcomp$year==2017][i],0), col=colL)
+	}	
+	
+	
+	arrows(Tcomp$doy[Tcomp$year==2017]-.25,Tcomp$T.LH[Tcomp$year==2017]-Tcomp$seH[Tcomp$year==2017],
+		Tcomp$doy[Tcomp$year==2017]-.25,Tcomp$T.LH[Tcomp$year==2017]+Tcomp$seH[Tcomp$year==2017],code=0,lwd=2)
+	arrows(Tcomp$doy[Tcomp$year==2017]+.25,Tcomp$T.LL[Tcomp$year==2017]-Tcomp$seL[Tcomp$year==2017],
+		Tcomp$doy[Tcomp$year==2017]+.25,Tcomp$T.LL[Tcomp$year==2017]+Tcomp$seL[Tcomp$year==2017],code=0,lwd=2)
+	axis(1, xseq2017, lab=rep(" ", length(xseq2017)), lwd.ticks=3, cex.axis=2)
+	mtext(xseq2017, side=1, at=xseq2017, cex=2, line=2)
+	box(which="plot")
+dev.off()

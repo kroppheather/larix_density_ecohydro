@@ -40,14 +40,8 @@ model{
 #################################	
 	for(i in 1:NstandDay){
 		gref[i]<-a[1,stand[i]]+a[2,stand[i]]*airTcent[i]+a[3,stand[i]]*(pastprcent1[i])+a[4,stand[i]]*(TDcent[i])+a[5,stand[i]]*pastprcent2[i]
-				+a[6,stand[i]]*(airTcent[i]*pastprcent1[i])+a[7,stand[i]]*(airTcent[i]*TDcent[i])+a[8,stand[i]]*(pastprcent1[i]*TDcent[i])+
-				a[9,stand[i]]*(pastprcent1[i]*pastprcent2[i])+a[10,stand[i]]*(TDcent[i]*pastprcent2[i])+a[11,stand[i]]*(airTcent[i]*pastprcent2[i])
 		S[i]<-b[1,stand[i]]+b[2,stand[i]]*airTcent[i]+b[3,stand[i]]*(pastprcent1[i])+b[4,stand[i]]*(TDcent[i])+b[5,stand[i]]*pastprcent2[i]
-				+b[6,stand[i]]*(airTcent[i]*pastprcent1[i])+b[7,stand[i]]*(airTcent[i]*TDcent[i])+b[8,stand[i]]*(pastprcent1[i]*TDcent[i])
-				+b[9,stand[i]]*(pastprcent1[i]*pastprcent2[i])+b[10,stand[i]]*(TDcent[i]*pastprcent2[i])+b[11,stand[i]]*(airTcent[i]*pastprcent2[i])
 		slope.temp[i] <-d[1,stand[i]]+d[2,stand[i]]*airTcent[i]+d[3,stand[i]]*(pastprcent1[i])+d[4,stand[i]]*(TDcent[i])+d[5,stand[i]]*pastprcent2[i]
-						+d[6,stand[i]]*(airTcent[i]*pastprcent1[i])+d[7,stand[i]]*(airTcent[i]*TDcent[i])+d[8,stand[i]]*(pastprcent1[i]*TDcent[i])
-					+d[9,stand[i]]*(pastprcent1[i]*pastprcent2[i])+d[10,stand[i]]*(TDcent[i]*pastprcent2[i])+d[11,stand[i]]*(airTcent[i]*pastprcent2[i])
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
