@@ -100,7 +100,8 @@ datgcH$D<-(datHe.sat-(datgcH$RHfix*datHe.sat))
 datPARL <- data.frame(doy=datPAR$doy[datPAR$site=="ld"], year=datPAR$year[datPAR$site=="ld"],
 						hour=datPAR$hour[datPAR$site=="ld"], PAR=datPAR$PAR.QSOS.Par[datPAR$site=="ld"])
 datPARH <- data.frame(doy=datPAR$doy[datPAR$site=="hd"], year=datPAR$year[datPAR$site=="hd"],
-						hour=datPAR$hour[datPAR$site=="hd"], PAR=datPAR$PAR.QSOS.Par[datPAR$site=="hd"])						
+						hour=datPAR$hour[datPAR$site=="hd"], PAR=datPAR$PAR.QSOS.Par[datPAR$site=="hd"])	
+						
 #join PAR to gc
 datgcL <- join(datgcL, datPARL, by=c("doy", "year","hour"), type="inner")						
 datgcL17 <- join(datgcL17, datPARL, by=c("doy", "year","hour"), type="inner")					
@@ -328,182 +329,108 @@ LTdaily$se <- LTdailySD$x/sqrt(LTdailyn$x)
 
 
 #################################################################
-####plot daily T  data                                    #######
+####plot half hourly T  data                              #######
 #################################################################
-wd <- 30
-hd <- 30
-xl16 <- 180
-xh16 <- 245
-xl17 <- 155
-xh17 <- 225
+#join par and D 
+
+
+wd <- 45
+hd <- 32
+
+xl <- 198
+xh <- 202
+ys <- 2016
+xl2 <- 171
+xh2 <- 175
+ys2 <- 2017
+
 yl <-0
-yh <- .35
+yh <- .011
+ylD<- 0
+yhD <- 2.5
+ylP<- 0
+yhP <- 1500
+x.off <- .1
 colL <- "royalblue3"
 colH <- "tomato3"
-xseq2016 <- seq(xl16, xh16, by=10)
-yseq <- seq(yl,yh, by=.1)
-xseq2017 <- seq(xl17, xh17, by=10)
-hhyl <- 0
-hhyh <- .015
-hhyseq <- seq(hhyl,hhyh, by=.01)
-hhxl16 <-185
-hhxh16 <- 200
-hhxl17 <-160
-hhxh17 <- 182
-jpeg(paste0(dirP , "\\transpiraiton_all.jpg"), width=2800, height=2000, units="px", quality=100)
-	ab <- layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(wd),4), height=rep(lcm(hd),4))
-	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", ylim=c(hhyl,hhyh), xlim=c(hhxl16,hhxh16), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
-			yaxs="i")	
-	points(Ehh$doy[Ehh$stand==1&Ehh$year==2016]+(Ehh$hour[Ehh$stand==1&Ehh$year==2016]/24),
-		Ehh$Ehh[Ehh$stand==1&Ehh$year==2016],cex=3, pch=19, col=colL, type="b")
-	points(Ehh$doy[Ehh$stand==2&Ehh$year==2016]+(Ehh$hour[Ehh$stand==2&Ehh$year==2016]/24),
-		Ehh$Ehh[Ehh$stand==2&Ehh$year==2016],cex=3, pch=19, col=colH, type="b")	
-	#arrows(Ehh$doy[Ehh$year==2016]+(Ehh$hour[Ehh$year==2016]/24),
-	#	Ehh$Ehh[Ehh$year==2016]+Ehh$se[Ehh$year==2016],
-	#	Ehh$doy[Ehh$year==2016]+(Ehh$hour[Ehh$year==2016]/24),
-	#	Ehh$Ehh[Ehh$year==2016]+Ehh$se[Ehh$year==2016],code=0,lwd=3)	
-	axis(2,hhyseq, lwd.ticks=3, cex.axis=3,las=2 )
-	box(which="plot")
+xseq <- seq(xl, xh-1, by=1)
+xseq2 <- seq(xl2, xh2, by=1)
+yseq <- seq(yl,yh, by=.002)
+yseqD <- seq(ylD, yhD-.5, by=.5)
+yseqP<- seq(ylP, yhP-300, by=300)
+bl <-3
+
+jpeg(paste0(dirP , "\\transpiraiton_hh.jpg"), width=3600, height=3200, units="px", quality=100)
+
+	ab <- layout(matrix(seq(1,6), ncol=2, byrow=FALSE), width=rep(lcm(wd),6), height=rep(lcm(hd),6))
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", ylim=c(hhyl,hhyh), xlim=c(hhxl17,hhxh17), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl-x.off,xh+x.off), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")	
-	points(Ehh$doy[Ehh$stand==1&Ehh$year==2017]+(Ehh$hour[Ehh$stand==1&Ehh$year==2017]/24),
-		Ehh$Ehh[Ehh$stand==1&Ehh$year==2017],cex=3, pch=19, col=colL, type="b")
-	points(Ehh$doy[Ehh$stand==2&Ehh$year==2017]+(Ehh$hour[Ehh$stand==2&Ehh$year==2017]/24),
-		Ehh$Ehh[Ehh$stand==2&Ehh$year==2017],cex=3, pch=19, col=colH, type="b")	
-	#arrows(Ehh$doy[Ehh$year==2017]+(Ehh$hour[Ehh$year==2017]/24),
-	#	Ehh$Ehh[Ehh$year==2017]+Ehh$se[Ehh$year==2017],
-	#	Ehh$doy[Ehh$year==2017]+(Ehh$hour[Ehh$year==2017]/24),
-	#	Ehh$Ehh[Ehh$year==2017]+Ehh$se[Ehh$year==2017],code=0,lwd=3)	
-	axis(4,hhyseq, lwd.ticks=3, cex.axis=3,las=2 )	
-	box(which="plot")	
 	
-	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl16,xh16), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
-			yaxs="i")
-		points(LTdaily$doy[LTdaily$stand==1&LTdaily$year==2016], 
-			LTdaily$T.L[LTdaily$stand==1&LTdaily$year==2016], pch=19, col=colL,cex=3 )
-		points(LTdaily$doy[LTdaily$stand==2&LTdaily$year==2016], 
-			LTdaily$T.L[LTdaily$stand==2&LTdaily$year==2016], pch=19, col=colH,cex=3 )	
-		arrows(LTdaily$doy[LTdaily$year==2016],
-			LTdaily$T.L[LTdaily$year==2016]-LTdaily$se[LTdaily$year==2016],
-			LTdaily$doy[LTdaily$year==2016],
-			LTdaily$T.L[LTdaily$year==2016]+LTdaily$se[LTdaily$year==2016],code=0,lwd=3)
-	axis(1, xseq2016, lab=rep(" ", length(xseq2016)), lwd.ticks=3, cex.axis=3)
-	axis(2,yseq, lwd.ticks=3, cex.axis=3,las=2 )
-	box(which="plot")
-
-	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl17,xh17), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
-			yaxs="i")
-		points(LTdaily$doy[LTdaily$stand==1&LTdaily$year==2017], 
-			LTdaily$T.L[LTdaily$stand==1&LTdaily$year==2017], pch=19, col=colL,cex=3 )
-		points(LTdaily$doy[LTdaily$stand==2&LTdaily$year==2017], 
-			LTdaily$T.L[LTdaily$stand==2&LTdaily$year==2017], pch=19, col=colH,cex=3 )	
-		arrows(LTdaily$doy[LTdaily$year==2017],
-			LTdaily$T.L[LTdaily$year==2017]-LTdaily$se[LTdaily$year==2017],
-			LTdaily$doy[LTdaily$year==2017],
-			LTdaily$T.L[LTdaily$year==2017]+LTdaily$se[LTdaily$year==2017],code=0,lwd=3)
-	axis(1, xseq2017, lab=rep(" ", length(xseq2017)), lwd.ticks=3, cex.axis=2)
-	axis(4,yseq, lwd.ticks=3, cex.axis=3,las=2 )
-	box(which="plot")
-dev.off()	
-
-
-#################################################################
-####plot daily T  vs daily ave D                          #######
-#################################################################
-
-#aggregate to get daily
-DdayH <- aggregate(datHmet$D, by=list(datHmet$doy,datHmet$year),FUN="mean")
-DdayL <- aggregate(datLmet$D, by=list(datLmet$doy,datLmet$year),FUN="mean")
-colnames(DdayH)<- c("doy","year","Dave")
-colnames(DdayL)<- c("doy","year","Dave")
-
-DdayH$stand <- rep(2, dim(DdayH)[1])
-DdayL$stand <- rep(1, dim(DdayL)[1])
-
-Dday <- rbind(DdayL,DdayH)
-
-DLdf <- join(LTdaily, Dday, by=c("doy","year","stand"),type="left")
-
-colL <- "royalblue3"
-colH <- "tomato3"
-#now join into daily T
-plot(DLdf$Dave[DLdf$stand==1],DLdf$T.L[DLdf$stand==1], pch=19, col=colL)
-points(DLdf$Dave[DLdf$stand==2],DLdf$T.L[DLdf$stand==2], pch=19, col=colH)
-
-
-
-
-
-plot(Ehh$D[Ehh$stand==1], Ehh$Ehh[Ehh$stand==1], pch=19, col=colL, ylim=c(0,0.015))
-points(Ehh$D[Ehh$stand==2], Ehh$Ehh[Ehh$stand==2], pch=19, col=colH)
-
-
-#################################################################
-####side by side comparision of daily T                   #######
-#################################################################
-wd <- 50
-hd <- 50
-xl16 <- 180
-xh16 <- 230
-xl17 <- 154
-xh17 <- 184
-yl <-0
-yh <- .25
-colL <- "royalblue3"
-colH <- "tomato3"
-xseq2016 <- seq(xl16+1, xh16-3, by=2)
-yseq <- seq(yl,yh, by=.1)
-xseq2017 <- seq(xl17+1, xh17-3, by=2)
-xt16<- Tcomp$doy[Tcomp$year==2016]
-xt17<- Tcomp$doy[Tcomp$year==2017]
-#make a side by side comparision
-HdL <- DLdf[DLdf$stand==2,]
-LdL <- DLdf[DLdf$stand==1,]
-colnames(HdL)[3:8] <- paste0(colnames(HdL)[3:8],"H")
-colnames(LdL)[3:8] <- paste0(colnames(LdL)[3:8],"L")
-
-Tcomp <- join(HdL, LdL, by=c("doy","year"), type="inner")
-jpeg(paste0(dirP , "\\Tdaily_comp.jpg"), width=3000, height=2000, units="px", quality=100)
-ab <- layout(matrix(seq(1,2), ncol=2, byrow=TRUE), width=rep(lcm(wd),2), height=rep(lcm(hd),2))
-	par(mai=c(0,0,0,0))
-	
-	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl16,xh16), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
-			yaxs="i")	
-	for(i in 1:length(xt16)){
-	polygon(c(xt16[i]-.5,xt16[i]-.5,xt16[i],xt16[i]),c(0,Tcomp$T.LH[Tcomp$year==2016][i],Tcomp$T.LH[Tcomp$year==2016][i],0), col=colH)
-	polygon(c(xt16[i],xt16[i],xt16[i]+.5,xt16[i]+.5),c(0,Tcomp$T.LL[Tcomp$year==2016][i],Tcomp$T.LL[Tcomp$year==2016][i],0), col=colL)
+	for(i in 1:(xh-xl)){
+	points(Ehh$doy[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24)
+			,Ehh$Ehh[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19,type="b",  col=colL,cex=7,lwd=5)
+	points(Ehh$doy[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24)
+			,Ehh$Ehh[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19, type="b",  col=colH,cex=7,lwd=5)
 	}
-	arrows(Tcomp$doy[Tcomp$year==2016]-.25,Tcomp$T.LH[Tcomp$year==2016]-Tcomp$seH[Tcomp$year==2016],
-		Tcomp$doy[Tcomp$year==2016]-.25,Tcomp$T.LH[Tcomp$year==2016]+Tcomp$seH[Tcomp$year==2016],code=0,lwd=2)
-	arrows(Tcomp$doy[Tcomp$year==2016]+.25,Tcomp$T.LL[Tcomp$year==2016]-Tcomp$seL[Tcomp$year==2016],
-		Tcomp$doy[Tcomp$year==2016]+.25,Tcomp$T.LL[Tcomp$year==2016]+Tcomp$seL[Tcomp$year==2016],code=0,lwd=2)
-	axis(1, xseq2016, lab=rep(" ", length(xseq2016)), lwd.ticks=3, cex.axis=2)
-	mtext(xseq2016, side=1, at=xseq2016, cex=2, line=2)
-	axis(2, yseq, cex.axis=2, las=2)
-	box(which="plot")
+	axis(2, yseq,yseq*1000, cex.axis=9, las=2, lwd.ticks=4)
+	mtext("Transpiration", side=2, line=45,cex=8)
 	
-	
+	mtext(expression(paste("(mg m"^"-2"~"s"^"-1"~")")), side=2, line=18,cex=8)
+	box(which="plot", lwd=bl)
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl17,xh17), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
-			yaxs="i")
-			
-	for(i in 1:length(xt17)){
-	polygon(c(xt17[i]-.5,xt17[i]-.5,xt17[i],xt17[i]),c(0,Tcomp$T.LH[Tcomp$year==2017][i],Tcomp$T.LH[Tcomp$year==2017][i],0), col=colH)
-	polygon(c(xt17[i],xt17[i],xt17[i]+.5,xt17[i]+.5),c(0,Tcomp$T.LL[Tcomp$year==2017][i],Tcomp$T.LL[Tcomp$year==2017][i],0), col=colL)
-	}	
+	plot(c(0,1),c(0,1),type="n", ylim=c(ylD,yhD), xlim=c(xl-x.off,xh+x.off), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")	
+	points(datLmet$doy[datLmet$year==ys]+(datLmet$hour[datLmet$year==ys]/24),datLmet$D[datLmet$year==ys], type="l", col=colL, lwd=8)
+	points(datHmet$doy[datHmet$year==ys]+(datHmet$hour[datHmet$year==ys]/24),datHmet$D[datHmet$year==ys], type="l", col=colH, lwd=8)
+	
+	axis(2, yseqD, cex.axis=9, las=2, lwd.ticks=4)
+	mtext("Vapor pressure", side=2, line=45,cex=8)
+	mtext("deficit", side=2, line=32,cex=8)
+	mtext("(KPa)", side=2, line=18,cex=8)
+	
+	box(which="plot", lwd=bl)
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(ylP,yhP), xlim=c(xl-x.off,xh+x.off), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")		
+	points(datPARL$doy[datPARL$year==ys]+(datPARL$hour[datPARL$year==ys]/24), datPARL$PAR[datPARL$year==ys], type="l", col=colL, lwd=8)
+	points(datPARH$doy[datPARH$year==ys]+(datPARH$hour[datPARH$year==ys]/24), datPARH$PAR[datPARH$year==ys], type="l", col=colH, lwd=8)
+	axis(2, yseqP, cex.axis=9, las=2, lwd.ticks=4)
+	axis(1, xseq,rep(" ", length(xseq)), cex.axis=9, las=2, lwd.ticks=4)
+	mtext("Photosynthetically", side=2, line=45,cex=8)
+	mtext("active radiation", side=2, line=32,cex=8)
+	mtext(expression(paste("("~mu~"mol m"^"-2"~"s"^"-1"~")")), side=2, line=18,cex=8)
+	mtext(xseq, at=xseq,side=1, line=8, cex=6)
+	box(which="plot", lwd=bl)
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xl2,xh2), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")	
+	for(i in 1:(xh2-xl2)){
+	points(Ehh$doy[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
+	Ehh$Ehh[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],type="b",pch=19,  col=colL,cex=7,lwd=5)
+	points(Ehh$doy[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
+	Ehh$Ehh[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],pch=19 ,type="b", col=colH,cex=7,lwd=5)
+	}
+	box(which="plot", lwd=bl)
+	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(ylD,yhD), xlim=c(xl2,xh2), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")	
+	points(datLmet$doy[datLmet$year==ys2]+(datLmet$hour[datLmet$year==ys2]/24),datLmet$D[datLmet$year==ys2], type="l", col=colL, lwd=8)
+	points(datHmet$doy[datHmet$year==ys2]+(datHmet$hour[datHmet$year==ys2]/24),datHmet$D[datHmet$year==ys2], type="l", col=colH, lwd=8)
+	box(which="plot", lwd=bl)
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(ylP,yhP), xlim=c(xl2,xh2), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")		
+	points(datPARL$doy[datPARL$year==ys2]+(datPARL$hour[datPARL$year==ys2]/24), datPARL$PAR[datPARL$year==ys2], type="l", col=colL, lwd=8)
+	points(datPARH$doy[datPARH$year==ys2]+(datPARH$hour[datPARH$year==ys2]/24), datPARH$PAR[datPARH$year==ys2], type="l", col=colH, lwd=8)
+	axis(1, xseq2,rep(" ", length(xseq2)), cex.axis=9, las=2, lwd.ticks=4)
+	mtext(xseq2, at=xseq2,side=1, line=8, cex=6)
+	
+	box(which="plot", lwd=bl)	
+	
+dev.off()	
 	
 	
-	arrows(Tcomp$doy[Tcomp$year==2017]-.25,Tcomp$T.LH[Tcomp$year==2017]-Tcomp$seH[Tcomp$year==2017],
-		Tcomp$doy[Tcomp$year==2017]-.25,Tcomp$T.LH[Tcomp$year==2017]+Tcomp$seH[Tcomp$year==2017],code=0,lwd=2)
-	arrows(Tcomp$doy[Tcomp$year==2017]+.25,Tcomp$T.LL[Tcomp$year==2017]-Tcomp$seL[Tcomp$year==2017],
-		Tcomp$doy[Tcomp$year==2017]+.25,Tcomp$T.LL[Tcomp$year==2017]+Tcomp$seL[Tcomp$year==2017],code=0,lwd=2)
-	axis(1, xseq2017, lab=rep(" ", length(xseq2017)), lwd.ticks=3, cex.axis=2)
-	mtext(xseq2017, side=1, at=xseq2017, cex=2, line=2)
-	box(which="plot")
-dev.off()
