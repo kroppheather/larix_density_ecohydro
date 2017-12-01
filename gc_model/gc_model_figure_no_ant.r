@@ -10,18 +10,18 @@
 library(plyr)
 
 #set plot directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run32"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run35"
 
 
 #read in stand day data
 
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\out\\standDay.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\out\\gcdata.csv")
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\gcdata.csv")
 #################################################################
 ####read in parameters                                    #######
 #################################################################
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\out\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run32\\out\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_quants.csv")
 
 #stand index of 1 is low
 
@@ -49,13 +49,13 @@ datgrefA <- cbind(datgref,daySD)
 datparm <- datC[datC$parms3=="a"|datC$parms3=="b"|datC$parms3=="d",]
 
 
-datparm$stand <- rep(c(1,2), times=12)
-datparm$pN <- rep(rep(c(1,2,3,4),each=2),times=3)
+datparm$stand <- rep(c(1,2), times=15)
+datparm$pN <- rep(rep(c(1,2,3,4,5),each=2),times=3)
 
 #################################################################
 ####goodness of fit plots                                 #######
 #################################################################
-plot(datgc$g.c,datrep$Mean, pch=19, xlim=c(0,200), ylim=c(0,200))
+plot(datgc$g.c,datrep$Mean, pch=19, xlim=c(0,80), ylim=c(0,80))
 fit<-lm(datrep$Mean~datgc$g.c)
 summary(fit)
 abline(fit)
@@ -65,9 +65,9 @@ abline(0,1, lwd=2, col="red")
 res <- datrep$Mean-datgc$g.c
 datALL <- join(datgc, daySD, by="standDay", type="left")
 plot(datALL$Tair, res)
-plot(datALL$precipL, res)
+plot(datALL$precipL1, res)
 plot(datALL$TD, res)
-
+plot(datALL$precipL2, res)
 #Tair mean =14.13
 #TDstart 1= 14, 2=11
 #################################################################
@@ -80,15 +80,17 @@ plot(datALL$TD, res)
 wd <- 30
 hd <- 30
 gmin <-0
-gmax <- 100
+gmax <- 50
 Smin <-0
 Smax <-1.7
 Tmin <-5
 Tmax <- 25
 Thmin <- 0
 Thmax <- 100
-Pmin <-0
-Pmax <- 60
+Pmin1 <-0
+Pmax1 <- 6
+Pmin2 <-0
+Pmax2 <- 5
 colL <-"royalblue"
 colH <- "tomato3"
 axisC <-3
@@ -101,11 +103,12 @@ regL <- function(x,b1,b2,X0){
 }
 
 Tseq <- seq(Tmin,Tmax, by=.1)
-Pseq <- seq(Pmin,Pmax, by=.1)
+Pseq1 <- seq(Pmin1,Pmax1, by=.1)
+Pseq2 <- seq(Pmin2,Pmax2, by=.1)
 Thseq <- seq(Thmin,Thmax, by=.1)
 
-jpeg(paste0(plotDI , "\\regression_coeff.jpg"), width=3000, height=2000, units="px", quality=100)
-	ab <- layout(matrix(seq(1,6), ncol=3, byrow=FALSE), width=rep(lcm(wd),6), height=rep(lcm(hd),6))
+jpeg(paste0(plotDI , "\\regression_coeff.jpg"), width=4000, height=3000, units="px", quality=100)
+	ab <- layout(matrix(seq(1,8), ncol=4, byrow=FALSE), width=rep(lcm(wd),8), height=rep(lcm(hd),8))
 	
 par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n", xlim=c(Tmin,Tmax), ylim=c(gmin,gmax), axes=FALSE, xaxs="i", yaxs="i",
@@ -178,27 +181,27 @@ par(mai=c(0,0,0,0))
 box(which="plot")	
 
 par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(Pmin,Pmax), ylim=c(gmin,gmax), axes=FALSE, xaxs="i", yaxs="i",
+	plot(c(0,1),c(0,1), type="n", xlim=c(Pmin1,Pmax1), ylim=c(gmin,gmax), axes=FALSE, xaxs="i", yaxs="i",
 			xlab=" ", ylab=" ")
-	arrows(datgrefA$precipL, datgrefA$X2.5.,datgrefA$precipL, datgrefA$X97.5.,lwd=2,code=0)
+	arrows(datgrefA$precipL1, datgrefA$X2.5.,datgrefA$precipL1, datgrefA$X97.5.,lwd=2,code=0)
 
 	
-	points(datgrefA$precipL[datgrefA$stand==1], datgrefA$Mean[datgrefA$stand==1],
+	points(datgrefA$precipL1[datgrefA$stand==1], datgrefA$Mean[datgrefA$stand==1],
 			col=colL, pch=19, cex=4)
-	points(datgrefA$precipL[datgrefA$stand==2], datgrefA$Mean[datgrefA$stand==2],
+	points(datgrefA$precipL1[datgrefA$stand==2], datgrefA$Mean[datgrefA$stand==2],
 			col=colH, pch=19, cex=4)
 
 
 	if(datparm$Sig[datparm$parms3=="a"&datparm$stand==1&datparm$pN==3]==1){
-		points(Pseq,regL(Pseq,datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==1],
-				datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==3],17), type="l", lwd=4, col=colL)
+		points(Pseq1,regL(Pseq1,datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==3],1), type="l", lwd=4, col=colL)
 	}else{
 		abline(h=datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==1], lwd=4, lty=3, col=colL)
 	}
 	
 	if(datparm$Sig[datparm$parms3=="a"&datparm$stand==2&datparm$pN==3]==1){
-		points(Pseq,regL(Pseq,datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==1],
-				datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==3],17), type="l", lwd=4, col=colH)
+		points(Pseq1,regL(Pseq1,datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==3],1), type="l", lwd=4, col=colH)
 	}else{
 		abline(h=datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==1], lwd=4, lty=3, col=colH)
 	}	
@@ -209,34 +212,34 @@ par(mai=c(0,0,0,0))
 box(which="plot")	
 
 par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(Pmin,Pmax), ylim=c(Smin,Smax), axes=FALSE, xaxs="i", yaxs="i",
+	plot(c(0,1),c(0,1), type="n", xlim=c(Pmin1,Pmax1), ylim=c(Smin,Smax), axes=FALSE, xaxs="i", yaxs="i",
 			xlab=" ", ylab=" ")
-	arrows(datgrefA$precipL, datS$X2.5.,	datgrefA$precipL, datS$X97.5.,lwd=2,code=0)
+	arrows(datgrefA$precipL1, datS$X2.5.,	datgrefA$precipL1, datS$X97.5.,lwd=2,code=0)
 	
-	points(datgrefA$precipL[datgrefA$stand==1], datS$Mean[datS$stand==1],
+	points(datgrefA$precipL1[datgrefA$stand==1], datS$Mean[datS$stand==1],
 			col=colL, pch=19, cex=4)
-	points(datgrefA$precipL[datgrefA$stand==2], datS$Mean[datS$stand==2],
+	points(datgrefA$precipL1[datgrefA$stand==2], datS$Mean[datS$stand==2],
 			col=colH, pch=19, cex=4)	
 
 	if(datparm$Sig[datparm$parms3=="b"&datparm$stand==1&datparm$pN==3]==1){
-		points(Pseq,regL(Pseq,datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==1],
-				datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==3],17), type="l", lwd=4, col=colL)
+		points(Pseq1,regL(Pseq1,datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==3],1), type="l", lwd=4, col=colL)
 	}else{
 		abline(h=datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==1], lwd=4, lty=3, col=colL)
 	}
 			
 	if(datparm$Sig[datparm$parms3=="b"&datparm$stand==2&datparm$pN==3]==1){
-		points(Pseq,regL(Pseq,datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==1],
-				datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==3],17), type="l", lwd=4, col=colH)
+		points(Pseq1,regL(Pseq1,datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==3],1), type="l", lwd=4, col=colH)
 	}else{
 		abline(h=datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==1], lwd=4, lty=3, col=colH)
 	}	
 
 
 			
-	axis(1, seq(Pmin,Pmax, by=5), rep(" ", length(seq(Pmin,Pmax, by=5))), cex.axis=axisC, lwd.ticks=3)
-	mtext(seq(Pmin,Pmax, by=5),at=seq(Pmin,Pmax, by=5), line=4, side=1, cex=3)
-	mtext("Total precipitation over past 2 weeks (mm)",side=1, line=8, cex=4)
+	axis(1, seq(Pmin1,Pmax1, by=.5), rep(" ", length(seq(Pmin1,Pmax1, by=.5))), cex.axis=axisC, lwd.ticks=3)
+	mtext(seq(Pmin1,Pmax1, by=.5),at=seq(Pmin1,Pmax1, by=.5), line=4, side=1, cex=3)
+	mtext("Average precipitation 1 week (mm)",side=1, line=8, cex=4)
 box(which="plot")	
 
 
@@ -299,7 +302,64 @@ par(mai=c(0,0,0,0))
 box(which="plot")
 
 
+par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(Pmin1,Pmax1), ylim=c(gmin,gmax), axes=FALSE, xaxs="i", yaxs="i",
+			xlab=" ", ylab=" ")
+	arrows(datgrefA$precipL2, datgrefA$X2.5.,datgrefA$precipL2, datgrefA$X97.5.,lwd=2,code=0)
+
 	
+	points(datgrefA$precipL2[datgrefA$stand==1], datgrefA$Mean[datgrefA$stand==1],
+			col=colL, pch=19, cex=4)
+	points(datgrefA$precipL2[datgrefA$stand==2], datgrefA$Mean[datgrefA$stand==2],
+			col=colH, pch=19, cex=4)
+
+
+	if(datparm$Sig[datparm$parms3=="a"&datparm$stand==1&datparm$pN==5]==1){
+		points(Pseq2,regL(Pseq2,datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==5],1), type="l", lwd=4, col=colL)
+	}else{
+		abline(h=datparm$Mean[datparm$parms3=="a"&datparm$stand==1&datparm$pN==1], lwd=4, lty=3, col=colL)
+	}
+	
+	if(datparm$Sig[datparm$parms3=="a"&datparm$stand==2&datparm$pN==5]==1){
+		points(Pseq2,regL(Pseq2,datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==5],1), type="l", lwd=4, col=colH)
+	}else{
+		abline(h=datparm$Mean[datparm$parms3=="a"&datparm$stand==2&datparm$pN==1], lwd=4, lty=3, col=colH)
+	}	
+
+
+
+			
+box(which="plot")	
+
+par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(Pmin1,Pmax1), ylim=c(Smin,Smax), axes=FALSE, xaxs="i", yaxs="i",
+			xlab=" ", ylab=" ")
+	arrows(datgrefA$precipL2, datS$X2.5.,	datgrefA$precipL2, datS$X97.5.,lwd=2,code=0)
+	
+	points(datgrefA$precipL2[datgrefA$stand==1], datS$Mean[datS$stand==1],
+			col=colL, pch=19, cex=4)
+	points(datgrefA$precipL2[datgrefA$stand==2], datS$Mean[datS$stand==2],
+			col=colH, pch=19, cex=4)	
+
+	if(datparm$Sig[datparm$parms3=="b"&datparm$stand==1&datparm$pN==5]==1){
+		points(Pseq2,regL(Pseq2,datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==5],1), type="l", lwd=4, col=colL)
+	}else{
+		abline(h=datparm$Mean[datparm$parms3=="b"&datparm$stand==1&datparm$pN==1], lwd=4, lty=3, col=colL)
+	}
+			
+	if(datparm$Sig[datparm$parms3=="b"&datparm$stand==2&datparm$pN==5]==1){
+		points(Pseq2,regL(Pseq2,datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==1],
+				datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==5],1), type="l", lwd=4, col=colH)
+	}else{
+		abline(h=datparm$Mean[datparm$parms3=="b"&datparm$stand==2&datparm$pN==1], lwd=4, lty=3, col=colH)
+	}	
+	axis(1, seq(Pmin2,Pmax2, by=.5), rep(" ", length(seq(Pmin2,Pmax2, by=.5))), cex.axis=axisC, lwd.ticks=3)
+	mtext(seq(Pmin2,Pmax2, by=.5),at=seq(Pmin2,Pmax2, by=.5), line=4, side=1, cex=3)
+	mtext("Average precipitation 2-3 weeks (mm)",side=1, line=8, cex=4)
+	box(which="plot")		
 dev.off()	
 
 
