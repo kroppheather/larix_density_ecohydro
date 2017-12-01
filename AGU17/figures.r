@@ -39,6 +39,51 @@ datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.
 #PAR
 datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS PAR.csv")
 
+#gc and model results
+##### have to change based on updated model results
+#read in stand day data
+
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\gcdata.csv")
+
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_quants.csv")
+
+#pull out model S, d, and gref paramters for 
+
+#stand index of 1 is low
+#################################################################
+####read in parameters                                    #######
+#################################################################
+datC <- cbind(datM,datQ)
+#extract vector
+dexps<-"\\[*[[:digit:]]*\\]"
+datC$parms1<-gsub(dexps,"",rownames(datC))
+datC$parms2<- gsub("[[:punct:]]", "",rownames(datC))
+datC$parms3<- gsub("[[:digit:]]", "",datC$parms2)
+
+#first make a flag designating the sig
+datC$Sig <- ifelse(datC$X2.5.<0&datC$X97.5.<0,1,
+			ifelse(datC$X2.5.>0&datC$X97.5.>0,1,0))
+#now subset
+
+datS <- datC[datC$parms3=="S",]
+datgref <- datC[datC$parms3=="gref",]
+datlslope <- datC[datC$parms3=="lslope",]
+datrep <- datC[datC$parms3=="repgs",]
+datmugs<- datC[datC$parms3=="mugs",]
+
+#add ind
+
+colnames(datS) <- paste0(colnames(datS), "S")
+colnames(datgref) <- paste0(colnames(datgref), "G")
+colnames(datlslope) <- paste0(colnames(datlslope), "L")
+
+datRparm <- cbind(datgref,datS)
+datRparm <- cbind(datRparm, datlslope)
+datRparm <- cbind(datRparm, daySD)
+#join the 
+
 #################################################################
 ####organize met data                                     #######
 #################################################################
@@ -373,11 +418,16 @@ jpeg(paste0(dirP , "\\transpiraiton_hh.jpg"), width=3600, height=3200, units="px
 			,Ehh$Ehh[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19,type="b",  col=colL,cex=7,lwd=5)
 	points(Ehh$doy[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24)
 			,Ehh$Ehh[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19, type="b",  col=colH,cex=7,lwd=5)
+	arrows(Ehh$doy[Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24),
+		Ehh$Ehh[Ehh$year==ys&Ehh$doy==((xl-1)+i)]-Ehh$se[Ehh$year==ys&Ehh$doy==((xl-1)+i)],
+		Ehh$doy[Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24),
+		Ehh$Ehh[Ehh$year==ys&Ehh$doy==((xl-1)+i)]+Ehh$se[Ehh$year==ys&Ehh$doy==((xl-1)+i)],code=0,lwd=3,col=rgb(0/255,0/255,0/255,.6))
 	}
 	axis(2, yseq,yseq*1000, cex.axis=9, las=2, lwd.ticks=4)
 	mtext("Transpiration", side=2, line=45,cex=8)
 	
 	mtext(expression(paste("(mg m"^"-2"~"s"^"-1"~")")), side=2, line=18,cex=8)
+	
 	box(which="plot", lwd=bl)
 	
 	par(mai=c(0,0,0,0))
@@ -412,7 +462,12 @@ jpeg(paste0(dirP , "\\transpiraiton_hh.jpg"), width=3600, height=3200, units="px
 	Ehh$Ehh[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],type="b",pch=19,  col=colL,cex=7,lwd=5)
 	points(Ehh$doy[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
 	Ehh$Ehh[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],pch=19 ,type="b", col=colH,cex=7,lwd=5)
+	arrows(Ehh$doy[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
+		Ehh$Ehh[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]-Ehh$se[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],
+		Ehh$doy[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
+		Ehh$Ehh[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+Ehh$se[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],code=0,lwd=3,col=rgb(0/255,0/255,0/255,.6))
 	}
+	legend(xl2+.2,yh, c("low density","high density", "se"), col=c(colL,colH,rgb(0/255,0/255,0/255,.6)), pch=c(19,19,NA),lwd=c(3,3,3), cex=9,bty="n")
 	box(which="plot", lwd=bl)
 	
 	par(mai=c(0,0,0,0))
@@ -433,4 +488,100 @@ jpeg(paste0(dirP , "\\transpiraiton_hh.jpg"), width=3600, height=3200, units="px
 	
 dev.off()	
 	
+
+
+#################################################################
+####gc model                                              #######
+#################################################################
+#need to figure out the best way to show the relationship between
+#gc and light. Try out a 3d plot or stepping through a 
+#show an example of the gc model functions on a couple of different 
+#ways to see what is clearer. Try a 3D plot or stepping through the variability
+# in two steps in a plot
+#make a table of paramters in the high and low stand that share the same dayRparm
+install.packages(c("rgl"))
+library(rgl)
+
+datPL <- datRparm[datRparm$stand==1,]
+datPH <- datRparm[datRparm$stand==2,]
+colnames(datPL) <- paste0("L.",colnames(datPL) )
+colnames(datPH) <- paste0("H.",colnames(datPH) )
+colnames(datPH)[40:41] <- c("doy","year")
+colnames(datPL)[40:41] <- c("doy","year")
+
+datPcomp <- join(datPH, datPL, by=c("doy", "year"), type="inner")
+#declare plot variables
+
+wd <- 45
+hd <- 32
+yl <- 0
+yh <- 80
+xlD <- 0
+xhD <- 2.5
+xlP <- 0
+xhP <- 1500
+colL <- "royalblue3"
+colH <- "tomato3"
+#188 2016 is a good example
+datPcomp[,89:94]
+Day1 <-17
+Day2 <-18
+standDay1<-c(datPcomp$L.standDay[datPcomp$L.Days==Day1],datPcomp$H.standDay[datPcomp$H.Days==Day1])
+standDay2<-c(datPcomp$L.standDay[datPcomp$L.Days==Day2],datPcomp$H.standDay[datPcomp$H.Days==Day2])
+
+#make a panel of 2
+jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", quality=100)
+	#
+	ab <- layout(matrix(seq(1,2), ncol=2, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(hd),2))
 	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlP,xhP), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")
+	points(datgc$PAR[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]], pch=19, cex=5, col=colL)
+	points(datgc$PAR[datgc$standDay==standDay2[2]], datgc$g.c[datgc$standDay==standDay2[2]], pch=19, cex=5, col=colH)
+	
+	box(which="plot", lwd=bl)
+	
+dev.off()	
+
+
+plot(datgc$PAR[datgc$doy==187&datgc$year==2016&datgc$stand==1],datgc$g.c[datgc$doy==187&datgc$year==2016&datgc$stand==1], pch=19)
+
+gs.fun<- function(gref,S,l.slope,D,PAR){
+	(gref*(1-(S*log(D))))*(1-exp(-l.slope*PAR))
+}	
+plot3d(seq(0.1,2.5,length.out=300), seq(0.1,1500, length.out=300),
+		gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
+		seq(0.1,2.5,length.out=300), seq(0.1,1500, length.out=300)))
+
+plotmat <-matrix(gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
+		rep(seq(0.1,2.5,length.out=300),times=300),
+		rep(seq(0.1,1500, length.out=300),each=300)),ncol=300, byrow=FALSE)			
+plotR <- round_any(range(plotmat),10)
+plotB <- seq(plotR[1],plotR[2], length.out=10)
+plotcol <- topo.colors(10,alpha=.5)
+color<- as.numeric(cut(as.vector(plotmat), plotB))
+colorV <- plotcol[color]
+colV <- matrix(colorV, ncol=300, byrow=FALSE)
+
+
+for(i in)
+
+gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
+		rep(seq(0.1,2.5,length.out=300),
+		rep(seq(0.1,1500, length.out=300))
+		
+plot3d(seq(0.1,2.5,length.out=300), seq(0.1,1500, length.out=300),
+	matrix(gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
+		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
+		rep(seq(0.1,2.5,length.out=300),times=300),
+		rep(seq(0.1,1500, length.out=300),each=300)),ncol=300, byrow=FALSE))			
+			
+points3d(datgc$D[datgc$standDay==standDay2[1]],datgc$PAR[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]],pch=19, col="red")			
