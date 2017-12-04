@@ -10,18 +10,18 @@
 library(plyr)
 
 #set plot directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run35"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run36"
 
 
 #read in stand day data
 
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\standDay.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\gcdata.csv")
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run36\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run36\\out\\gcdata.csv")
 #################################################################
 ####read in parameters                                    #######
 #################################################################
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run36\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run36\\out\\mod_quants.csv")
 
 #stand index of 1 is low
 
@@ -33,8 +33,8 @@ datC$parms2<- gsub("[[:punct:]]", "",rownames(datC))
 datC$parms3<- gsub("[[:digit:]]", "",datC$parms2)
 
 #first make a flag designating the sig
-datC$Sig <- ifelse(datC$X2.5.<0&datC$X97.5.<0,1,
-			ifelse(datC$X2.5.>0&datC$X97.5.>0,1,0))
+datC$Sig <- ifelse(datC$X0.2.<0&datC$X99.8.<0,1,
+			ifelse(datC$X0.2.>0&datC$X99.8.>0,1,0))
 #now subset
 
 datS <- datC[datC$parms3=="S",]
@@ -70,6 +70,18 @@ plot(datALL$TD, res)
 plot(datALL$precipL2, res)
 #Tair mean =14.13
 #TDstart 1= 14, 2=11
+
+#predicter df
+predf <- cbind(daySD$Tair, daySD[,7:9])
+predf$in1 <- predf[,1]*predf[,2]
+predf$in2 <- predf[,1]*predf[,3]
+predf$in3 <- predf[,1]*predf[,4]
+predf$in4 <- predf[,2]*predf[,3]
+predf$in5 <- predf[,2]*predf[,4]
+predf$in6 <- predf[,3]*predf[,4]
+
+plot(predf)
+cor(predf)
 #################################################################
 ####parameter plots                                       #######
 #################################################################

@@ -29,7 +29,7 @@ model{
 	mu.gs[i]<-oren.mod[i]*light[i]
 	
 	#light scaling function
-	light[i]<-1-exp(-l.slope[standDay[i]]*PAR[i])
+	light[i]<- 
 	
 	#oren model 1999 for mean gs
 	oren.mod[i]<-gref[standDay[i]]*(1-(S[standDay[i]]*log(D[i])))

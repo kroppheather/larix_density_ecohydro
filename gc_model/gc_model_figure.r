@@ -10,18 +10,18 @@
 library(plyr)
 
 #set plot directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run31"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\plots\\run34"
 
 
 #read in stand day data
 
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run31\\out2\\standDay.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run31\\out2\\gcdata.csv")
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\gcdata.csv")
 #################################################################
 ####read in parameters                                    #######
 #################################################################
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run31\\out2\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run31\\out2\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\mod_quants.csv")
 
 #stand index of 1 is low
 
@@ -63,7 +63,7 @@ datw$wn <- rep(seq(1,6), each=2)
 #################################################################
 ####goodness of fit plots                                 #######
 #################################################################
-plot(datgc$g.c,datrep$Mean, pch=19, xlim=c(0,200), ylim=c(0,200))
+plot(datgc$g.c,datrep$Mean, pch=19, xlim=c(0,100), ylim=c(0,100))
 fit<-lm(datrep$Mean~datgc$g.c)
 summary(fit)
 abline(fit)
