@@ -366,9 +366,9 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #ran thinning by 350 for 5000 samples
 
 
-folder1 <- paste0(saveMdir, "\\CODA_out4\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out4\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out4\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
 
 
 
@@ -380,14 +380,14 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history4"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
 
 
 modSum <-summary(codaobj1) 
 
 
-write.table(modSum$statistics, paste0(saveMdir, "\\out2", "\\mod_stats.csv"), sep=",", row.names=TRUE)
-write.table(modSum$quantiles, paste0(saveMdir, "\\out2", "\\mod_quants.csv"), sep=",", row.names=TRUE)
-write.table(standDay4, paste0(saveMdir, "\\out2", "\\standDay.csv"), sep=",", row.names=FALSE)
-write.table(gcALL2, paste0(saveMdir, "\\out2", "\\gcdata.csv"), sep=",", row.names=FALSE)
+write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
+write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
+write.table(standDay4, paste0(saveMdir, "\\out", "\\standDay.csv"), sep=",", row.names=FALSE)
+write.table(gcALL2, paste0(saveMdir, "\\out", "\\gcdata.csv"), sep=",", row.names=FALSE)
 #aggregate to compare means

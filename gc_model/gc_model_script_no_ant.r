@@ -387,7 +387,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 mcmcplot(codaobj1, parms=c( "a", "b", "d"),  dir=paste0(saveMdir, "\\history"))
 
 
-modSum <-summary(codaobj1) 
+modSum <-summary(codaobj1, quantiles=c(.002,.025,.5,.975,.998)) 
 
 
 write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
