@@ -39,7 +39,7 @@ datC$Sig <- ifelse(datC$X2.5.<0&datC$X97.5.<0,1,
 
 datS <- datC[datC$parms3=="S",]
 datgref <- datC[datC$parms3=="gref",]
-datlslope <- datC[datC$parms3=="lsope",]
+datlslope <- datC[datC$parms3=="lslope",]
 datrep <- datC[datC$parms3=="repgs",]
 datmugs<- datC[datC$parms3=="mugs",]
 datprecip<- datC[datC$parms3=="pastpr",]
@@ -49,6 +49,9 @@ datprecip$stand <- rep(c(1,2), times=60)
 #add ind
 datS <- cbind(datS,daySD)
 datgrefA <- cbind(datgref,daySD)
+datgrefA <- cbind(datgrefA,datlslope)
+
+
 datparm <- datC[datC$parms3=="a"|datC$parms3=="b"|datC$parms3=="d",]
 
 datgrefA <- join(datgrefA, datprecip, by=c("Days", "stand"),type="left")
@@ -56,6 +59,11 @@ datgrefA <- join(datgrefA, datprecip, by=c("Days", "stand"),type="left")
 datparm$stand <- rep(c(1,2), times=12)
 datparm$pN <- rep(rep(c(1,2,3,4),each=2),times=3)
 
+lslopecalc <-(datparm$Mean[datparm$parms3=="d"&datparm$pN==1&datparm$stand==2])+
+				(datparm$Mean[datparm$parms3=="d"&datparm$pN==2&datparm$stand==2]*(datgrefA$Tair[89]-14))+
+				(datparm$Mean[datparm$parms3=="d"&datparm$pN==3&datparm$stand==2]*(datgrefA$pMean[89]-5))+
+				(datparm$Mean[datparm$parms3=="d"&datparm$pN==4&datparm$stand==2]*(datgrefA$TD[89]-11))
+				
 
 datw<- datC[datC$parms3=="wpr",]
 datw$stand<- rep(c(1,2), times=6)

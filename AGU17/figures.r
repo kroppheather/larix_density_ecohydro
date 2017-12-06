@@ -43,11 +43,11 @@ datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS 
 ##### have to change based on updated model results
 #read in stand day data
 
-daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\standDay.csv")
-datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\gcdata.csv")
+daySD <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\standDay.csv")
+datgc <-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\gcdata.csv")
 
-datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_stats.csv")
-datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run35\\out\\mod_quants.csv")
+datM <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\mod_stats.csv")
+datQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\out\\mod_quants.csv")
 
 #pull out model S, d, and gref paramters for 
 
@@ -493,14 +493,6 @@ dev.off()
 #################################################################
 ####gc model                                              #######
 #################################################################
-#need to figure out the best way to show the relationship between
-#gc and light. Try out a 3d plot or stepping through a 
-#show an example of the gc model functions on a couple of different 
-#ways to see what is clearer. Try a 3D plot or stepping through the variability
-# in two steps in a plot
-#make a table of paramters in the high and low stand that share the same dayRparm
-install.packages(c("rgl"))
-library(rgl)
 
 datPL <- datRparm[datRparm$stand==1,]
 datPH <- datRparm[datRparm$stand==2,]
@@ -516,18 +508,37 @@ wd <- 45
 hd <- 32
 yl <- 0
 yh <- 80
-xlD <- 0
+xlD <- 0.5
 xhD <- 2.5
 xlP <- 0
 xhP <- 1500
 colL <- "royalblue3"
 colH <- "tomato3"
+Dseq <- seq(0.6,2.4, by=.2)
+Pseq <- seq(0,1200, by =300)
+bl <-2
 #188 2016 is a good example
-datPcomp[,89:94]
-Day1 <-17
-Day2 <-18
-standDay1<-c(datPcomp$L.standDay[datPcomp$L.Days==Day1],datPcomp$H.standDay[datPcomp$H.Days==Day1])
+#17
+datPcomp[,87:90]
+#day 32 is good
+#day 39 especially high
+#33 high
+
+#focus on high density day 39 for simplicity
+
+Day2 <-39
+
 standDay2<-c(datPcomp$L.standDay[datPcomp$L.Days==Day2],datPcomp$H.standDay[datPcomp$H.Days==Day2])
+
+ParFunc <- function(gref,PAR,b){
+	gref*(1-exp(-b*PAR))
+
+}
+
+DFunc <- function(gref,D,S){
+	gref*(1-S*log(D))
+
+}
 
 #make a panel of 2
 jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", quality=100)
@@ -535,53 +546,26 @@ jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", qu
 	ab <- layout(matrix(seq(1,2), ncol=2, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(hd),2))
 	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlP,xhP), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlP-1,xhP), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")
 	points(datgc$PAR[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]], pch=19, cex=5, col=colL)
 	points(datgc$PAR[datgc$standDay==standDay2[2]], datgc$g.c[datgc$standDay==standDay2[2]], pch=19, cex=5, col=colH)
-	
+	points(seq(1,xhP, by=.1), ParFunc(datPcomp$H.MeanG[datPcomp$H.standDay==standDay2[2]],
+			seq(1,xhP, by=.1),datPcomp$H.MeanL[datPcomp$H.standDay==standDay2[2]]), type="l", lwd=5, col=colH)
+		points(seq(1,xhP, by=.1), ParFunc(datPcomp$L.MeanG[datPcomp$L.standDay==standDay2[1]],
+			seq(1,xhP, by=.1),datPcomp$L.MeanL[datPcomp$L.standDay==standDay2[1]]), type="l", lwd=5, col=colL)
+	axis(1, Pseq, cex.axis=3)
+	box(which="plot", lwd=bl)
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlD,xhD), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
+			yaxs="i")
+	points(seq(.6,xhD, by=.1), DFunc(datPcomp$H.MeanG[datPcomp$H.standDay==standDay2[2]],
+			seq(.6,xhD, by=.1),datPcomp$H.MeanS[datPcomp$H.standDay==standDay2[2]]), type="l", lwd=5, col=colH)		
+		points(seq(.6,xhD, by=.1), DFunc(datPcomp$L.MeanG[datPcomp$L.standDay==standDay2[1]],
+			seq(.6,xhD, by=.1),datPcomp$L.MeanS[datPcomp$L.standDay==standDay2[1]]), type="l", lwd=5, col=colL)		
+	points(datgc$D[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]], pch=19, cex=5, col=colL)
+	points(datgc$D[datgc$standDay==standDay2[2]], datgc$g.c[datgc$standDay==standDay2[2]], pch=19, cex=5, col=colH)
+	axis(1, Dseq, cex.axis=3)
 	box(which="plot", lwd=bl)
 	
 dev.off()	
-
-
-plot(datgc$PAR[datgc$doy==187&datgc$year==2016&datgc$stand==1],datgc$g.c[datgc$doy==187&datgc$year==2016&datgc$stand==1], pch=19)
-
-gs.fun<- function(gref,S,l.slope,D,PAR){
-	(gref*(1-(S*log(D))))*(1-exp(-l.slope*PAR))
-}	
-plot3d(seq(0.1,2.5,length.out=300), seq(0.1,1500, length.out=300),
-		gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
-		seq(0.1,2.5,length.out=300), seq(0.1,1500, length.out=300)))
-
-plotmat <-matrix(gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
-		rep(seq(0.1,2.5,length.out=300),times=300),
-		rep(seq(0.1,1500, length.out=300),each=300)),ncol=300, byrow=FALSE)			
-plotR <- round_any(range(plotmat),10)
-plotB <- seq(plotR[1],plotR[2], length.out=10)
-plotcol <- topo.colors(10,alpha=.5)
-color<- as.numeric(cut(as.vector(plotmat), plotB))
-colorV <- plotcol[color]
-colV <- matrix(colorV, ncol=300, byrow=FALSE)
-
-
-for(i in)
-
-gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
-		rep(seq(0.1,2.5,length.out=300),
-		rep(seq(0.1,1500, length.out=300))
-		
-plot3d(seq(0.1,2.5,length.out=300), seq(0.1,1500, length.out=300),
-	matrix(gs.fun(datPcomp$H.MeanG[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanS[datPcomp$H.Days==Day2],
-		datPcomp$H.MeanL[datPcomp$H.Days==Day2],
-		rep(seq(0.1,2.5,length.out=300),times=300),
-		rep(seq(0.1,1500, length.out=300),each=300)),ncol=300, byrow=FALSE))			
-			
-points3d(datgc$D[datgc$standDay==standDay2[1]],datgc$PAR[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]],pch=19, col="red")			
