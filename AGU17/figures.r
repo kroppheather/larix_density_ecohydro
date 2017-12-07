@@ -493,42 +493,27 @@ dev.off()
 #################################################################
 ####gc model                                              #######
 #################################################################
+#68,
+sDsub <- 3
 
-datPL <- datRparm[datRparm$stand==1,]
-datPH <- datRparm[datRparm$stand==2,]
-colnames(datPL) <- paste0("L.",colnames(datPL) )
-colnames(datPH) <- paste0("H.",colnames(datPH) )
-colnames(datPH)[40:41] <- c("doy","year")
-colnames(datPL)[40:41] <- c("doy","year")
+datPP <- datRparm[datRparm$standDay==sDsub,]
+datGP <- datgc[datgc$standDay==sDsub,]
 
-datPcomp <- join(datPH, datPL, by=c("doy", "year"), type="inner")
 #declare plot variables
 
 wd <- 45
 hd <- 32
 yl <- 0
-yh <- 80
+yh <- 45
 xlD <- 0.5
-xhD <- 2.5
+xhD <- 2
 xlP <- 0
-xhP <- 1500
-colL <- "royalblue3"
-colH <- "tomato3"
+xhP <- 600
+colD <- "royalblue3"
+colP <- "tomato3"
 Dseq <- seq(0.6,2.4, by=.2)
 Pseq <- seq(0,1200, by =300)
 bl <-2
-#188 2016 is a good example
-#17
-datPcomp[,87:90]
-#day 32 is good
-#day 39 especially high
-#33 high
-
-#focus on high density day 39 for simplicity
-
-Day2 <-39
-
-standDay2<-c(datPcomp$L.standDay[datPcomp$L.Days==Day2],datPcomp$H.standDay[datPcomp$H.Days==Day2])
 
 ParFunc <- function(gref,PAR,b){
 	gref*(1-exp(-b*PAR))
@@ -539,6 +524,12 @@ DFunc <- function(gref,D,S){
 	gref*(1-S*log(D))
 
 }
+#look at when PAR is saturated
+
+Pchange <- round_any(log(.2)/-datPP$MeanL,100)
+
+colP <- ifelse(datGP$PAR<=Pchange, "black","grey75")
+colD <- ifelse(datGP$PAR>=Pchange, "black","grey75")
 
 #make a panel of 2
 jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", quality=100)
@@ -548,23 +539,14 @@ jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", qu
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlP-1,xhP), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")
-	points(datgc$PAR[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]], pch=19, cex=5, col=colL)
-	points(datgc$PAR[datgc$standDay==standDay2[2]], datgc$g.c[datgc$standDay==standDay2[2]], pch=19, cex=5, col=colH)
-	points(seq(1,xhP, by=.1), ParFunc(datPcomp$H.MeanG[datPcomp$H.standDay==standDay2[2]],
-			seq(1,xhP, by=.1),datPcomp$H.MeanL[datPcomp$H.standDay==standDay2[2]]), type="l", lwd=5, col=colH)
-		points(seq(1,xhP, by=.1), ParFunc(datPcomp$L.MeanG[datPcomp$L.standDay==standDay2[1]],
-			seq(1,xhP, by=.1),datPcomp$L.MeanL[datPcomp$L.standDay==standDay2[1]]), type="l", lwd=5, col=colL)
-	axis(1, Pseq, cex.axis=3)
+	points(datGP$PAR,datGP$g.c, pch=19, cex=5, col=colP)
+	points(seq(1,xhP, by=.1), ParFunc(datPP$MeanG,seq(1,xhP, by=.1),datPP$MeanL), lwd=5)
 	box(which="plot", lwd=bl)
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlD,xhD), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")
-	points(seq(.6,xhD, by=.1), DFunc(datPcomp$H.MeanG[datPcomp$H.standDay==standDay2[2]],
-			seq(.6,xhD, by=.1),datPcomp$H.MeanS[datPcomp$H.standDay==standDay2[2]]), type="l", lwd=5, col=colH)		
-		points(seq(.6,xhD, by=.1), DFunc(datPcomp$L.MeanG[datPcomp$L.standDay==standDay2[1]],
-			seq(.6,xhD, by=.1),datPcomp$L.MeanS[datPcomp$L.standDay==standDay2[1]]), type="l", lwd=5, col=colL)		
-	points(datgc$D[datgc$standDay==standDay2[1]], datgc$g.c[datgc$standDay==standDay2[1]], pch=19, cex=5, col=colL)
-	points(datgc$D[datgc$standDay==standDay2[2]], datgc$g.c[datgc$standDay==standDay2[2]], pch=19, cex=5, col=colH)
+	points(datGP$D,datGP$g.c, pch=19, cex=5, col=colD)
+	points(seq(.6,xhD, by=.01), DFunc(datPP$MeanG,seq(.6,xhD, by=.01),datPP$MeanS), type="l",lwd=5, lty=1)
 	axis(1, Dseq, cex.axis=3)
 	box(which="plot", lwd=bl)
 	
