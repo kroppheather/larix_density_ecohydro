@@ -83,7 +83,12 @@ datRparm <- cbind(datgref,datS)
 datRparm <- cbind(datRparm, datlslope)
 datRparm <- cbind(datRparm, daySD)
 #join the 
+datparm <- datC[datC$parms3=="a"|datC$parms3=="b"|datC$parms3=="d",]
 
+
+
+datparm$stand <- rep(c(1,2), times=12)
+datparm$pN <- rep(rep(c(1,2,3,4),each=2),times=3)
 #################################################################
 ####organize met data                                     #######
 #################################################################
@@ -415,38 +420,38 @@ jpeg(paste0(dirP , "\\transpiraiton_hh.jpg"), width=3600, height=3200, units="px
 	
 	for(i in 1:(xh-xl)){
 	points(Ehh$doy[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24)
-			,Ehh$Ehh[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19,type="b",  col=colL,cex=7,lwd=5)
+			,Ehh$Ehh[Ehh$stand==1&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19,type="b",  col=colL,cex=9,lwd=7)
 	points(Ehh$doy[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24)
-			,Ehh$Ehh[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19, type="b",  col=colH,cex=7,lwd=5)
+			,Ehh$Ehh[Ehh$stand==2&Ehh$year==ys&Ehh$doy==((xl-1)+i)],pch=19, type="b",  col=colH,cex=9,lwd=7)
 	arrows(Ehh$doy[Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24),
 		Ehh$Ehh[Ehh$year==ys&Ehh$doy==((xl-1)+i)]-Ehh$se[Ehh$year==ys&Ehh$doy==((xl-1)+i)],
 		Ehh$doy[Ehh$year==ys&Ehh$doy==((xl-1)+i)]+(Ehh$hour[Ehh$year==ys&Ehh$doy==((xl-1)+i)]/24),
 		Ehh$Ehh[Ehh$year==ys&Ehh$doy==((xl-1)+i)]+Ehh$se[Ehh$year==ys&Ehh$doy==((xl-1)+i)],code=0,lwd=3,col=rgb(0/255,0/255,0/255,.6))
 	}
 	axis(2, yseq,yseq*1000, cex.axis=9, las=2, lwd.ticks=4)
-	mtext("Transpiration", side=2, line=45,cex=8)
-	
+	mtext("Canopy", side=2, line=45,cex=8)
+	mtext("Transpiration", side=2, line=32,cex=8)
 	mtext(expression(paste("(mg m"^"-2"~"s"^"-1"~")")), side=2, line=18,cex=8)
-	
+	mtext("2016", side=3, line=5, cex=8)
 	box(which="plot", lwd=bl)
 	
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(ylD,yhD), xlim=c(xl-x.off,xh+x.off), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")	
-	points(datLmet$doy[datLmet$year==ys]+(datLmet$hour[datLmet$year==ys]/24),datLmet$D[datLmet$year==ys], type="l", col=colL, lwd=8)
-	points(datHmet$doy[datHmet$year==ys]+(datHmet$hour[datHmet$year==ys]/24),datHmet$D[datHmet$year==ys], type="l", col=colH, lwd=8)
+	points(datLmet$doy[datLmet$year==ys]+(datLmet$hour[datLmet$year==ys]/24),datLmet$D[datLmet$year==ys], type="l", col=colL, lwd=12)
+	points(datHmet$doy[datHmet$year==ys]+(datHmet$hour[datHmet$year==ys]/24),datHmet$D[datHmet$year==ys], type="l", col=colH, lwd=12)
 	
 	axis(2, yseqD, cex.axis=9, las=2, lwd.ticks=4)
 	mtext("Vapor pressure", side=2, line=45,cex=8)
 	mtext("deficit", side=2, line=32,cex=8)
-	mtext("(KPa)", side=2, line=18,cex=8)
+	mtext("(KPa)", side=2, line=19,cex=8)
 	
 	box(which="plot", lwd=bl)
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(ylP,yhP), xlim=c(xl-x.off,xh+x.off), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")		
-	points(datPARL$doy[datPARL$year==ys]+(datPARL$hour[datPARL$year==ys]/24), datPARL$PAR[datPARL$year==ys], type="l", col=colL, lwd=8)
-	points(datPARH$doy[datPARH$year==ys]+(datPARH$hour[datPARH$year==ys]/24), datPARH$PAR[datPARH$year==ys], type="l", col=colH, lwd=8)
+	points(datPARL$doy[datPARL$year==ys]+(datPARL$hour[datPARL$year==ys]/24), datPARL$PAR[datPARL$year==ys], type="l", col=colL, lwd=12)
+	points(datPARH$doy[datPARH$year==ys]+(datPARH$hour[datPARH$year==ys]/24), datPARH$PAR[datPARH$year==ys], type="l", col=colH, lwd=12)
 	axis(2, yseqP, cex.axis=9, las=2, lwd.ticks=4)
 	axis(1, xseq,rep(" ", length(xseq)), cex.axis=9, las=2, lwd.ticks=4)
 	mtext("Photosynthetically", side=2, line=45,cex=8)
@@ -459,31 +464,32 @@ jpeg(paste0(dirP , "\\transpiraiton_hh.jpg"), width=3600, height=3200, units="px
 			yaxs="i")	
 	for(i in 1:(xh2-xl2)){
 	points(Ehh$doy[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
-	Ehh$Ehh[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],type="b",pch=19,  col=colL,cex=7,lwd=5)
+	Ehh$Ehh[Ehh$stand==1&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],type="b",pch=19,  col=colL,cex=9,lwd=7)
 	points(Ehh$doy[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
-	Ehh$Ehh[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],pch=19 ,type="b", col=colH,cex=7,lwd=5)
+	Ehh$Ehh[Ehh$stand==2&Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],pch=19 ,type="b", col=colH,cex=9,lwd=7)
 	arrows(Ehh$doy[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
 		Ehh$Ehh[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]-Ehh$se[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],
 		Ehh$doy[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+(Ehh$hour[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]/24),
 		Ehh$Ehh[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)]+Ehh$se[Ehh$year==ys2&Ehh$doy==((xl2-1)+i)],code=0,lwd=3,col=rgb(0/255,0/255,0/255,.6))
 	}
 	legend(xl2+.2,yh, c("low density","high density", "se"), col=c(colL,colH,rgb(0/255,0/255,0/255,.6)), pch=c(19,19,NA),lwd=c(3,3,3), cex=9,bty="n")
+	mtext("2017", side=3, line=5, cex=8)
 	box(which="plot", lwd=bl)
 	
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(ylD,yhD), xlim=c(xl2,xh2), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")	
-	points(datLmet$doy[datLmet$year==ys2]+(datLmet$hour[datLmet$year==ys2]/24),datLmet$D[datLmet$year==ys2], type="l", col=colL, lwd=8)
-	points(datHmet$doy[datHmet$year==ys2]+(datHmet$hour[datHmet$year==ys2]/24),datHmet$D[datHmet$year==ys2], type="l", col=colH, lwd=8)
+	points(datLmet$doy[datLmet$year==ys2]+(datLmet$hour[datLmet$year==ys2]/24),datLmet$D[datLmet$year==ys2], type="l", col=colL, lwd=12)
+	points(datHmet$doy[datHmet$year==ys2]+(datHmet$hour[datHmet$year==ys2]/24),datHmet$D[datHmet$year==ys2], type="l", col=colH, lwd=12)
 	box(which="plot", lwd=bl)
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(ylP,yhP), xlim=c(xl2,xh2), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")		
-	points(datPARL$doy[datPARL$year==ys2]+(datPARL$hour[datPARL$year==ys2]/24), datPARL$PAR[datPARL$year==ys2], type="l", col=colL, lwd=8)
-	points(datPARH$doy[datPARH$year==ys2]+(datPARH$hour[datPARH$year==ys2]/24), datPARH$PAR[datPARH$year==ys2], type="l", col=colH, lwd=8)
+	points(datPARL$doy[datPARL$year==ys2]+(datPARL$hour[datPARL$year==ys2]/24), datPARL$PAR[datPARL$year==ys2], type="l", col=colL, lwd=12)
+	points(datPARH$doy[datPARH$year==ys2]+(datPARH$hour[datPARH$year==ys2]/24), datPARH$PAR[datPARH$year==ys2], type="l", col=colH, lwd=12)
 	axis(1, xseq2,rep(" ", length(xseq2)), cex.axis=9, las=2, lwd.ticks=4)
 	mtext(xseq2, at=xseq2,side=1, line=8, cex=6)
-	
+	mtext("Day of year", side=1, outer=TRUE, line=-5, cex=8)
 	box(which="plot", lwd=bl)	
 	
 dev.off()	
@@ -504,15 +510,16 @@ datGP <- datgc[datgc$standDay==sDsub,]
 wd <- 45
 hd <- 32
 yl <- 0
-yh <- 45
+yh <- 35
 xlD <- 0.5
 xhD <- 2
 xlP <- 0
 xhP <- 600
 colD <- "royalblue3"
 colP <- "tomato3"
-Dseq <- seq(0.6,2.4, by=.2)
-Pseq <- seq(0,1200, by =300)
+Dseq <- seq(0.6,1.8, by=.2)
+Pseq <- seq(0,500, by =100)
+Gseq <- seq(0,30, by=10)
 bl <-2
 
 ParFunc <- function(gref,PAR,b){
@@ -528,11 +535,11 @@ DFunc <- function(gref,D,S){
 
 Pchange <- round_any(log(.2)/-datPP$MeanL,100)
 
-colP <- ifelse(datGP$PAR<=Pchange, "black","grey75")
-colD <- ifelse(datGP$PAR>=Pchange, "black","grey75")
+colP <- ifelse(datGP$PAR<=Pchange, "black","grey57")
+colD <- ifelse(datGP$PAR>=Pchange, "black","grey57")
 
 #make a panel of 2
-jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", quality=100)
+jpeg(paste0(dirP , "\\gc_response.jpg"), width=3200, height=1500, units="px", quality=100)
 	#
 	ab <- layout(matrix(seq(1,2), ncol=2, byrow=FALSE), width=rep(lcm(wd),2), height=rep(lcm(hd),2))
 	
@@ -541,13 +548,25 @@ jpeg(paste0(dirP , "\\gc_response.jpg"), width=3600, height=3200, units="px", qu
 			yaxs="i")
 	points(datGP$PAR,datGP$g.c, pch=19, cex=5, col=colP)
 	points(seq(1,xhP, by=.1), ParFunc(datPP$MeanG,seq(1,xhP, by=.1),datPP$MeanL), lwd=5)
+	
+	axis(1, Pseq,rep(" ", length(Pseq)), cex.axis=3, las=2, lwd.ticks=4)
+	axis(2,Gseq, cex.axis=5, las=2, lwd.ticks=4)
+	
+	mtext( Pseq, at= Pseq,side=1, line=5, cex=5)
+	mtext("Canopy stomatal conductance", side=2, line=16, cex=6)
+	mtext(expression(paste("(mmol m"^"-2","s"^"-1",")")),, side=2, line=8, cex=6  )
+	mtext("Photosynthetically active radiation", side=1, line=11, cex=6)
+	mtext(expression(paste("(",mu,"mol m"^"-2","s"^"-1",")")), side=1, line=18,cex=6)
 	box(which="plot", lwd=bl)
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1),type="n", ylim=c(yl,yh), xlim=c(xlD,xhD), xlab=" ", ylab=" ", axes=FALSE, xaxs="i",
 			yaxs="i")
 	points(datGP$D,datGP$g.c, pch=19, cex=5, col=colD)
 	points(seq(.6,xhD, by=.01), DFunc(datPP$MeanG,seq(.6,xhD, by=.01),datPP$MeanS), type="l",lwd=5, lty=1)
-	axis(1, Dseq, cex.axis=3)
+	axis(1, Dseq,rep(" ", length( Dseq)), cex.axis=3, las=2, lwd.ticks=4)
+	mtext( Dseq, at= Dseq,side=1, line=5, cex=5)
+	mtext("Vapor pressure deficit", side=1, line=11, cex=6)
+	mtext("(KPa)", side=1, line=17,cex=6)
 	box(which="plot", lwd=bl)
 	
 dev.off()	
