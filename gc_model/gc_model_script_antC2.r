@@ -67,6 +67,8 @@ datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS 
 #soil temp
 datStemp <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\tempS.GS3.csv")
 
+datStemp2 <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\tempS.5TM.csv")
+
 
 #################################################################
 ####organize met data                                     #######
@@ -79,9 +81,29 @@ datSsh <- aggregate(datStemp$tempS.GS3[datStemp$sensorZ==5],
 				datStemp$site[datStemp$sensorZ==5]),FUN="mean",na.action=na.omit)
 
 colnames(datSsh) <- c("doy","year","site","T.s")
-datSsh$stand <- ifelse(datSsh$site=="hd",2,1)			
+datSsh$stand <- ifelse(datSsh$site=="hd",2,1)
+#read in deeper sensor data for gap filling
+#from another organic layer sensor
+datSsh2 <- aggregate(datStemp2$tempS.5TM,
+		by=list(datStemp2$doy,
+				datStemp2$year,
+				datStemp2$site,
+				datStemp2$sensorZ),FUN="mean",na.action=na.omit)
+colnames(datSsh2) <- c("doy","year","site","depthD","T.sD")
+datSsh2$stand <-ifelse(datSsh2$site=="hd",2,1)				
 
-#subset and match
+
+#see how closely shallow depths are related between doy 150 and 240 
+datSTall <- join(datSsh,datSsh2[datSsh2$depth<15,],by=c("doy","year","site"),type="left")
+#only look at above zero temps
+datSTall<-datSTall[datSTall$T.s>0,]
+
+plot(datSTall$T.sD[datSTall$stand==1],datSTall$T.s[datSTall$stand==1])
+plot(datSTall$T.sD[datSTall$stand==2],datSTall$T.s[datSTall$stand==2])
+#get relationships
+ld.soilFill <- lm(datSTall$T.s[datSTall$stand==1]~datSTall$T.sD[datSTall$stand==1])
+hd.soilFill <- lm(datSTall$T.s[datSTall$stand==2]~datSTall$T.sD[datSTall$stand==2])
+#subset and match met data
 datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
 datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
 
@@ -408,9 +430,7 @@ cor(gctempA$pRootf,gctempA$T.s)
 cor(gctempA$pRootf,gctempA$Tair)	
 cor(gctempA$pRootf,(gctempA$doy-200)^2)
 cor(gctempA$pRootf,gctempA$doy)
-
-
-					
+				
 #################################################################
 ####model run                                             #######
 #################################################################
