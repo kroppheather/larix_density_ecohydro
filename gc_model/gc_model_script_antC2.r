@@ -38,7 +38,7 @@ library(mcmcplots)
 ####indicate if this is a spatial model                   #######
 #################################################################
 #1 indicates uses coordinates 0 no
-spatialmodel <- 1
+spatialmodel <- 0
 
 #################################################################
 ####specify directories                                   #######
@@ -64,16 +64,23 @@ datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.
 #PAR
 datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS PAR.csv")
 
-#tree coordinates
-datTcoor <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\tree_coord_out.csv")
+#soil temp
+datStemp <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\tempS.GS3.csv")
 
-#tree neighbor distance and density
-datLdist <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\ld_near.csv")
-datHdens <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\hd_neighbor.csv")
 
 #################################################################
 ####organize met data                                     #######
 #################################################################
+#organize soil temperature
+#aggregate two sensors
+datSsh <- aggregate(datStemp$tempS.GS3[datStemp$sensorZ==5],
+		by=list(datStemp$doy[datStemp$sensorZ==5],
+				datStemp$year[datStemp$sensorZ==5],
+				datStemp$site[datStemp$sensorZ==5]),FUN="mean",na.action=na.omit)
+
+colnames(datSsh) <- c("doy","year","site","T.s")
+datSsh$stand <- ifelse(datSsh$site=="hd",2,1)			
+
 #subset and match
 datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
 datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
@@ -306,6 +313,50 @@ TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="min")
 colnames(TDstart) <- c("stand", "TD")
 TDstart$TD <- floor(TDstart$TD)
 
+#join soil temp into the data.frame
+standDay5 <- join(standDay4, datSsh, by=c("doy","year","stand"),type="left")
+st5temp <- na.omit(standDay5)
+plot(st5temp$T.s,st5temp$TD)
+plot(st5temp$T.s,st5temp$Tair)
+plot(st5temp$doy,st5temp$TD)
+plot((st5temp$doy-200)^2,st5temp$TD)
+cor(st5temp$T.s,st5temp$TD)
+cor(st5temp$T.s,st5temp$Tair)
+cor(st5temp$doy,st5temp$TD)
+cor(st5temp$TD,(st5temp$doy-200)^2)
+gcdoytest <- aggregate(gcALL2$g.c, by=list(gcALL2$doy,gcALL2$year,gcALL2$stand),
+				FUN="mean")
+colnames(gcdoytest)<-c("doy","year","stand","gc")
+plot(gcdoytest$doy[gcdoytest$stand==1&gcdoytest$year==2016],
+gcdoytest$gc[gcdoytest$stand==1&gcdoytest$year==2016],pch=19, col="royalblue",
+	xlim=c(150,250), ylim=c(0,80))
+points(gcdoytest$doy[gcdoytest$stand==1&gcdoytest$year==2017],gcdoytest$gc[gcdoytest$stand==1&gcdoytest$year==2017],pch=19, col="royalblue4")
+points(gcdoytest$doy[gcdoytest$stand==2&gcdoytest$year==2016],
+gcdoytest$gc[gcdoytest$stand==2&gcdoytest$year==2016],pch=19, col="tomato3",
+	)
+points(gcdoytest$doy[gcdoytest$stand==2&gcdoytest$year==2017],
+	gcdoytest$gc[gcdoytest$stand==2&gcdoytest$year==2017],pch=19, col="tomato4")
+
+points(seq(150,250),40-(.015*(seq(150,250)-200)^2),type="l")	
+	
+gcdoytest <- join(gcdoytest,standDay5, by=c("doy","year","stand"),type="left")
+
+par(mfrow=c(1,2))
+plot(gcdoytest$T.s[gcdoytest$stand==1],
+gcdoytest$gc[gcdoytest$stand==1],pch=19, col="royalblue",
+	xlim=c(0,10), ylim=c(0,80))
+points(gcdoytest$T.s[gcdoytest$stand==2],	
+gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3",
+	xlim=c(0,10), ylim=c(0,80))
+plot(gcdoytest$TD[gcdoytest$stand==1],
+gcdoytest$gc[gcdoytest$stand==1],pch=19, col="royalblue",
+	xlim=c(0,100), ylim=c(0,80))
+points(gcdoytest$TD[gcdoytest$stand==2],	
+gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3",
+	xlim=c(0,100), ylim=c(0,80))
+
+	
+	
 #################################################################
 ####model run                                             #######
 #################################################################
@@ -363,7 +414,7 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
-#ran thinning by 350 for 5000 samples
+#ran thinning by 350 for 5000 samples. First 2,000 are burn in.
 
 
 folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
