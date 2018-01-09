@@ -44,7 +44,7 @@ spatialmodel <- 0
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_antC.r"
 
@@ -94,15 +94,14 @@ datSsh2$stand <-ifelse(datSsh2$site=="hd",2,1)
 
 
 #see how closely shallow depths are related between doy 150 and 240 
-datSTall <- join(datSsh,datSsh2[datSsh2$depth<15,],by=c("doy","year","site"),type="left")
-#only look at above zero temps
-datSTall<-datSTall[datSTall$T.s>0,]
+datSTall <- join(datSsh,datSsh2[datSsh2$depth<15,],by=c("doy","year","stand"),type="full")
 
 plot(datSTall$T.sD[datSTall$stand==1],datSTall$T.s[datSTall$stand==1])
 plot(datSTall$T.sD[datSTall$stand==2],datSTall$T.s[datSTall$stand==2])
-#get relationships
-ld.soilFill <- lm(datSTall$T.s[datSTall$stand==1]~datSTall$T.sD[datSTall$stand==1])
-hd.soilFill <- lm(datSTall$T.s[datSTall$stand==2]~datSTall$T.sD[datSTall$stand==2])
+#get relationships 
+#use only temps above zero because there is nothing below zero in sapflow range
+ld.soilFill <- lm(datSTall$T.s[datSTall$stand==1&datSTall$T.s>0]~datSTall$T.sD[datSTall$stand==1&datSTall$T.s>0])
+hd.soilFill <- lm(datSTall$T.s[datSTall$stand==2&datSTall$T.s>0]~datSTall$T.sD[datSTall$stand==2&datSTall$T.s>0])
 #subset and match met data
 datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
 datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
@@ -336,100 +335,30 @@ colnames(TDstart) <- c("stand", "TD")
 TDstart$TD <- floor(TDstart$TD)
 
 #join soil temp into the data.frame
-standDay5 <- join(standDay4, datSsh, by=c("doy","year","stand"),type="left")
-st5temp <- na.omit(standDay5)
-plot(st5temp$T.s,st5temp$TD)
-plot(st5temp$T.s,st5temp$Tair)
-plot(st5temp$doy,st5temp$TD)
-plot((st5temp$doy-200)^2,st5temp$TD)
-plot(st5temp$doy,st5temp$T.s)
-cor((st5temp$doy-200)^2,st5temp$T.s)
-cor(st5temp$doy,st5temp$T.s)
-cor(st5temp$T.s,st5temp$TD)
-cor(st5temp$T.s,st5temp$Tair)
-cor(st5temp$doy,st5temp$TD)
-cor(st5temp$TD,(st5temp$doy-200)^2)
-gcdoytest <- aggregate(gcALL2$g.c, by=list(gcALL2$doy,gcALL2$year,gcALL2$stand),
-				FUN="mean")
-colnames(gcdoytest)<-c("doy","year","stand","gc")
-plot(gcdoytest$doy[gcdoytest$stand==1&gcdoytest$year==2016],
-gcdoytest$gc[gcdoytest$stand==1&gcdoytest$year==2016],pch=19, col="royalblue",
-	xlim=c(150,250), ylim=c(0,80))
-points(gcdoytest$doy[gcdoytest$stand==1&gcdoytest$year==2017],gcdoytest$gc[gcdoytest$stand==1&gcdoytest$year==2017],pch=19, col="royalblue4")
-points(gcdoytest$doy[gcdoytest$stand==2&gcdoytest$year==2016],
-gcdoytest$gc[gcdoytest$stand==2&gcdoytest$year==2016],pch=19, col="tomato3",
-	)
-points(gcdoytest$doy[gcdoytest$stand==2&gcdoytest$year==2017],
-	gcdoytest$gc[gcdoytest$stand==2&gcdoytest$year==2017],pch=19, col="tomato4")
-
-points(seq(150,250),40-(.015*(seq(150,250)-200)^2),type="l")	
-	
-gcdoytest <- join(gcdoytest,standDay5, by=c("doy","year","stand"),type="left")
-
-par(mfrow=c(1,2))
-plot(gcdoytest$T.s[gcdoytest$stand==1],
-gcdoytest$gc[gcdoytest$stand==1],pch=19, col="royalblue",
-	xlim=c(0,10), ylim=c(0,80))
-points(gcdoytest$T.s[gcdoytest$stand==2],	
-gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3",
-	xlim=c(0,10), ylim=c(0,80))
-plot(gcdoytest$TD[gcdoytest$stand==1],
-gcdoytest$gc[gcdoytest$stand==1],pch=19, col="royalblue",
-	xlim=c(0,100), ylim=c(0,80))
-points(gcdoytest$TD[gcdoytest$stand==2],	
-gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3",
-	xlim=c(0,100), ylim=c(0,80))
-
+datSTtoj <- data.frame(doy=datSTall$doy,year=datSTall$year,
+				T.5cm=datSTall$T.s,stand=datSTall$stand,depthD=datSTall$depthD,
+				T.Dcm=datSTall$T.sD)
+standDay5 <- join(standDay4, datSTtoj, by=c("doy","year","stand"),type="left")
+#fill in missing 5cm temps
+standDay5$Tsoil5 <- ifelse(is.na(standDay5$T.5cm)&standDay5$stand==1,
+						ld.soilFill$coefficients[1]+(ld.soilFill$coefficients[2]*standDay5$T.Dcm),
+						ifelse(is.na(standDay5$T.5cm)&standDay5$stand==2,
+							hd.soilFill$coefficients[1]+(hd.soilFill$coefficients[2]*standDay5$T.Dcm),
+							standDay5$T.5cm))
 #try using porportion of rooting distribution thawed
 #start with calculation from parameter values
-#Rbeta[i]<-exp(log.beta[i])
-#log.beta[i]<-(log(depth[i])*(alpha[DaySite[i]]-1))+(log(1-depth[i])*beta[DaySite[i]])	
+#of root proportion of vertical root biomass thawed	
 datRparm <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\root_analysis\\siteDay\\siteDayparms.csv")	
-#take the deepest profile for each site
 hd.p <- datRparm[3,]	
 ld.p <- datRparm[7,]
-#beta scale
-betaR <- function(Alpha,Dmode,Beta,Dprop){
-	exp((log(Dprop)*(Alpha-1))+(log(1-Dprop)*Beta))
 
-}	
-sum(beta.t)
-library(caTools)
-plot(seq(0,hd.p$Ave.deep-.1,by=.1),dbeta(seq(0,hd.p$Ave.deep-.1,by=.1)/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
-plot(seq(0,1,by=.01),qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta))
-qbeta(.5,ld.p$alpha,ld.p$beta)
-qbeta(.5,ld.p$alpha,ld.p$beta)*ld.p$Ave.deep
-qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta)*hd.p$Ave.deep
-hd.beta <- data.frame(prob=seq(0,1,by=.01),quant=qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta),
-						depth=qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta)*hd.p$Ave.deep)
-
-hd.prob <- data.frame(quant=seq(0,1,by=.01),depth=seq(0,1,by=.01)*hd.p$Ave.deep,
-						prob=pbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta))
-						
-pbeta(.1)
-(hd.p$alpha-(1/3))/(hd.p$alpha+hd.p$beta-(2/3))*hd.p$Ave.deep
-pbeta((hd.p$alpha-(1/3))/(hd.p$alpha+hd.p$beta-(2/3)),hd.p$alpha,hd.p$beta)
-
+#take the deepest profile for each site
 standDay5$pRoot <- ifelse(standDay5$stand==1,
 						pbeta(standDay5$TD/ld.p$Ave.deep,ld.p$alpha,ld.p$beta),
 						pbeta(standDay5$TD/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
-gcdoytest$pRootf <- 1-standDay5$pRoot
-par(mfrow=c(1,3))
-plot(gcdoytest$pRoot[gcdoytest$stand==1],gcdoytest$gc[gcdoytest$stand==1],ylim=c(0,50),pch=19, col="royalblue")						
-points(gcdoytest$pRoot[gcdoytest$stand==2],gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3")						
 
-plot(gcdoytest$pRootf[gcdoytest$stand==1],gcdoytest$gc[gcdoytest$stand==1],ylim=c(0,50),pch=19, col="royalblue")						
-points(gcdoytest$pRootf[gcdoytest$stand==2],gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3")						
+standDay5$pFroze<- 1-standDay5$pRoot						
 
-plot(log(gcdoytest$pRoot[gcdoytest$stand==1]),gcdoytest$gc[gcdoytest$stand==1],ylim=c(0,50),pch=19, col="royalblue")						
-points(log(gcdoytest$pRoot[gcdoytest$stand==2]),gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3")						
-
-plot(gcdoytest$pRootf,gcdoytest$T.s)
-gctempA<- na.omit(gcdoytest)
-cor(gctempA$pRootf,gctempA$T.s)	
-cor(gctempA$pRootf,gctempA$Tair)	
-cor(gctempA$pRootf,(gctempA$doy-200)^2)
-cor(gctempA$pRootf,gctempA$doy)
 				
 #################################################################
 ####model run                                             #######
