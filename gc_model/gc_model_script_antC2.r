@@ -320,6 +320,9 @@ plot(st5temp$T.s,st5temp$TD)
 plot(st5temp$T.s,st5temp$Tair)
 plot(st5temp$doy,st5temp$TD)
 plot((st5temp$doy-200)^2,st5temp$TD)
+plot(st5temp$doy,st5temp$T.s)
+cor((st5temp$doy-200)^2,st5temp$T.s)
+cor(st5temp$doy,st5temp$T.s)
 cor(st5temp$T.s,st5temp$TD)
 cor(st5temp$T.s,st5temp$Tair)
 cor(st5temp$doy,st5temp$TD)
@@ -355,7 +358,7 @@ points(gcdoytest$TD[gcdoytest$stand==2],
 gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3",
 	xlim=c(0,100), ylim=c(0,80))
 
-	
+#try looking at thaw depth over the past week	
 	
 #################################################################
 ####model run                                             #######
