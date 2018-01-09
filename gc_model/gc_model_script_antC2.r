@@ -102,6 +102,8 @@ plot(datSTall$T.sD[datSTall$stand==2],datSTall$T.s[datSTall$stand==2])
 #use only temps above zero because there is nothing below zero in sapflow range
 ld.soilFill <- lm(datSTall$T.s[datSTall$stand==1&datSTall$T.s>0]~datSTall$T.sD[datSTall$stand==1&datSTall$T.s>0])
 hd.soilFill <- lm(datSTall$T.s[datSTall$stand==2&datSTall$T.s>0]~datSTall$T.sD[datSTall$stand==2&datSTall$T.s>0])
+
+
 #subset and match met data
 datLRHmet <- data.frame(datRH[datRH$site=="ld",1:3], RH=datRH$RH.VP4[datRH$site=="ld"])
 datLTCmet <- data.frame(datTC[datTC$site=="ld",1:3], Temp=datTC$TempC.VP4[datTC$site=="ld"])
@@ -338,6 +340,8 @@ TDstart$TD <- floor(TDstart$TD)
 datSTtoj <- data.frame(doy=datSTall$doy,year=datSTall$year,
 				T.5cm=datSTall$T.s,stand=datSTall$stand,depthD=datSTall$depthD,
 				T.Dcm=datSTall$T.sD)
+				
+
 standDay5 <- join(standDay4, datSTtoj, by=c("doy","year","stand"),type="left")
 #fill in missing 5cm temps
 standDay5$Tsoil5 <- ifelse(is.na(standDay5$T.5cm)&standDay5$stand==1,
@@ -345,6 +349,36 @@ standDay5$Tsoil5 <- ifelse(is.na(standDay5$T.5cm)&standDay5$stand==1,
 						ifelse(is.na(standDay5$T.5cm)&standDay5$stand==2,
 							hd.soilFill$coefficients[1]+(hd.soilFill$coefficients[2]*standDay5$T.Dcm),
 							standDay5$T.5cm))
+#join the other soil temp in there
+#pull out deep mineral and upper mineral measurements
+datMd <- aggregate(datStemp$tempS.GS3[datStemp$sensorZ==50],
+		by=list(datStemp$doy[datStemp$sensorZ==50],
+				datStemp$year[datStemp$sensorZ==50],
+				datStemp$site[datStemp$sensorZ==50]),FUN="mean",na.action=na.omit)
+
+colnames(datMd) <- c("doy","year","site","T.Dcm3")				
+datMd$stand <- ifelse(datMd$site=="hd",2,1)
+datMd<-cbind(datMd[,1:2],datMd[,4:5])
+				
+
+
+							
+datMs <- aggregate(datStemp2$tempS.5TM[datStemp2$sensorZ>15],
+		by=list(datStemp2$doy[datStemp2$sensorZ>15],
+				datStemp2$year[datStemp2$sensorZ>15],
+				datStemp2$site[datStemp2$sensorZ>15]),FUN="mean",na.action=na.omit)							
+colnames(datMs) <- c("doy","year","site","T.Dcm2")
+datMs$stand <- ifelse(datMs$site=="hd",2,1)
+datMs<-cbind(datMs[,1:2],datMs[,4:5])
+
+#join other measrements into standDay
+standDay6 <- join(standDay5,datMs, by=c("doy","year","stand"),type="left")
+standDay7 <- join(standDay6,datMd, by=c("doy","year","stand"),type="left")
+
+#interpolate deep roots
+#get the average rate of change for unthaw
+
+								
 #try using porportion of rooting distribution thawed
 #start with calculation from parameter values
 #of root proportion of vertical root biomass thawed	
@@ -353,11 +387,11 @@ hd.p <- datRparm[3,]
 ld.p <- datRparm[7,]
 
 #take the deepest profile for each site
-standDay5$pRoot <- ifelse(standDay5$stand==1,
+standDay7$pRoot <- ifelse(standDay5$stand==1,
 						pbeta(standDay5$TD/ld.p$Ave.deep,ld.p$alpha,ld.p$beta),
 						pbeta(standDay5$TD/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
 
-standDay5$pFroze<- 1-standDay5$pRoot						
+standDay7$pFroze<- 1-standDay5$pRoot						
 
 				
 #################################################################
@@ -370,10 +404,10 @@ standDay5$pFroze<- 1-standDay5$pRoot
 
 datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, standDay=gcALL2$standDay,
 					PAR=gcALL2$PAR,
-					D=gcALL2$D, NstandDay=dim(standDay4)[1],
-					stand=standDay4$stand, airT=standDay4$Tair,
-					airTmean=airTmean,thawD=standDay4$TD, thawstart=TDstart$TD, 
-					 Nstand=2,a.pr=precipL,days=standDay4$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4 )
+					D=gcALL2$D, NstandDay=dim(standDay7)[1],
+					stand=standDay7$stand, airT=standDay7$Tair,
+					airTmean=airTmean,freezeR=standDay7$TD,  
+					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4 )
 
 # set parameters to monitor
 parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
@@ -400,9 +434,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run34\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37\\chain3"))
  	
 	
 	# 5b. call openbugs
