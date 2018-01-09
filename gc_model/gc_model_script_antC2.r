@@ -358,8 +358,59 @@ points(gcdoytest$TD[gcdoytest$stand==2],
 gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3",
 	xlim=c(0,100), ylim=c(0,80))
 
-#try looking at thaw depth over the past week	
-	
+#try using porportion of rooting distribution thawed
+#start with calculation from parameter values
+#Rbeta[i]<-exp(log.beta[i])
+#log.beta[i]<-(log(depth[i])*(alpha[DaySite[i]]-1))+(log(1-depth[i])*beta[DaySite[i]])	
+datRparm <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\root_analysis\\siteDay\\siteDayparms.csv")	
+#take the deepest profile for each site
+hd.p <- datRparm[3,]	
+ld.p <- datRparm[7,]
+#beta scale
+betaR <- function(Alpha,Dmode,Beta,Dprop){
+	exp((log(Dprop)*(Alpha-1))+(log(1-Dprop)*Beta))
+
+}	
+sum(beta.t)
+library(caTools)
+plot(seq(0,hd.p$Ave.deep-.1,by=.1),dbeta(seq(0,hd.p$Ave.deep-.1,by=.1)/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
+plot(seq(0,1,by=.01),qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta))
+qbeta(.5,ld.p$alpha,ld.p$beta)
+qbeta(.5,ld.p$alpha,ld.p$beta)*ld.p$Ave.deep
+qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta)*hd.p$Ave.deep
+hd.beta <- data.frame(prob=seq(0,1,by=.01),quant=qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta),
+						depth=qbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta)*hd.p$Ave.deep)
+
+hd.prob <- data.frame(quant=seq(0,1,by=.01),depth=seq(0,1,by=.01)*hd.p$Ave.deep,
+						prob=pbeta(seq(0,1,by=.01),hd.p$alpha,hd.p$beta))
+						
+pbeta(.1)
+(hd.p$alpha-(1/3))/(hd.p$alpha+hd.p$beta-(2/3))*hd.p$Ave.deep
+pbeta((hd.p$alpha-(1/3))/(hd.p$alpha+hd.p$beta-(2/3)),hd.p$alpha,hd.p$beta)
+
+standDay5$pRoot <- ifelse(standDay5$stand==1,
+						pbeta(standDay5$TD/ld.p$Ave.deep,ld.p$alpha,ld.p$beta),
+						pbeta(standDay5$TD/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
+gcdoytest$pRootf <- 1-standDay5$pRoot
+par(mfrow=c(1,3))
+plot(gcdoytest$pRoot[gcdoytest$stand==1],gcdoytest$gc[gcdoytest$stand==1],ylim=c(0,50),pch=19, col="royalblue")						
+points(gcdoytest$pRoot[gcdoytest$stand==2],gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3")						
+
+plot(gcdoytest$pRootf[gcdoytest$stand==1],gcdoytest$gc[gcdoytest$stand==1],ylim=c(0,50),pch=19, col="royalblue")						
+points(gcdoytest$pRootf[gcdoytest$stand==2],gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3")						
+
+plot(log(gcdoytest$pRoot[gcdoytest$stand==1]),gcdoytest$gc[gcdoytest$stand==1],ylim=c(0,50),pch=19, col="royalblue")						
+points(log(gcdoytest$pRoot[gcdoytest$stand==2]),gcdoytest$gc[gcdoytest$stand==2],pch=19, col="tomato3")						
+
+plot(gcdoytest$pRootf,gcdoytest$T.s)
+gctempA<- na.omit(gcdoytest)
+cor(gctempA$pRootf,gctempA$T.s)	
+cor(gctempA$pRootf,gctempA$Tair)	
+cor(gctempA$pRootf,(gctempA$doy-200)^2)
+cor(gctempA$pRootf,gctempA$doy)
+
+
+					
 #################################################################
 ####model run                                             #######
 #################################################################
