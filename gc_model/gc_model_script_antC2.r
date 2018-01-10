@@ -391,8 +391,16 @@ standDay7$pRoot <- ifelse(standDay5$stand==1,
 						pbeta(standDay5$TD/ld.p$Ave.deep,ld.p$alpha,ld.p$beta),
 						pbeta(standDay5$TD/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
 
-standDay7$pFroze<- 1-standDay5$pRoot						
+standDay7$pFroze<- 1-standDay7$pRoot
 
+gcave <- aggregate(gcALL2$g.c, by=list(gcALL2$standDay),FUN="mean")
+colnames(gcave) <-  c("standDay","g.c")
+gcplot <- join(standDay7,gcave,by=c("standDay"), type="left")						
+
+plot(gcplot$pFroze, gcplot$g.c)
+plot(gcplot$Tsoil5, gcplot$g.c)
+plot(gcplot$TD, gcplot$g.c)
+plot(gcplot$T.Dcm2, gcplot$g.c)
 				
 #################################################################
 ####model run                                             #######
@@ -406,7 +414,7 @@ datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, sta
 					PAR=gcALL2$PAR,
 					D=gcALL2$D, NstandDay=dim(standDay7)[1],
 					stand=standDay7$stand, airT=standDay7$Tair,
-					airTmean=airTmean,freezeR=standDay7$TD,  
+					airTmean=airTmean,freezeR=standDay7$pFroze,  
 					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4 )
 
 # set parameters to monitor
@@ -451,7 +459,7 @@ parallel.bugs <- function(chain, x.data, params){
 # parallel.bugs on each of the 3 CPUs
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
-#ran thinning by 350 for 5000 samples. First 2,000 are burn in.
+#ran thinning by 150 for 5000 samples. First 2,000 are burn in.
 
 
 folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
