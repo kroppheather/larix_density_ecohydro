@@ -44,7 +44,7 @@ spatialmodel <- 0
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_antC.r"
 
@@ -370,8 +370,10 @@ datMs <- aggregate(datStemp2$tempS.5TM[datStemp2$sensorZ>15],
 colnames(datMs) <- c("doy","year","site","T.Dcm2")
 datMs$stand <- ifelse(datMs$site=="hd",2,1)
 datMs<-cbind(datMs[,1:2],datMs[,4:5])
-
-#join other measrements into standDay
+#T.Dcm is the bottom of the organic layer, Tsoil 5 is filled in, T.Dcm2 is the average over the two
+#organic layer measurements
+#join other measurements into standDay
+#T.Dcm3 is the deep mineral measurement
 standDay6 <- join(standDay5,datMs, by=c("doy","year","stand"),type="left")
 standDay7 <- join(standDay6,datMd, by=c("doy","year","stand"),type="left")
 
@@ -392,6 +394,11 @@ standDay7$pRoot <- ifelse(standDay5$stand==1,
 						pbeta(standDay5$TD/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
 
 standDay7$pFroze<- 1-standDay7$pRoot
+
+#get the soil temp mean for the model
+soilTmeans <- aggregate(standDay7$T.Dcm2, by=list(standDay7$stand), FUN="mean")
+colnames(soilTmeans) <- c("stand","TsoilMean")
+soilTmeans$TsoilMean <- round(soilTmeans$TsoilMean,2)
 
 gcave <- aggregate(gcALL2$g.c, by=list(gcALL2$standDay),FUN="mean")
 colnames(gcave) <-  c("standDay","g.c")
@@ -415,7 +422,8 @@ datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, sta
 					D=gcALL2$D, NstandDay=dim(standDay7)[1],
 					stand=standDay7$stand, airT=standDay7$Tair,
 					airTmean=airTmean,freezeR=standDay7$pFroze,  
-					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4 )
+					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=5,
+					 soilT=standDay7$T.Dcm2,soilTmean=soilTmeans$TsoilMean)
 
 # set parameters to monitor
 parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
@@ -442,9 +450,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run37\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38\\chain3"))
  	
 	
 	# 5b. call openbugs
@@ -462,8 +470,7 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #ran thinning by 150 for 5000 samples. First 2,000 are burn in.
 #saved state, updated starting values
 #ran for 11 then 
-#then ran for another 5000 thinning by 250
-#then ran another 3000 at 350
+#then ran for another 5000 thinning by 150
 
 folder1 <- paste0(saveMdir, "\\CODA_out3\\chain1\\")
 folder2 <- paste0(saveMdir, "\\CODA_out3\\chain2\\")
