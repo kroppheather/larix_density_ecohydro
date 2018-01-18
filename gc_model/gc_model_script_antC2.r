@@ -460,11 +460,14 @@ parallel.bugs <- function(chain, x.data, params){
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
 #ran thinning by 150 for 5000 samples. First 2,000 are burn in.
+#saved state, updated starting values
+#ran for 11 then 
+#then ran for another 5000 thinning by 250
+#then ran another 3000 at 350
 
-
-folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out3\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out3\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out3\\chain3\\")
 
 
 
@@ -476,7 +479,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history3"))
 
 
 modSum <-summary(codaobj1) 
@@ -484,6 +487,6 @@ modSum <-summary(codaobj1)
 
 write.table(modSum$statistics, paste0(saveMdir, "\\out", "\\mod_stats.csv"), sep=",", row.names=TRUE)
 write.table(modSum$quantiles, paste0(saveMdir, "\\out", "\\mod_quants.csv"), sep=",", row.names=TRUE)
-write.table(standDay4, paste0(saveMdir, "\\out", "\\standDay.csv"), sep=",", row.names=FALSE)
+write.table(standDay7, paste0(saveMdir, "\\out", "\\standDay.csv"), sep=",", row.names=FALSE)
 write.table(gcALL2, paste0(saveMdir, "\\out", "\\gcdata.csv"), sep=",", row.names=FALSE)
 #aggregate to compare means
