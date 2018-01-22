@@ -24,10 +24,6 @@
 source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_process.r")
 #libraries loaded from source
 #plyr, lubridate,caTools
-#################################################################
-####read in thawdepth data                                #######
-#################################################################
-source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\thaw_depth_process.r")
 # libraries
 library(snow)
 library(snowfall)
@@ -44,7 +40,7 @@ spatialmodel <- 0
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run39")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_antC.r"
 
@@ -312,29 +308,11 @@ for(i in 1:dim(Days)[1]){
 
 standDay3  <- join(standDay2, Days, by=c("doy", "year"), type="left")
 
-#match up thaw depth data
-#create a stand ID in thaw depth
-#take only relevant TD cols
-#TDall needs 2 more days for hd 2016
-TDchange <- TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==185]-TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==184]
-TDtemp <- data.frame(doy=c(182,183), year=c(2016,2016), site=c("hd","hd"), TD=c(NA,NA),
-		TDday=c(TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==184]-(TDchange*2),
-			TDall$TDday[TDall$year==2016&TDall$site=="hd"&TDall$doy==184]-TDchange))
-TDall <- rbind(TDtemp,TDall)
-
-
-TDsub <- data.frame(doy =TDall$doy, year= TDall$year, stand = ifelse(TDall$site=="hd",2,1),TD=TDall$TDday)
-
-#join in stand day
-standDay4 <- join(standDay3, TDsub, by=c("doy","year","stand"), type="left")
 
 #variables for centering
 #air temp
-airTmean<- mean(standDay2$Tair)
-#thaw depth minimum
-TDstart <- aggregate(standDay4$TD, by=list(standDay4$stand), FUN="min")
-colnames(TDstart) <- c("stand", "TD")
-TDstart$TD <- floor(TDstart$TD)
+airTmean<- mean(standDay3$Tair)
+
 
 #join soil temp into the data.frame
 datSTtoj <- data.frame(doy=datSTall$doy,year=datSTall$year,
@@ -342,13 +320,13 @@ datSTtoj <- data.frame(doy=datSTall$doy,year=datSTall$year,
 				T.Dcm=datSTall$T.sD)
 				
 
-standDay5 <- join(standDay4, datSTtoj, by=c("doy","year","stand"),type="left")
+standDay4 <- join(standDay3, datSTtoj, by=c("doy","year","stand"),type="left")
 #fill in missing 5cm temps
-standDay5$Tsoil5 <- ifelse(is.na(standDay5$T.5cm)&standDay5$stand==1,
-						ld.soilFill$coefficients[1]+(ld.soilFill$coefficients[2]*standDay5$T.Dcm),
-						ifelse(is.na(standDay5$T.5cm)&standDay5$stand==2,
-							hd.soilFill$coefficients[1]+(hd.soilFill$coefficients[2]*standDay5$T.Dcm),
-							standDay5$T.5cm))
+standDay4$Tsoil5 <- ifelse(is.na(standDay4$T.5cm)&standDay4$stand==1,
+						ld.soilFill$coefficients[1]+(ld.soilFill$coefficients[2]*standDay4$T.Dcm),
+						ifelse(is.na(standDay4$T.5cm)&standDay4$stand==2,
+							hd.soilFill$coefficients[1]+(hd.soilFill$coefficients[2]*standDay4$T.Dcm),
+							standDay4$T.5cm))
 #join the other soil temp in there
 #pull out deep mineral and upper mineral measurements
 datMd <- aggregate(datStemp$tempS.GS3[datStemp$sensorZ==50],
@@ -359,10 +337,7 @@ datMd <- aggregate(datStemp$tempS.GS3[datStemp$sensorZ==50],
 colnames(datMd) <- c("doy","year","site","T.Dcm3")				
 datMd$stand <- ifelse(datMd$site=="hd",2,1)
 datMd<-cbind(datMd[,1:2],datMd[,4:5])
-				
-
-
-							
+									
 datMs <- aggregate(datStemp2$tempS.5TM[datStemp2$sensorZ>15],
 		by=list(datStemp2$doy[datStemp2$sensorZ>15],
 				datStemp2$year[datStemp2$sensorZ>15],
@@ -374,40 +349,15 @@ datMs<-cbind(datMs[,1:2],datMs[,4:5])
 #organic layer measurements
 #join other measurements into standDay
 #T.Dcm3 is the deep mineral measurement
-standDay6 <- join(standDay5,datMs, by=c("doy","year","stand"),type="left")
-standDay7 <- join(standDay6,datMd, by=c("doy","year","stand"),type="left")
+standDay5 <- join(standDay4,datMs, by=c("doy","year","stand"),type="left")
+standDay6 <- join(standDay5,datMd, by=c("doy","year","stand"),type="left")
 
-#interpolate deep roots
-#get the average rate of change for unthaw
-
-								
-#try using porportion of rooting distribution thawed
-#start with calculation from parameter values
-#of root proportion of vertical root biomass thawed	
-datRparm <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\root_analysis\\siteDay\\siteDayparms.csv")	
-hd.p <- datRparm[3,]	
-ld.p <- datRparm[7,]
-
-#take the deepest profile for each site
-standDay7$pRoot <- ifelse(standDay5$stand==1,
-						pbeta(standDay5$TD/ld.p$Ave.deep,ld.p$alpha,ld.p$beta),
-						pbeta(standDay5$TD/hd.p$Ave.deep,hd.p$alpha,hd.p$beta))
-
-standDay7$pFroze<- 1-standDay7$pRoot
-
+						
 #get the soil temp mean for the model
-soilTmeans <- aggregate(standDay7$T.Dcm2, by=list(standDay7$stand), FUN="mean")
+soilTmeans <- aggregate(standDay6$T.Dcm2, by=list(standDay6$stand), FUN="mean")
 colnames(soilTmeans) <- c("stand","TsoilMean")
 soilTmeans$TsoilMean <- round(soilTmeans$TsoilMean,2)
 
-gcave <- aggregate(gcALL2$g.c, by=list(gcALL2$standDay),FUN="mean")
-colnames(gcave) <-  c("standDay","g.c")
-gcplot <- join(standDay7,gcave,by=c("standDay"), type="left")						
-
-plot(gcplot$pFroze, gcplot$g.c)
-plot(gcplot$Tsoil5, gcplot$g.c)
-plot(gcplot$TD, gcplot$g.c)
-plot(gcplot$T.Dcm2, gcplot$g.c)
 				
 #################################################################
 ####model run                                             #######
@@ -419,11 +369,11 @@ plot(gcplot$T.Dcm2, gcplot$g.c)
 
 datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, standDay=gcALL2$standDay,
 					PAR=gcALL2$PAR,
-					D=gcALL2$D, NstandDay=dim(standDay7)[1],
-					stand=standDay7$stand, airT=standDay7$Tair,
-					airTmean=airTmean,freezeR=standDay7$pFroze,  
-					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=5,
-					 soilT=standDay7$T.Dcm2,soilTmean=soilTmeans$TsoilMean)
+					D=gcALL2$D, NstandDay=dim(standDay6)[1],
+					stand=standDay6$stand, airT=standDay6$Tair,
+					airTmean=airTmean, 
+					 Nstand=2,a.pr=precipL,days=standDay6$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=4,
+					 soilT=standDay6$T.Dcm2,soilTmean=soilTmeans$TsoilMean)
 
 # set parameters to monitor
 parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
@@ -450,9 +400,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run38\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run39\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run39\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run39\\chain3"))
  	
 	
 	# 5b. call openbugs
