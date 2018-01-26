@@ -503,7 +503,8 @@ parallel.bugs <- function(chain, x.data, params){
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
 #ran thinning by 150 for 5000 samples. First 2,000 are burn in.
-
+#checked at 5000 needs to run longer
+#running for another 5000 with thinning by 250
 
 folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
 folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
