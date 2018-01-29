@@ -502,11 +502,12 @@ parallel.bugs <- function(chain, x.data, params){
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
 #ran thinning by 150 for 5000 samples. First 2,000 are burn in.
+#reran model with better starting values
 
 
-folder1 <- paste0(saveMdir, "\\CODA_out\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out2\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out2\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out2\\chain3\\")
 
 
 
@@ -518,7 +519,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history2"))
 
 
 modSum <-summary(codaobj1) 
