@@ -505,9 +505,9 @@ sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #reran model with better starting values
 #still not converging running for another 5000 thinning by 350
 
-folder1 <- paste0(saveMdir, "\\CODA_out3\\chain1\\")
-folder2 <- paste0(saveMdir, "\\CODA_out3\\chain2\\")
-folder3 <- paste0(saveMdir, "\\CODA_out3\\chain3\\")
+folder1 <- paste0(saveMdir, "\\CODA_out4\\chain1\\")
+folder2 <- paste0(saveMdir, "\\CODA_out4\\chain2\\")
+folder3 <- paste0(saveMdir, "\\CODA_out4\\chain3\\")
 
 
 
@@ -519,7 +519,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history3"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history4"))
 
 
 modSum <-summary(codaobj1) 

@@ -39,16 +39,15 @@ model{
 #########parameter model ########
 #################################	
 	for(i in 1:NstandDay){
-		gref[i]<-a[1,stand[i]]+a[2,stand[i]]*airTcent[i]+a[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+a[4,stand[i]]*(freezeR[i])+a[5,stand[i]]*soilTcent[i]
-		S[i]<-b[1,stand[i]]+b[2,stand[i]]*airTcent[i]+b[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+b[4,stand[i]]*(freezeR[i])+b[5,stand[i]]*soilTcent[i]
-		slope.temp[i] <-d[1,stand[i]]+d[2,stand[i]]*airTcent[i]+d[3,stand[i]]*(pastpr[days[i],stand[i]]-5)+d[4,stand[i]]*(freezeR[i])+d[5,stand[i]]*soilTcent[i]
+		gref[i]<-a[1,stand[i]]+a[2,stand[i]]*airTcent[i]+a[3,stand[i]]*(pastpr[days[i],stand[i]]-5)
+		S[i]<-b[1,stand[i]]+b[2,stand[i]]*airTcent[i]+b[3,stand[i]]*(pastpr[days[i],stand[i]]-5)
+		slope.temp[i] <-d[1,stand[i]]+d[2,stand[i]]*airTcent[i]+d[3,stand[i]]*(pastpr[days[i],stand[i]]-5)
 		#Log transform light function slope to avoid numerical traps
 		#and allow for better mixing and faster convergence of the non-linear model
 		l.slope[i]<-exp(slope.temp[i])
 	#conduct covariate centering to help with mixing
 
 	airTcent[i]<-airT[i]-airTmean	
-	soilTcent[i] <- soilT[i]-soilTmean[stand[i]]
 	#calculate sensitivity
 
 	}

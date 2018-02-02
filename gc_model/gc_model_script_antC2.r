@@ -44,7 +44,7 @@ spatialmodel <- 0
 ####specify directories                                   #######
 #################################################################
 #model output
-saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run40")
+saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42")
 #model code
 modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_antC.r"
 
@@ -457,9 +457,8 @@ datalist <- list(Nobs=dim(gcALL2)[1], gs=gcALL2$g.c, stand.obs=gcALL2$stand, sta
 					PAR=gcALL2$PAR,
 					D=gcALL2$D, NstandDay=dim(standDay7)[1],
 					stand=standDay7$stand, airT=standDay7$Tair,
-					airTmean=airTmean,freezeR=standDay7$percFroze,  
-					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=5,
-					 soilT=standDay7$T.Dcm2,soilTmean=soilTmeans$TsoilMean)
+					airTmean=airTmean,
+					 Nstand=2,a.pr=precipL,days=standDay7$Days,Nlag=length(lagStart),Ndays=dim(Days)[1],Nparm=3)
 # set parameters to monitor
 parms <-c( "a", "b", "d","S","gref","l.slope","rep.gs", "wpr","deltapr","pastpr")
 
@@ -485,9 +484,9 @@ for (i in 1:length(folderALL)){
 
 #get model started but run manually
 parallel.bugs <- function(chain, x.data, params){
-	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run40\\chain1",
-				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run40\\chain2",
-					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run40\\chain3"))
+	folder <- ifelse(chain==1,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\chain1",
+				ifelse(chain==2,"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\chain2",
+					"c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\chain3"))
  	
 	
 	# 5b. call openbugs
@@ -503,11 +502,9 @@ parallel.bugs <- function(chain, x.data, params){
 sfLapply(1:3, fun=parallel.bugs,x.data=datalist, params=parms)
 #after the small number of iterations runs, I make sure it uses a slice updater, run for a test of 11 samples,
 #ran thinning by 150 for 5000 samples. First 2,000 are burn in.
-#checked at 5000 needs to run longer
-#running for another 5000 with thinning by 250
-#stopped after 3000 to check
-#burnin was after 6000 iterations
-#so final sample is from 6012-8012
+#checked and burnin isn't actually until about 2500
+#so output new coda leaving a burnin of 3,000
+#had to save as out3 though because messed up the naming 
 
 folder1 <- paste0(saveMdir, "\\CODA_out3\\chain1\\")
 folder2 <- paste0(saveMdir, "\\CODA_out3\\chain2\\")
@@ -523,7 +520,7 @@ codaobj1 <- read.bugs(c(paste0(folder1, "\\CODAchain1.txt"),
 						))
 
 
-mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history3"))
+mcmcplot(codaobj1, parms=c( "a", "b", "d","wpr","deltapr"),  dir=paste0(saveMdir, "\\history2"))
 
 
 modSum <-summary(codaobj1) 
