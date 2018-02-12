@@ -270,6 +270,12 @@ dayHT <- aggregate(datHmet$Temp, by=list(datHmet$doy,datHmet$year), FUN="mean")
 colnames(dayHT) <- c("doy","year","T")
 dayH <- join(dayHT,dayHD, by=c("doy","year"),type="full")
 
+dayLP <-aggregate(datLmet$PAR, by=list(datLmet$doy,datLmet$year), FUN="max")
+dayHP <-aggregate(datHmet$PAR, by=list(datHmet$doy,datHmet$year), FUN="max")
+colnames(dayLP)<- c("doy","year","PARmax")
+colnames(dayHP)<- c("doy","year","PARmax")
+dayL <- join(dayL,dayLP, by=c("doy","year"),type="full")
+dayH <- join(dayH,dayHP, by=c("doy","year"),type="full")
 #################################################################
 ####filter gc to exclude measurements when D is too low   #######
 #################################################################
@@ -630,4 +636,89 @@ jpeg(paste0(plotDI , "\\hh__summary6.jpg"), width=2800, height=2600, units="px")
 	mtext(expression(paste("(",mu,"mol m"^"-2","s"^"-1",")")), side=2, line=12, cex=5)
 dev.off()	
 	
-	
+
+
+
+#################################################################
+####make a panel of daily met                             #######      
+#################################################################	
+plotDI
+
+wd <- 45
+hd <-25
+
+#day range for x axis 
+xl2016 <- 182
+xh2016 <- 245
+xl2017 <- 155
+xh2017 <- 230
+Tmin <- 0
+Tmax<- 25
+Dmin <- 0
+Dmax <- 1.75
+TDmin <- 90
+TDmax <- 0
+cx.p <- 7
+lwp <- 6
+cx.a <- 7
+lwt <- 6
+cx.m <- 6
+#subset precip
+prec2016 <- datAirP[datAirP$doy<=xh2016&datAirP$doy>=xl2016&datAirP$year==2016,]
+prec2017 <- datAirP[datAirP$doy<=xh2017&datAirP$doy>=xl2017&datAirP$year==2017,]
+
+#just plot day L for the presentation
+
+
+jpeg(paste0(plotDI , "\\daily_met_fig_for_Utica.jpg"), width=3300, height=2600, units="px",quality=100)
+	layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(wd),6), height=rep(lcm(hd),6))
+	#plot 1
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(xl2016, xh2016), ylim=c(Tmin,Tmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
+		points(dayL$doy[dayL$year==2016], dayL$T[dayL$year==2016], col="royalblue3", pch=19,  cex=cx.p, lwd=lwp, type="b")
+	box(which="plot")
+	axis(2,seq(Tmin,Tmax,by=5), cex.axis=cx.a,las=2,lwd.ticks=lwt)
+	mtext("Average daily", side=2, cex=cx.m, line=25)
+	mtext("air temperature (C)", side=2, cex=cx.m, line=14)
+	mtext("2016",side=3,cex=cx.m,line=5)
+	#plot 2
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(xl2017, xh2017), ylim=c(Tmin,Tmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
+		points(dayL$doy[dayL$year==2017], dayL$T[dayL$year==2017], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="b")
+	box(which="plot")
+	mtext("2017",side=3,cex=cx.m,line=5)
+	#plot 3
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(xl2016, xh2016), ylim=c(Dmin,Dmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
+		points(dayL$doy[dayL$year==2016], dayL$D[dayL$year==2016], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="b")
+	box(which="plot")
+	axis(2,seq(Dmin+.25,Dmax-0.25,by=.25), cex.axis=cx.a,las=2,lwd.ticks=lwt)
+		mtext("Average daily vapor", side=2, cex=cx.m, line=25)
+	mtext("pressure deficit (KPa)", side=2, cex=cx.m, line=14)
+	#plot 4
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(xl2017, xh2017), ylim=c(Dmin,Dmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
+		points(dayL$doy[dayL$year==2017], dayL$D[dayL$year==2017], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="b")
+	box(which="plot")	
+	#plot 5
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(xl2016, xh2016), ylim=c(TDmin,TDmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
+		points(TDall$doy[TDall$year==2016&TDall$site=="ld"], TDall$TDday[TDall$year==2016&TDall$site=="ld"], col="royalblue3" , lwd=lwp, type="l")
+		points(TDall$doy[TDall$year==2016&TDall$site=="hd"], TDall$TDday[TDall$year==2016&TDall$site=="hd"], col="tomato3" , lwd=lwp, type="l")		
+	box(which="plot")	
+	axis(2,seq(TDmin,TDmax,by=-10), cex.axis=cx.a,las=2,lwd.ticks=lwt)
+	axis(1, seq(185,235, by=10),rep(" ",length(seq(185,235, by=10))), cex.axis=cx.a,lwd.ticks=lwt)
+	mtext(seq(185,235, by=10), at=seq(185,235, by=10), cex=5, side=1,line=5)
+			mtext("Permafrost", side=2, cex=cx.m, line=25)
+	mtext("thaw depth(cm)", side=2, cex=cx.m, line=14)
+		mtext("Day of year",outer=TRUE, side=1, cex=cx.m, line=-10)
+		legend(215,5, c("low density", "high density", col=c("royalblue3", "tomato3"), cex=5, lwd=lwp))
+	#plot 6
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(xl2017, xh2017), ylim=c(TDmin,TDmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
+		points(TDall$doy[TDall$year==2017&TDall$site=="ld"], TDall$TDday[TDall$year==2017&TDall$site=="ld"], col="royalblue3", lwd=lwp, type="l")
+		points(TDall$doy[TDall$year==2017&TDall$site=="hd"], TDall$TDday[TDall$year==2017&TDall$site=="hd"], col="tomato3" ,  lwd=lwp, type="l")		
+	box(which="plot")
+	axis(1, seq(160,230, by=10),rep(" ",length(seq(160,230, by=10))), cex.axis=cx.a,lwd.ticks=lwt)
+	mtext(seq(160,230, by=10), at=seq(160,230, by=10), cex=5, side=1,line=5)
+dev.off()	
