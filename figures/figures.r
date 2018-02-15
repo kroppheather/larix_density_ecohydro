@@ -49,6 +49,9 @@ datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.
 #PAR
 datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS PAR.csv")
 
+#water potential
+dat
+
 #################################################################
 ####calculate daily transpiration                         #######
 #################################################################
@@ -712,7 +715,7 @@ jpeg(paste0(plotDI , "\\daily_met_fig_for_Utica.jpg"), width=3300, height=2600, 
 			mtext("Permafrost", side=2, cex=cx.m, line=25)
 	mtext("thaw depth(cm)", side=2, cex=cx.m, line=14)
 		mtext("Day of year",outer=TRUE, side=1, cex=cx.m, line=-10)
-		legend(215,5, c("low density", "high density", col=c("royalblue3", "tomato3"), cex=5, lwd=lwp))
+		legend(215,5, c("low density", "high density"), col=c("royalblue3", "tomato3"), cex=8, lwd=lwp,bty="n")
 	#plot 6
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), xlim=c(xl2017, xh2017), ylim=c(TDmin,TDmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
