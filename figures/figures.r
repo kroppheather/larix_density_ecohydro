@@ -20,7 +20,7 @@
 #################################################################
 ####read in sapflow data                                  #######
 #################################################################
-source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_process.r")
+source("c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\sapflux_process.r")
 #libraries loaded from source
 #plyr, lubridate,caTools
 
@@ -30,7 +30,7 @@ plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\time_plot"
 ####read in thaw depth data                               #######
 #################################################################
 
-source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\thaw_depth_process.r")
+source("c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\thaw_depth_process.r")
 
 #################################################################
 ####read in datafiles                                     #######
