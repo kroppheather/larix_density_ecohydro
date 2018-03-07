@@ -128,7 +128,7 @@ initlist<-list(list(
 	sig.bio = 1.522))
 				
 				
-initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\Siberia_root_profile\\vertical\\Distrubution_model_code.txt",
+initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\vertical\\Distrubution_model_code.txt",
 				inits=initlist,parameters.to.save=c("alpha","beta","deviance","sig.bio", "mu.bio", "Dmode", "bio.est",
 													"Rbeta","r.med", "r.mean", "r.mode","r.tot","r.rep", "med.diff"),
 				n.iter=4000,n.chains=3,n.burnin=2000,n.thin=25,

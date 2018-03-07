@@ -21,13 +21,13 @@
 #################################################################
 ####read in sapflow data                                  #######
 #################################################################
-source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\sapflux_process.r")
+source("c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\sapflux_process.r")
 #libraries loaded from source
 #plyr, lubridate,caTools
 #################################################################
 ####read in thawdepth data                                #######
 #################################################################
-source("c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\thaw_depth_process.r")
+source("c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\thaw_depth_process.r")
 # libraries
 library(snow)
 library(snowfall)
@@ -46,7 +46,7 @@ spatialmodel <- 0
 #model output
 saveMdir <- c("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42")
 #model code
-modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larch_density_ecohydro\\gc_model\\gc_model_code_antC.r"
+modCode <- "c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\gc_model\\gc_model_code_antC.r"
 
 
 
