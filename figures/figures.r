@@ -49,8 +49,8 @@ datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.
 #PAR
 datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS PAR.csv")
 
-#water potential
-dat
+#read in leaf and sapwood area
+datLSA <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\sapflux_diag\\tables\\treeSummary.csv")
 
 #################################################################
 ####calculate daily transpiration                         #######
@@ -203,7 +203,7 @@ for(i in 1:4){
 	gcHHave$gc.sd <- gsHHsd$x
 	gcHHave$gc.n <- gsHHn$x
 	gcHHave$gc.se <- gsHHave$gc.sd/sqrt(gsHHave$gc.n)
-	
+	gcHHave$site <- ifelse(gcHHave$dataset==1|gcHHave$dataset==2,"ld","hd")
 #get the average daily gc across all trees
 
 
@@ -656,9 +656,9 @@ xh2016 <- 245
 xl2017 <- 155
 xh2017 <- 230
 Tmin <- 0
-Tmax<- 25
+Tmax<- 30
 Dmin <- 0
-Dmax <- 1.75
+Dmax <- 2.75
 TDmin <- 90
 TDmax <- 0
 cx.p <- 7
@@ -678,7 +678,7 @@ jpeg(paste0(plotDI , "\\daily_met_fig_for_Utica.jpg"), width=3300, height=2600, 
 	#plot 1
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), xlim=c(xl2016, xh2016), ylim=c(Tmin,Tmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
-		points(dayL$doy[dayL$year==2016], dayL$T[dayL$year==2016], col="royalblue3", pch=19,  cex=cx.p, lwd=lwp, type="b")
+		points(datLmet$doy[datLmet$year==2016]+(datLmet$hour[datLmet$year==2016]/24), datLmet$Temp[datLmet$year==2016], col="royalblue3", pch=19,  cex=cx.p, lwd=lwp, type="l")
 	box(which="plot")
 	axis(2,seq(Tmin,Tmax,by=5), cex.axis=cx.a,las=2,lwd.ticks=lwt)
 	mtext("Average daily", side=2, cex=cx.m, line=25)
@@ -687,21 +687,21 @@ jpeg(paste0(plotDI , "\\daily_met_fig_for_Utica.jpg"), width=3300, height=2600, 
 	#plot 2
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), xlim=c(xl2017, xh2017), ylim=c(Tmin,Tmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
-		points(dayL$doy[dayL$year==2017], dayL$T[dayL$year==2017], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="b")
+		points(datLmet$doy[datLmet$year==2017]+(datLmet$hour[datLmet$year==2017]/24), datLmet$Temp[datLmet$year==2017], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="l")
 	box(which="plot")
 	mtext("2017",side=3,cex=cx.m,line=5)
 	#plot 3
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), xlim=c(xl2016, xh2016), ylim=c(Dmin,Dmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
-		points(dayL$doy[dayL$year==2016], dayL$D[dayL$year==2016], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="b")
+		points(datLmet$doy[datLmet$year==2016]+(datLmet$hour[datLmet$year==2016]/24), datLmet$D[datLmet$year==2016], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="l")
 	box(which="plot")
-	axis(2,seq(Dmin+.25,Dmax-0.25,by=.25), cex.axis=cx.a,las=2,lwd.ticks=lwt)
+	axis(2,seq(Dmin+.5,Dmax-0.25,by=.5), cex.axis=cx.a,las=2,lwd.ticks=lwt)
 		mtext("Average daily vapor", side=2, cex=cx.m, line=25)
 	mtext("pressure deficit (KPa)", side=2, cex=cx.m, line=14)
 	#plot 4
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), xlim=c(xl2017, xh2017), ylim=c(Dmin,Dmax), xaxs="i", yaxs="i", axes=FALSE, xlab =" ", ylab=" ")
-		points(dayL$doy[dayL$year==2017], dayL$D[dayL$year==2017], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="b")
+		points(datLmet$doy[datLmet$year==2017]+(datLmet$hour[datLmet$year==2017]/24), datLmet$D[datLmet$year==2017], col="royalblue3", pch=19, cex=cx.p, lwd=lwp, type="l")
 	box(which="plot")	
 	#plot 5
 	par(mai=c(0,0,0,0))
@@ -725,3 +725,26 @@ jpeg(paste0(plotDI , "\\daily_met_fig_for_Utica.jpg"), width=3300, height=2600, 
 	axis(1, seq(160,230, by=10),rep(" ",length(seq(160,230, by=10))), cex.axis=cx.a,lwd.ticks=lwt)
 	mtext(seq(160,230, by=10), at=seq(160,230, by=10), cex=5, side=1,line=5)
 dev.off()	
+
+
+
+########################################################################################################
+##### make a plot of leaf area to sapwood area
+wd <- 40
+hd <- 40
+
+jpeg(paste0(plotDI , "\\leaf_sap_comp.jpg"), width=1500, height=1500, units="px",quality=100)
+	layout(matrix(c(1),ncol=1), width=lcm(wd), height=lcm(hd))
+	plot(c(0,1),c(0,1), xlim=c(-.5,5.5), ylim=c(0,2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE, type="n")
+	polygon(c(0,0,2,2), c(0,datLSA$LSrat[1],datLSA$LSrat[1],0), col="royalblue3")
+	polygon(c(3,3,5,5), c(0,datLSA$LSrat[2],datLSA$LSrat[2],0), col="tomato3")
+	arrows(c(1,4), datLSA$LSrat-(datLSA$LSrat.sd/sqrt(datLSA$LSrat.n)), 
+			c(1,4),datLSA$LSrat+(datLSA$LSrat.sd/sqrt(datLSA$LSrat.n)), code=0, lwd=4)
+	axis(1, c(-1,1,4,6), c(" ", " "," ", " "), cex.axis=3, lwd.ticks=4)
+	mtext(c("low density", "high density"), side=1,at=c(1,4), line=2, cex=3)
+	axis(2, seq(0,2, by=.5),  cex.axis=3, lwd.ticks=4,las=2)
+	legend(3.5,2, c("1 se"), lwd=4, bty="n", cex=4)
+	mtext("Stand", side=1, line=6, cex=5)
+	mtext(expression(paste("Leaf area : sapwood area ratio (m"^"2"~"cm"^"-2"~")")), side=2, cex=5, line=7)
+dev.off()	
+	
