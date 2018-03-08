@@ -42,11 +42,18 @@ datAirP <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\airport\\airp
 
 #read in continuous soil data
 datSW <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\vwc.GS3.csv")
+datSW2 <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\vwc.5TM.csv")
+
+datStemp2 <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\tempS.5TM.csv")
 
 #canopy rh and temperature
 datRH <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\RH.VP4.csv")
 datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.csv")
 
+datAA <- join(datRH, datTC, by=c("doy","year","hour","sensorLoc","site"), type="inner")
+datAA$e.sat <- 0.611*exp((17.502*datAA$TempC.VP4)/(datAA$TempC.VP4+240.97))
+datAA$rh.fix <- ifelse(datAA$RH.VP4>=1,.999,datAA$RH.VP4)
+datAA$D <- (datAA$e.sat-(datAA$rh.fix*datAA$e.sat))
 #PAR
 datPAR <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\PAR.QSOS PAR.csv")
 
@@ -72,12 +79,208 @@ datD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\Depth.c
 datE<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\rbio_SiteDay.csv")
 datMD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\medDepth.csv")
 
+#####################################################################
+####  figure 2. Micromet figure                                  ####
+#####################################################################
+
+#aggregate data to daily
+#air data
+datTA <- aggregate(datAA$TempC.VP4, by=list(datAA$doy, datAA$year,datAA$site), FUN="mean")
+colnames(datTA) <- c("doy","year","site","TempC.VP4")
+datDA <- aggregate(datAA$D, by=list(datAA$doy, datAA$year,datAA$site), FUN="mean")
+datTA$D <- datDA$x
+
+#soil moisture data
+datSoilW <- aggregate(datSW2$vwc.5TM, by=list(datSW2$doy,datSW2$year,datSW2$sensorZ,datSW2$site),FUN="mean") 
+colnames(datSoilW) <- c("doy","year","depth","site","SW")
+
+datSsh2 <- aggregate(datStemp2$tempS.5TM,
+		by=list(datStemp2$doy,
+				datStemp2$year,
+				datStemp2$site,
+				datStemp2$sensorZ),FUN="mean",na.action=na.omit)
+colnames(datSsh2) <- c("doy","year","site","depthD","T.sD")
+
+
+#182 20 cm hd
+#160 10cm hd
+# 161 18 cm ld
+#148 8 cm ld
+
+datSoilW$SW <- ifelse(datSoilW$doy<182&datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20, NA,
+			ifelse(datSoilW$doy<160&datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10,NA,
+			ifelse(datSoilW$doy<161&datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18,NA,
+			ifelse(datSoilW$doy<160&datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8,NA,datSoilW$SW))))
+
+lwl<-50
+lhl<-25
+
+
+ylr1 <- 0
+yhr1 <- 30
+ylr2 <- 0
+yhr2 <- 3.5
+ylr3 <- 0
+yhr3 <- 80
+xl16 <- 181
+xh16 <- 245
+xl17 <- 152
+xh17 <- 226
+#low
+col1 <- rgb(51/255,51/255,51/255)
+
+#high
+col2 <- rgb(191/255,191/255,191/255)
+precipc <- rgb(100/255,100/255,100/255)
+lty1 <- 3
+lty2 <- 3
+lty3 <- 4
+lty4 <- 4
+prec.scale <- yhr1/40
+SWmax <- 0.4
+SW.scale <- yhr2/SWmax
+TSmax <- 15
+TS.scale <- yhr3/TSmax
+
+lw <- 12
+#subset precip
+pr2016 <- datAirP[datAirP$year==2016&datAirP$doy>=xl16&datAirP$doy<xh16,]
+pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
+
+
+jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3500, height=3000, units="px",quality=100)
+ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
+				height=rep(lcm(lhl),6))
+
+#low air par 2016
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr1,yhr1), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+		
+		for(i in 1:dim(pr2016)[1]){
+		
+		polygon(c(pr2016$doy[i]-.5,pr2016$doy[i]-.5,pr2016$doy[i]+.5,pr2016$doy[i]+.5),
+				c(0, pr2016$Pr.mm[i]*prec.scale,pr2016$Pr.mm[i]*prec.scale,0), border=NA,col=precipc)
+		
+		}
+
+		points(datTA$doy[datTA$site=="ld"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
+				datTA$TempC.VP4[datTA$site=="ld"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", 
+				lwd=lw,col=col1)
+			points(datTA$doy[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
+				datTA$TempC.VP4[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", lwd=lw, col=col2)
+
+		
+	box(which="plot")			
+	
+#low air par 2017
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr1,yhr1), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			
+		for(i in 1:dim(pr2017)[1]){
+		
+		polygon(c(pr2017$doy[i]-.5,pr2017$doy[i]-.5,pr2017$doy[i]+.5,pr2017$doy[i]+.5),
+				c(0, pr2017$Pr.mm[i]*prec.scale,pr2017$Pr.mm[i]*prec.scale,0), border=NA,col=precipc)
+		
+		}
+	
+			
+			points(datTA$doy[datTA$site=="ld"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
+				datTA$TempC.VP4[datTA$site=="ld"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17], type="l", lwd=lw, col=col1)
+			points(datTA$doy[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
+				datTA$TempC.VP4[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17], type="l", lwd=lw,col=col2)
+	box(which="plot")
+
+#low air vpd 2016
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			points(datTA$doy[datTA$site=="ld"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
+				datTA$D[datTA$site=="ld"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", lwd=lw, col=col1)
+			points(datTA$doy[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
+				datTA$D[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", lwd=lw, col=col2)
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
+				,type="l",lwd=lw,col=col1,lty=lty1)
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
+				,type="l",lwd=lw,col=col2,lty=lty2)
+				
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
+				,type="l",lwd=lw,col=col1,lty=lty3)
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
+				,type="l",lwd=lw,col=col2,lty=lty4)	
+				
+	box(which="plot")	
+	
+#low air par 2017
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			points(datTA$doy[datTA$site=="ld"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
+				datTA$D[datTA$site=="ld"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17], type="l", lwd=lw, col=col1)
+			points(datTA$doy[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
+				datTA$D[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17], type="l", lwd=lw, col=col2)
+				
+			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl17&datSoilW$doy<xh17],
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				,type="l",lwd=lw,col=col1,lty=lty1)
+			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl17&datSoilW$doy<xh17],
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				,type="l",lwd=lw,col=col2,lty=lty2)	
+			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl17&datSoilW$doy<xh17],
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				,type="l",lwd=lw,col=col1,lty=lty3)
+			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17],
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				,type="l",lwd=lw,col=col2,lty=lty4)					
+				
+	box(which="plot")
+
+#low TD 2016
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			points(TDall$doy[TDall$site=="ld"&TDall$year==2016],
+				TDall$TDday[TDall$site=="ld"&TDall$year==2016], type="l", lwd=lw, col=col1)
+			points(TDall$doy[TDall$site=="hd"&TDall$year==2016],
+				TDall$TDday[TDall$site=="hd"&TDall$year==2016], type="l", lwd=lw, col=col2)
+				
+			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl16&datSsh2$doy<xh16],
+				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl16&datSsh2$doy<xh16]*TS.scale
+				,lwd=lw,col=col1,lty=lty1, type="l")
+			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16],
+				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16]*TS.scale
+				,lwd=lw,col=col2,lty=lty2, type="l")		
+				
+	box(which="plot")
+#low TD 2017
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			points(TDall$doy[TDall$site=="ld"&TDall$year==2017],
+				TDall$TDday[TDall$site=="ld"&TDall$year==2017], type="l", lwd=lw, col=col1)
+			points(TDall$doy[TDall$site=="hd"&TDall$year==2017],
+				TDall$TDday[TDall$site=="hd"&TDall$year==2017], type="l", lwd=lw, col=col2)
+			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl17&datSsh2$doy<xh17],
+				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl17&datSsh2$doy<xh17]*TS.scale
+				,lwd=lw,col=col1,lty=lty1, type="l")
+			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17],
+				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17]*TS.scale
+				,lwd=lw,col=col2,lty=lty2, type="l")	
+	
+	
+	box(which="plot")	
+
+
+dev.off()
 
 
 
 
+###############################End micromet             ########################################################################
+################################################################################################################################
+################################################################################################################################
 
 
+	
 #####################################################################
 ####  figure 4. Vertical root profile                            ####
 #####################################################################
@@ -543,3 +746,8 @@ mtext("Stand", side=1, cex=mcx, line=8)
 
 legend(.92,13,c("green moss", "brown moss", "fibric organic"), fill=c(mgcol, mbcol,ocol), bty="n", cex=lgcx)
 dev.off()
+
+
+###############################End soil root figure    ########################################################################
+################################################################################################################################
+################################################################################################################################
