@@ -174,7 +174,7 @@ jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3200, units="px",quali
 ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				height=rep(lcm(lhl),6))
 
-#low air par 2016
+#Tair P 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr1,yhr1), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 		
@@ -199,7 +199,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 	
 	box(which="plot")			
 	
-#low air par 2017
+#Tair P 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr1,yhr1), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 			
@@ -225,7 +225,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 	mtext("Precipitation", 	cex=lx, line=28,side=4)
 	mtext(expression(paste("(",italic(P),", mm )")), 	cex=lx, line=42,side=4)
 		
-#low air vpd 2016
+#M D 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 			points(datTA$doy[datTA$site=="ld"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
@@ -252,7 +252,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 	mtext( expression(paste("deficit(",italic(D),", kPa )")), 	cex=lx, line=18,side=2)		
 	box(which="plot")	
 	
-#low air par 2017
+#M D 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 			points(datTA$doy[datTA$site=="ld"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
@@ -285,7 +285,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 						expression(paste("high 20cm ", italic(M)))),
 						lty=c(1,lty2,lty4),lwd=c(lw,lw,lw),  col=c(col2,col2,col2),bty="n",cex=lgx)	
 	
-#low TD 2016
+#TD TS 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 			points(TDall$doy[TDall$site=="ld"&TDall$year==2016],
@@ -307,7 +307,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		mtext(x16seq, at=x16seq, cex=mx, line=7, side=1)	
 		
 	box(which="plot")
-#low TD 2017
+#TD TS 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 			points(TDall$doy[TDall$site=="ld"&TDall$year==2017],
@@ -342,6 +342,63 @@ dev.off()
 ################################################################################################################################
 ################################################################################################################################
 
+#####################################################################
+####  figure 3. Transpiration/gc figure                          ####
+#####################################################################
+
+#start by aggregating across trees for transpiration and gc
+#low16
+ThhL <- data.frame(El.L[,1:3],T=rowMeans(El.L[,4:16], na.rm=TRUE), T.sd=apply(El.L[,4:16],1,sd,na.rm=TRUE),
+					T.n=apply(El.L[,4:16],1,function(x) length(which(!is.na(x)))))
+
+#low17
+ThhL17 <- data.frame(El.L17[,1:3],T=rowMeans(El.L17[,4:16], na.rm=TRUE), T.sd=apply(El.L17[,4:16],1,sd,na.rm=TRUE),
+					T.n=apply(El.L17[,4:16],1,function(x) length(which(!is.na(x)))))
+
+#high16
+ThhH <- data.frame(El.H[,1:3],T=rowMeans(El.H[,4:10], na.rm=TRUE), T.sd=apply(El.H[,4:10],1,sd,na.rm=TRUE),
+					T.n=apply(El.H[,4:10],1,function(x) length(which(!is.na(x)))))
+
+#high17
+ThhH17 <- data.frame(El.H17[,1:3],T=rowMeans(El.H17[,4:16], na.rm=TRUE), T.sd=apply(El.H17[,4:16],1,sd,na.rm=TRUE),
+					T.n=apply(El.H17[,4:16],1,function(x) length(which(!is.na(x)))))
+					
+#gc 
+ghhL <- data.frame(gc.L[,1:3],gc=rowMeans(gc.L[,4:16], na.rm=TRUE), gc.sd=apply(gc.L[,4:16],1,sd,na.rm=TRUE),
+					gc.n=apply(gc.L[,4:16],1,function(x) length(which(!is.na(x)))))
+
+#low17
+ghhL17 <- data.frame(gc.L17[,1:3],gc=rowMeans(gc.L17[,4:16], na.rm=TRUE), gc.sd=apply(gc.L17[,4:16],1,sd,na.rm=TRUE),
+					gc.n=apply(gc.L17[,4:16],1,function(x) length(which(!is.na(x)))))
+
+#high16
+ghhH <- data.frame(gc.H[,1:3],gc=rowMeans(gc.H[,4:10], na.rm=TRUE), gc.sd=apply(gc.H[,4:10],1,sd,na.rm=TRUE),
+					gc.n=apply(gc.H[,4:10],1,function(x) length(which(!is.na(x)))))
+
+#high17
+ghhH17 <- data.frame(gc.H17[,1:3],gc=rowMeans(gc.H17[,4:16], na.rm=TRUE), gc.sd=apply(gc.H17[,4:16],1,sd,na.rm=TRUE),
+					gc.n=apply(gc.H17[,4:16],1,function(x) length(which(!is.na(x)))))				
+
+#join met data to match for VPD, PAR, and Precip
+#first join par to datAA
+datPAA <- join(datPAR,datAA, by=c("doy","year","hour","site"),type="right")
+#join precip
+datPPAA <- join(datPAA, datAirP, by=c("doy","year"), type="left")
+datPAAH <- datPPAA[datPPAA$site=="hd",]					
+datPAAL <- datPPAA[datPPAA$site=="ld",]					
+#turn to T and gc dataframes into a list
+TList <- list(ThhL,ThhH,ThhL17,ThhH17)
+gcList <- list(ghhL,ghhH, ghhL17,ghhH17)
+PAList <- list(datPAAL,datPAAH,datPAAL,datPAAH)
+
+for(i in 1:4){
+	TList[[i]] <- join(TList[[i]], dat)
+
+}					
+					
+###############################End T/gc                 ########################################################################
+################################################################################################################################
+################################################################################################################################
 
 	
 #####################################################################
