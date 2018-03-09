@@ -115,11 +115,13 @@ datSoilW$SW <- ifelse(datSoilW$doy<182&datSoilW$year==2017&datSoilW$site=="hd"&d
 lwl<-50
 lhl<-25
 
-
+#increments of 5
 ylr1 <- 0
 yhr1 <- 30
+#increments .5
 ylr2 <- 0
 yhr2 <- 3.5
+#increments of 10
 ylr3 <- 0
 yhr3 <- 80
 xl16 <- 181
@@ -137,18 +139,36 @@ lty2 <- 3
 lty3 <- 4
 lty4 <- 4
 prec.scale <- yhr1/40
+#increments 0.05
 SWmax <- 0.4
 SW.scale <- yhr2/SWmax
+#increments of 3
 TSmax <- 15
 TS.scale <- yhr3/TSmax
 
+mx <- 6
+lx <- 8
+
+tseq <- seq(0,yhr1, by=5)
+prseqL <- seq(0,40, by=10)
+prseqA <- prseqL*prec.scale
+Dseq <- seq(0,yhr2-0.5, by=.5)
+SWseqL <- seq(0,.35,by=.05)
+SWseqA <- SWseqL*SW.scale
+TDseq <- seq(0,yhr3-10,by=10)
+TSseqL <- seq(0,TSmax-3,by=3)
+TSseqA <- TS.scale*TSseqL
+tw <- 8
 lw <- 12
+
+x16seq <- 
 #subset precip
 pr2016 <- datAirP[datAirP$year==2016&datAirP$doy>=xl16&datAirP$doy<xh16,]
 pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
-jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3500, height=3000, units="px",quality=100)
+
+jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3000, units="px",quality=100)
 ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				height=rep(lcm(lhl),6))
 
@@ -168,8 +188,12 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				lwd=lw,col=col1)
 			points(datTA$doy[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
 				datTA$TempC.VP4[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", lwd=lw, col=col2)
-
 		
+		axis(2, tseq, rep(" ",length(tseq)), lwd.ticks=tw)
+		mtext(tseq, at=tseq, cex=mx, line=5, side=2, las=2)
+	mtext("Air temperature", 	cex=lx, line=32,side=2)
+	mtext(expression(paste("(",degree,"C )")), 	cex=lx, line=18,side=2)
+	
 	box(which="plot")			
 	
 #low air par 2017
@@ -189,7 +213,11 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datTA$doy[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
 				datTA$TempC.VP4[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17], type="l", lwd=lw,col=col2)
 	box(which="plot")
-
+		axis(4, prseqA, rep(" ",length(prseqA)), lwd.ticks=tw)
+		mtext(prseqL, at=prseqA, cex=mx, line=5, side=4, las=2)
+	mtext("Precipitation", 	cex=lx, line=28,side=4)
+	mtext("( mm )", 	cex=lx, line=42,side=4)
+		
 #low air vpd 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -210,7 +238,11 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16],
 				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
 				,type="l",lwd=lw,col=col2,lty=lty4)	
-				
+		axis(2, Dseq, rep(" ",length(Dseq)), lwd.ticks=tw)
+		mtext(Dseq, at=Dseq, cex=mx, line=5, side=2, las=2)	
+
+	mtext("Vapor pressure", 	cex=lx, line=32,side=2)
+	mtext("deficit ( kPa )", 	cex=lx, line=18,side=2)		
 	box(which="plot")	
 	
 #low air par 2017
@@ -233,8 +265,11 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17],
 				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
 				,type="l",lwd=lw,col=col2,lty=lty4)					
-				
+		axis(4, SWseqA, rep(" ",length(SWseqA)), lwd.ticks=tw)
+		mtext(SWseqL, at=SWseqA, cex=mx, line=5, side=4, las=2)			
 	box(which="plot")
+	mtext("Soil moisture", 	cex=lx, line=28,side=4)
+	mtext(expression(paste("( m"^"3"~"m"^"-3"~")")), 	cex=lx, line=42,side=4)
 
 #low TD 2016
 	par(mai=c(0,0,0,0))
@@ -250,7 +285,11 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16],
 				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16]*TS.scale
 				,lwd=lw,col=col2,lty=lty2, type="l")		
-				
+		axis(2, TDseq, rep(" ",length(TDseq)), lwd.ticks=tw)
+		mtext(TDseq, at=TDseq, cex=mx, line=5, side=2, las=2)	
+	mtext("Permafrost thaw", 	cex=lx, line=32,side=2)
+	mtext("depth ( cm )", 	cex=lx, line=18,side=2)		
+		
 	box(which="plot")
 #low TD 2017
 	par(mai=c(0,0,0,0))
@@ -266,7 +305,11 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17]*TS.scale
 				,lwd=lw,col=col2,lty=lty2, type="l")	
 	
-	
+		axis(4, TSseqA, rep(" ",length(TSseqA)), lwd.ticks=tw)
+		mtext(TSseqL, at=TSseqA, cex=mx, line=5, side=4, las=2)
+		mtext("Soil temperature", 	cex=lx, line=28,side=4)
+		mtext(expression(paste("( ",degree,"C )")), 	cex=lx, line=42,side=4)
+		
 	box(which="plot")	
 
 
