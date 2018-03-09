@@ -113,7 +113,7 @@ datSoilW$SW <- ifelse(datSoilW$doy<182&datSoilW$year==2017&datSoilW$site=="hd"&d
 			ifelse(datSoilW$doy<160&datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8,NA,datSoilW$SW))))
 
 lwl<-50
-lhl<-30
+lhl<-32
 
 #increments of 5
 ylr1 <- 0
@@ -148,13 +148,13 @@ TS.scale <- yhr3/TSmax
 
 mx <- 6
 lx <- 8
-lgx <- 5
+lgx <- 10
 
 tseq <- seq(0,yhr1, by=5)
 prseqL <- seq(0,40, by=10)
 prseqA <- prseqL*prec.scale
 Dseq <- seq(0,yhr2-0.5, by=.5)
-SWseqL <- seq(0,.35,by=.05)
+SWseqL <- seq(0,.45,by=.05)
 SWseqA <- SWseqL*SW.scale
 TDseq <- seq(0,yhr3-10,by=10)
 TSseqL <- seq(0,TSmax-3,by=3)
@@ -170,7 +170,7 @@ pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
 
-jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3000, units="px",quality=100)
+jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3200, units="px",quality=100)
 ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				height=rep(lcm(lhl),6))
 
@@ -219,7 +219,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		axis(4, prseqA, rep(" ",length(prseqA)), lwd.ticks=tw)
 		mtext(prseqL, at=prseqA, cex=mx, line=5, side=4, las=2)
 		
-	legend(158,30, c(expression(paste("low", italic(T[a]))),expression(paste("high", italic(T[a]))),
+	legend(151,31, c(expression(paste("low", italic(T[a]))),expression(paste("high", italic(T[a]))),
 						expression(paste(italic(P)))),
 						lty=c(1,1,NA),lwd=c(lw,lw,NA), pch=c(NA,NA,15), col=c(col1,col2,precipc),bty="n",cex=lgx)
 	mtext("Precipitation", 	cex=lx, line=28,side=4)
@@ -276,8 +276,15 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		mtext(SWseqL, at=SWseqA, cex=mx, line=5, side=4, las=2)			
 	box(which="plot")
 	mtext("Soil moisture", 	cex=lx, line=28,side=4)
-	mtext(expression(paste("(",italic(SM),", m"^"3"~"m"^"-3"~")")), 	cex=lx, line=42,side=4)
-
+	mtext(expression(paste("(",italic(M),", m"^"3"~"m"^"-3"~")")), 	cex=lx, line=42,side=4)
+	legend(149,3.7, c(expression(paste("low", italic(D))),expression(paste("low 8cm ", italic(M))),
+						expression(paste("low 18cm ", italic(M)))),
+						lty=c(1,lty1,lty3),lwd=c(lw,lw,lw),  col=c(col1,col1,col1),bty="n",cex=lgx)
+	
+	legend(185,3.7, c(expression(paste("high", italic(D))),expression(paste("high 10cm ", italic(M))),
+						expression(paste("high 20cm ", italic(M)))),
+						lty=c(1,lty2,lty4),lwd=c(lw,lw,lw),  col=c(col2,col2,col2),bty="n",cex=lgx)	
+	
 #low TD 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -322,7 +329,10 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		mtext(x17seq, at=x17seq, cex=mx, line=7, side=1)	
 	box(which="plot")	
 	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-8)
-
+	legend(151,81, c(expression(paste("low", italic(TD))),expression(paste("high", italic(TD))),
+						expression(paste("low", italic(T[s]))),expression(paste("high", italic(T[s])))),
+						lty=c(1,1,lty1,lty2),lwd=c(lw,lw,lw,lw), pch=c(NA,NA,NA,NA),
+						col=c(col1,col2,col1,col2),bty="n",cex=lgx)
 dev.off()
 
 
