@@ -346,6 +346,12 @@ dev.off()
 ####  figure 3. Transpiration/gc figure                          ####
 #####################################################################
 
+
+########################################################
+#####half houly data ###################################
+########################################################
+
+
 #start by aggregating across trees for transpiration and gc
 #low16
 ThhL <- data.frame(El.L[,1:3],T=rowMeans(El.L[,4:16], na.rm=TRUE), T.sd=apply(El.L[,4:16],1,sd,na.rm=TRUE),
@@ -390,12 +396,359 @@ datPAAL <- datPPAA[datPPAA$site=="ld",]
 TList <- list(ThhL,ThhH,ThhL17,ThhH17)
 gcList <- list(ghhL,ghhH, ghhL17,ghhH17)
 PAList <- list(datPAAL,datPAAH,datPAAL,datPAAH)
+TList2 <- list()
+gcList2 <- list()
+for(i in 1:4){
+	TList2[[i]] <- join(TList[[i]], PAList[[i]], by=c("doy","year","hour"), type="left")
+	gcList2[[i]] <- join(gcList[[i]], PAList[[i]], by=c("doy","year","hour"), type="left")
+}					
+
 
 for(i in 1:4){
-	TList[[i]] <- join(TList[[i]], dat)
+	#exclude data that is not reliable due to precipitation
+	TList2[[i]]$T <- ifelse(TList2[[i]]$Pr.mm>1,NA,TList2[[i]]$T)
+	gcList2[[i]]$gc <- ifelse(gcList2[[i]]$Pr.mm>1,NA,gcList2[[i]]$gc)
+	#exclude PAR < 5umol for gc
+	gcList2[[i]]$gc <- ifelse(gcList2[[i]]$PAR.QSOS.Par<5,NA,gcList2[[i]]$gc)
+	#VPD less than 0.6
+	gcList2[[i]]$gc <- ifelse(gcList2[[i]]$D<0.6,NA,gcList2[[i]]$gc)
+	
+}				
+#calculate standard error
+for(i in 1:4){
+	TList2[[i]]$T.se <-  TList2[[i]]$T.sd/sqrt(TList2[[i]]$T.n)
+	gcList2[[i]]$gc.se <-  gcList2[[i]]$gc.sd/sqrt(gcList2[[i]]$gc.n)
+	#set se to zero if T or gc are NA 
+	TList2[[i]]$T.se<- ifelse(is.na(TList2[[i]]$T), 0,TList2[[i]]$T.se)
+	gcList2[[i]]$gc.se<- ifelse(is.na(gcList2[[i]]$gc), 0,gcList2[[i]]$gc.se)
+	
+}	
+#################################################################
+####calculate daily transpiration                         #######
+#################################################################
 
-}					
-					
+
+#El is in g m-2 s-1
+
+#convert to g m-2 half hour-1
+#and reorganize
+E.temp <- list(El.L,El.H,El.L17,El.H17)
+E.dim <- numeric(0)
+E.temp2 <- list()
+E.temp3 <- list()
+E.tempwork <- list()
+for(i in 1:4){
+	E.dim[i] <- dim(E.temp[[i]])[2]
+	E.temp2[[i]] <- data.frame(E.temp[[i]][,1:3], E.temp[[i]][,4:E.dim[i]]*60*30)
+	E.temp3[[i]] <- data.frame(doy=rep(E.temp2[[i]]$doy,times=E.dim[i]-3),
+								year=rep(E.temp2[[i]]$year,times=E.dim[i]-3),
+								hour=rep(E.temp2[[i]]$hour,times=E.dim[i]-3),
+								E.hh = as.vector(data.matrix(E.temp2[[i]][,4:E.dim[i]])),
+								tree = rep(seq(1,E.dim[i]-3), each=dim(E.temp2[[i]])[1]))
+	E.temp3[[i]] <- na.omit(E.temp3[[i]])
+	E.tempwork[[i]] <- E.temp3[[i]]
+	E.tempwork[[i]]$E.ss <- E.temp3[[i]]$E.hh/(30*60)
+	E.tempwork[[i]]$dataset <- rep(i,dim(E.tempwork[[i]])[1])
+}
+Esshh <- ldply(E.tempwork,data.frame)
+#convert to mols
+Esshh$E.mmols <- (Esshh$E.ss/18)*1000
+
+#now aggregate to see how many observations in a day
+#and pull out data on days that have at least 3 trees
+#and those trees have all 48 measurements in a day
+ELength <- list()
+EdayL <- list()
+E.temp4 <- list()
+for(i in 1:4){
+	ELength[[i]] <- aggregate(E.temp3[[i]]$E.hh, by=list(E.temp3[[i]]$doy,E.temp3[[i]]$year,E.temp3[[i]]$tree),
+								FUN="length")
+	ELength[[i]] <- ELength[[i]][ELength[[i]]$x==48,]
+	colnames(ELength[[i]]) <- c("doy","year","tree","count")
+	#find out how many tree observations on each day
+	EdayL[[i]] <- aggregate(ELength[[i]]$tree, by=list(ELength[[i]]$doy,ELength[[i]]$year), FUN="length")
+	colnames(EdayL[[i]])<- c("doy","year", "ntree")
+	#subset to only use days with at least 3 trees
+	EdayL[[i]] <- EdayL[[i]][EdayL[[i]]$ntree>=3,]
+	#join to only include days with enough sensors
+	ELength[[i]] <- join(ELength[[i]],EdayL[[i]], by=c("doy","year"), type="inner")
+	#create a tree, day id
+	ELength[[i]]$treeDay <- seq(1, dim(ELength[[i]])[1])
+	ELength[[i]]$dataset <- rep(i, dim(ELength[[i]])[1])
+	#ELength now has the list of each sensor and day that should be included
+	#subset the data to only do the calculations on the trees that meet the minimum criteria
+	E.temp4[[i]] <- join(E.temp3[[i]],ELength[[i]], by=c("doy", "year", "tree"), type="inner")
+}
+#turn back into a dataframe
+EtempALL <- ldply(E.temp4,data.frame)
+EInfo <- ldply(ELength,data.frame)
+
+
+#get the daily integration of the transpiration
+EdayT <- numeric(0)
+EdayTemp <- list()
+for(i in 1:dim(EInfo)[1]){
+	EdayTemp[[i]] <- data.frame(x=EtempALL$hour[EtempALL$treeDay==EInfo$treeDay[i]&EtempALL$dataset==EInfo$dataset[i]],
+								y=EtempALL$E.hh[EtempALL$treeDay==EInfo$treeDay[i]&EtempALL$dataset==EInfo$dataset[i]])
+	EdayT[i] <- trapz(EdayTemp[[i]]$x,EdayTemp[[i]]$y)
+
+}
+#add daily value into Einfo
+EInfo$T.day <- EdayT
+#in g per day now
+EInfo$T.Lday <- EdayT/1000
+
+#add stand labels to the datasets 
+EInfo$stand <- ifelse(EInfo$dataset==1|EInfo$dataset==3,"ld","hd")
+
+#get the stand averages of daily transpiration across day
+
+EdayLm <- aggregate(EInfo$T.Lday, by=list(EInfo$doy,EInfo$year,EInfo$stand), FUN="mean")
+EdayLsd <- aggregate(EInfo$T.Lday, by=list(EInfo$doy,EInfo$year,EInfo$stand), FUN="sd")
+EdayLl <- aggregate(EInfo$T.Lday, by=list(EInfo$doy,EInfo$year,EInfo$stand), FUN="length")
+
+Eday <- EdayLm
+colnames(Eday) <- c("doy","year","site","T.L.day")
+Eday$T.sd <- EdayLsd$x
+Eday$T.n <- EdayLl$x
+
+Eday$T.se <- Eday$T.sd/sqrt(Eday$T.n)
+
+
+#################################################################
+####calculate daily gc                                    #######
+#################################################################
+
+
+#reoranize into data frames
+gctemp <- list(gc.L, gc.H, gc.L17, gc.H17)
+
+gcdim <- numeric(0)
+gctemp2 <- list()
+
+for(i in 1:4){
+	gcdim[i] <- dim(gctemp[[i]])[2]
+	gctemp2[[i]] <- data.frame(doy=rep(gctemp[[i]]$doy,times=gcdim[i]-3),
+								year=rep(gctemp[[i]]$year,times=gcdim[i]-3),
+								hour=rep(gctemp[[i]]$hour,times=gcdim[i]-3),
+								gc.h = as.vector(data.matrix(gctemp[[i]][,4:gcdim[i]])),
+								tree = rep(seq(1,gcdim[i]-3), each=dim(gctemp[[i]])[1]),
+								datset=rep(i, each=dim(gctemp[[i]])[1]) )
+	gctemp2[[i]] <- na.omit(gctemp2[[i]])
+}
+gctemp3 <- ldply(gctemp2, data.frame)
+gctemp3$site<- ifelse(gctemp3$datset==1|gctemp3$datset==3,"ld","hd")
+#join met, PAR, and Precip to only average relevant values
+MetJ <- join(datAA, datAirP, by=c("doy","year"), type="left")
+MetJ <- join(MetJ, datPAR, by=c("doy","year","hour","site"),type="left")
+
+
+MetJ$flag <- ifelse(MetJ$PAR.QSOS.Par<=5&MetJ$D<0.6&MetJ$Pr.mm>1,1,0)
+
+FlagJ <- data.frame(MetJ[,1:3],site=MetJ$site,flag=MetJ$flag)
+
+gctemp3 <- join(gctemp3,FlagJ,by=c("doy","year","hour","site"),type="left" )
+gctemp3$gc.h <- ifelse(gctemp3$flag==1,NA,gctemp3$gc.h)
+#get the average daily gc across all trees
+
+
+	gsDave <- aggregate(gctemp3$gc.h, by=list(gctemp3$doy,gctemp3$year,gctemp3$datset), FUN="mean",na.rm=TRUE, na.action=na.omit)
+	gsDsd <- aggregate(gctemp3$gc.h, by=list(gctemp3$doy,gctemp3$year,gctemp3$datset), FUN="sd",na.rm=TRUE)
+	gsDn <- aggregate(gctemp3$gc.h, by=list(gctemp3$doy,gctemp3$year,gctemp3$datset), function(x) length(which(!is.na(x))))
+	
+	colnames(gsDave) <- c("doy", "year", "dataset","gc.mmol.s")
+	gsDave$stand <- ifelse(gsDave$dataset==1|gsDave$dataset==3,"ld","hd")
+	
+	gsDave$se <- gsDsd$x/sqrt(gsDn$x)
+	
+#get the maximum daily par and D across each stand and day
+maxD <- aggregate(datAA$D, by=list(datAA$doy, datAA$year,datAA$site),FUN="max")
+colnames(maxD) <- c("doy","year","site","maxD")
+
+
+
+######## make plots
+lwl<-50
+lhl<-32
+
+#increments of 0.005
+#T is in g/ m2*s
+ylr1 <- 0
+yhr1 <- 0.015
+#gc is in mmol m-2 s-2
+#increments .5
+ylr2 <- 0
+yhr2 <-80
+#increments of 10
+ylr3 <- 0
+yhr3 <- 3.5
+
+ylr4 <- 0
+yhr4 <- .7
+ylr5 <- 0
+yhr5 <- 150
+#show a subset since too hard to see patterns
+#2016 range is 181-245
+xl16 <- 216
+xh16 <- 218
+xl16b <- 181
+xh16b <- 245
+
+#2017  159-226
+
+xl17b <- 159
+xh17b <- 226
+#low
+col1 <- rgb(51/255,51/255,51/255)
+
+#high
+col2 <- rgb(191/255,191/255,191/255)
+#sizes
+ptcx <- 9
+llw <- 7
+alw <- 5
+acol <- rgb(0,0,0,.5)
+blw <- 4
+jpeg(paste0(plotDI,"\\T_gc.jpg"), width=5000, height=3200, units="px",quality=100)
+ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
+				height=rep(lcm(lhl),9))
+#T 2016				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16-0.1,xh16+1.1), ylim=c(ylr1,yhr1), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(TList2[[1]]$doy[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]
+			+(TList2[[1]]$hour[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]/24),
+			TList2[[1]]$T[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16], type="b", col=col1, cex=ptcx, pch=19)
+	points(TList2[[2]]$doy[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]
+		+(TList2[[2]]$hour[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]/24),
+			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16], type="b", col=col2, cex=ptcx, pch=19)		
+	arrows(TList2[[1]]$doy[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]	
+			+(TList2[[1]]$hour[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]/24),
+			TList2[[1]]$T[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]-TList2[[1]]$T.se[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16],
+		TList2[[1]]$doy[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]	
+			+(TList2[[1]]$hour[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]/24),
+			TList2[[1]]$T[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]+TList2[[1]]$T.se[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16],
+			code=0, lwd=alw, col=acol)
+	arrows(TList2[[2]]$doy[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]	
+			+(TList2[[2]]$hour[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]/24),
+			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]-TList2[[2]]$T.se[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16],
+		TList2[[2]]$doy[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]	
+			+(TList2[[2]]$hour[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]/24),
+			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]+TList2[[2]]$T.se[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16],
+			code=0, lwd=alw, col=acol)			
+	box(which="plot")
+
+#T 2016				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-0.1,xh16b+1.1), ylim=c(ylr4,yhr4), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(Eday$doy[Eday$year==2016&Eday$site=="ld"],
+		Eday$T.L.day[Eday$year==2016&Eday$site=="ld"],pch=19,col=col1,cex=ptcx, type="b",lwd=blw)
+	points(Eday$doy[Eday$year==2016&Eday$site=="hd"],
+		Eday$T.L.day[Eday$year==2016&Eday$site=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	box(which="plot")
+	
+#T 2017				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-0.1,xh17b+1.1), ylim=c(ylr4,yhr4), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(Eday$doy[Eday$year==2017&Eday$site=="ld"],
+		Eday$T.L.day[Eday$year==2017&Eday$site=="ld"],pch=19,col=col1,cex=ptcx,type="b",lwd=blw)
+	points(Eday$doy[Eday$year==2017&Eday$site=="hd"],
+		Eday$T.L.day[Eday$year==2017&Eday$site=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	box(which="plot")	
+	
+	
+				
+#gc 2016				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16-0.1,xh16+1.1), ylim=c(ylr2,yhr2), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(gcList2[[1]]$doy[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]
+		+(gcList2[[1]]$hour[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]/24),
+			gcList2[[1]]$gc[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16], type="b", col=col1, cex=ptcx, pch=19)
+	points(gcList2[[2]]$doy[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]
+		+(gcList2[[2]]$hour[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]/24),
+			gcList2[[2]]$gc[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16], type="b", col=col2, cex=ptcx, pch=19)		
+		arrows(gcList2[[1]]$doy[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]	
+			+(gcList2[[1]]$hour[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]/24),
+			gcList2[[1]]$gc[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]-gcList2[[1]]$gc.se[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16],
+		gcList2[[1]]$doy[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]	
+			+(gcList2[[1]]$hour[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]/24),
+			gcList2[[1]]$gc[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]+gcList2[[1]]$gc.se[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16],
+			code=0, lwd=alw, col=acol)
+	arrows(gcList2[[2]]$doy[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]	
+			+(gcList2[[2]]$hour[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]/24),
+			gcList2[[2]]$gc[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]-gcList2[[2]]$gc.se[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16],
+		gcList2[[2]]$doy[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]	
+			+(gcList2[[2]]$hour[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]/24),
+			gcList2[[2]]$gc[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]+gcList2[[2]]$gc.se[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16],
+			code=0, lwd=alw, col=acol)			
+	box(which="plot")
+#gc 2016				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-0.1,xh16b+1.1), ylim=c(ylr5,yhr5), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+		points(gsDave$doy[gsDave$year==2016&gsDave$stand=="ld"],
+		gsDave$gc.mmol.s[gsDave$year==2016&gsDave$stand=="ld"],pch=19,col=col1,cex=ptcx,type="b",lwd=blw)
+		points(gsDave$doy[gsDave$year==2016&gsDave$stand=="hd"],
+		gsDave$gc.mmol.s[gsDave$year==2016&gsDave$stand=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	box(which="plot")
+#gc 2017				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-0.1,xh17b+1.1), ylim=c(ylr5,yhr5), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+		points(gsDave$doy[gsDave$year==2017&gsDave$stand=="ld"],
+		gsDave$gc.mmol.s[gsDave$year==2017&gsDave$stand=="ld"],pch=19,col=col1,cex=ptcx,type="b",lwd=blw)
+		points(gsDave$doy[gsDave$year==2017&gsDave$stand=="hd"],
+		gsDave$gc.mmol.s[gsDave$year==2017&gsDave$stand=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	box(which="plot")
+#D 2016				
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16-0.1,xh16+1.1), ylim=c(ylr3,yhr3), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(datAA$doy[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="hd"&datAA$year==2016]+
+			(datAA$hour[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="hd"&datAA$year==2016]/24),
+			datAA$D[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="hd"&datAA$year==2016], type="l",lwd=llw,
+			col=col2)
+			
+	points(datAA$doy[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="ld"&datAA$year==2016]+
+			(datAA$hour[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="ld"&datAA$year==2016]/24),
+			datAA$D[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="ld"&datAA$year==2016], type="l",lwd=llw,
+			col=col1)		
+	axis(1, seq(xl16,xh16, by=5), cex.axis=6)
+	axis(2, seq(0,3.5, by=.5), cex.axis=6, las=2)
+	box(which="plot")
+#D 2016			
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-0.1,xh16b+1.1), ylim=c(ylr5,yhr5), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(maxD$doy[maxD$year==2016&maxD$site=="ld"],maxD$maxD[maxD$year==2016&maxD$site=="ld"],
+		type="l", lwd=llw,col=col1)
+	points(maxD$doy[maxD$year==2016&maxD$site=="hd"],maxD$maxD[maxD$year==2016&maxD$site=="hd"],
+		type="l", lwd=llw,col=col2)	
+	box(which="plot")
+
+
+#D 2017			
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-0.1,xh17b+1.1), ylim=c(ylr5,yhr5), 
+		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+	points(maxD$doy[maxD$year==2017&maxD$site=="ld"],maxD$maxD[maxD$year==2017&maxD$site=="ld"],
+		type="l", lwd=llw,col=col1)
+	points(maxD$doy[maxD$year==2017&maxD$site=="hd"],maxD$maxD[maxD$year==2017&maxD$site=="hd"],
+		type="l", lwd=llw,col=col2)	
+	box(which="plot")	
+dev.off()				
+
+
+
+
+
+
+
+
+
 ###############################End T/gc                 ########################################################################
 ################################################################################################################################
 ################################################################################################################################
