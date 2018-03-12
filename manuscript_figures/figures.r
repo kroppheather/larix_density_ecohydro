@@ -583,10 +583,10 @@ ylr2 <- 0
 yhr2 <-80
 #increments of 10
 ylr3 <- 0
-yhr3 <- 3.5
+yhr3 <- 3
 
 ylr4 <- 0
-yhr4 <- .3
+yhr4 <- .25
 ylr5 <- 0
 yhr5 <- 80
 #show a subset since too hard to see patterns
