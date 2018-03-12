@@ -543,7 +543,7 @@ MetJ <- join(datAA, datAirP, by=c("doy","year"), type="left")
 MetJ <- join(MetJ, datPAR, by=c("doy","year","hour","site"),type="left")
 
 
-MetJ$flag <- ifelse(MetJ$PAR.QSOS.Par<=5&MetJ$D<0.6&MetJ$Pr.mm>1,1,0)
+MetJ$flag <- ifelse(MetJ$PAR.QSOS.Par<=5|MetJ$D<=0.6|MetJ$Pr.mm>1,1,0)
 
 FlagJ <- data.frame(MetJ[,1:3],site=MetJ$site,flag=MetJ$flag)
 
@@ -560,6 +560,8 @@ gctemp3$gc.h <- ifelse(gctemp3$flag==1,NA,gctemp3$gc.h)
 	gsDave$stand <- ifelse(gsDave$dataset==1|gsDave$dataset==3,"ld","hd")
 	
 	gsDave$se <- gsDsd$x/sqrt(gsDn$x)
+gsDave$gc.mmol.s <- ifelse(gsDave$doy==181&gsDave$year==2016,NA,gsDave$gc.mmol.s)
+gsDave <- na.omit(gsDave)
 	
 #get the maximum daily par and D across each stand and day
 maxD <- aggregate(datAA$D, by=list(datAA$doy, datAA$year,datAA$site),FUN="max")
@@ -584,11 +586,12 @@ ylr3 <- 0
 yhr3 <- 3.5
 
 ylr4 <- 0
-yhr4 <- .7
+yhr4 <- .3
 ylr5 <- 0
-yhr5 <- 150
+yhr5 <- 80
 #show a subset since too hard to see patterns
-#2016 range is 181-245
+#2016 range is 183-245
+#subset 216-218 for a close up
 xl16 <- 216
 xh16 <- 218
 xl16b <- 181
@@ -640,22 +643,35 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 
 #T 2016				
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-0.1,xh16b+1.1), ylim=c(ylr4,yhr4), 
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-1,xh16b+2), ylim=c(ylr4,yhr4), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(Eday$doy[Eday$year==2016&Eday$site=="ld"],
 		Eday$T.L.day[Eday$year==2016&Eday$site=="ld"],pch=19,col=col1,cex=ptcx, type="b",lwd=blw)
 	points(Eday$doy[Eday$year==2016&Eday$site=="hd"],
 		Eday$T.L.day[Eday$year==2016&Eday$site=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	arrows(Eday$doy[Eday$year==2016],
+		Eday$T.L.day[Eday$year==2016]-Eday$T.se[Eday$year==2016],
+		Eday$doy[Eday$year==2016],
+		Eday$T.L.day[Eday$year==2016]+Eday$T.se[Eday$year==2016],
+		code=0, lwd=alw, col=acol)	
+		
 	box(which="plot")
 	
 #T 2017				
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-0.1,xh17b+1.1), ylim=c(ylr4,yhr4), 
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-1,xh17b+2), ylim=c(ylr4,yhr4), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(Eday$doy[Eday$year==2017&Eday$site=="ld"],
 		Eday$T.L.day[Eday$year==2017&Eday$site=="ld"],pch=19,col=col1,cex=ptcx,type="b",lwd=blw)
 	points(Eday$doy[Eday$year==2017&Eday$site=="hd"],
 		Eday$T.L.day[Eday$year==2017&Eday$site=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	
+		arrows(Eday$doy[Eday$year==2017],
+		Eday$T.L.day[Eday$year==2017]-Eday$T.se[Eday$year==2017],
+		Eday$doy[Eday$year==2017],
+		Eday$T.L.day[Eday$year==2017]+Eday$T.se[Eday$year==2017],
+		code=0, lwd=alw, col=acol)	
+	
 	box(which="plot")	
 	
 	
@@ -687,21 +703,34 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	box(which="plot")
 #gc 2016				
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-0.1,xh16b+1.1), ylim=c(ylr5,yhr5), 
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-1,xh16b+2), ylim=c(ylr5,yhr5), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 		points(gsDave$doy[gsDave$year==2016&gsDave$stand=="ld"],
 		gsDave$gc.mmol.s[gsDave$year==2016&gsDave$stand=="ld"],pch=19,col=col1,cex=ptcx,type="b",lwd=blw)
 		points(gsDave$doy[gsDave$year==2016&gsDave$stand=="hd"],
 		gsDave$gc.mmol.s[gsDave$year==2016&gsDave$stand=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+		arrows(gsDave$doy[gsDave$year==2016],
+		gsDave$gc.mmol.s[gsDave$year==2016]-gsDave$se[gsDave$year==2016],
+		gsDave$doy[gsDave$year==2016],
+		gsDave$gc.mmol.s[gsDave$year==2016]+gsDave$se[gsDave$year==2016],
+		code=0, lwd=alw, col=acol)	
+		
+		
 	box(which="plot")
 #gc 2017				
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-0.1,xh17b+1.1), ylim=c(ylr5,yhr5), 
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-1,xh17b+2), ylim=c(ylr5,yhr5), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 		points(gsDave$doy[gsDave$year==2017&gsDave$stand=="ld"],
 		gsDave$gc.mmol.s[gsDave$year==2017&gsDave$stand=="ld"],pch=19,col=col1,cex=ptcx,type="b",lwd=blw)
 		points(gsDave$doy[gsDave$year==2017&gsDave$stand=="hd"],
 		gsDave$gc.mmol.s[gsDave$year==2017&gsDave$stand=="hd"],pch=19,col=col2,cex=ptcx,type="b",lwd=blw)
+	arrows(gsDave$doy[gsDave$year==2017],
+		gsDave$gc.mmol.s[gsDave$year==2017]-gsDave$se[gsDave$year==2017],
+		gsDave$doy[gsDave$year==2017],
+		gsDave$gc.mmol.s[gsDave$year==2017]+gsDave$se[gsDave$year==2017],
+		code=0, lwd=alw, col=acol)	
+	
 	box(which="plot")
 #D 2016				
 	par(mai=c(0,0,0,0))
@@ -721,7 +750,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	box(which="plot")
 #D 2016			
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-0.1,xh16b+1.1), ylim=c(ylr5,yhr5), 
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-1,xh16b+2), ylim=c(ylr3,yhr3), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(maxD$doy[maxD$year==2016&maxD$site=="ld"],maxD$maxD[maxD$year==2016&maxD$site=="ld"],
 		type="l", lwd=llw,col=col1)
@@ -732,7 +761,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 
 #D 2017			
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-0.1,xh17b+1.1), ylim=c(ylr5,yhr5), 
+	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-1,xh17b+2), ylim=c(ylr3,yhr3), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(maxD$doy[maxD$year==2017&maxD$site=="ld"],maxD$maxD[maxD$year==2017&maxD$site=="ld"],
 		type="l", lwd=llw,col=col1)
