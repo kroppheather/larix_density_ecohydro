@@ -578,41 +578,47 @@ lhl<-32
 ylr1 <- 0
 yhr1 <- 0.015
 #gc is in mmol m-2 s-2
-#increments .5
+#increments 10
 ylr2 <- 0
 yhr2 <-80
-#increments of 10
+#increments of 1
 ylr3 <- 0
 yhr3 <- 3
-
+#increments of 0.05
 ylr4 <- 0
 yhr4 <- .25
+#increments of 10
 ylr5 <- 0
 yhr5 <- 80
 #show a subset since too hard to see patterns
 #2016 range is 183-245
+#increments of 1
 #subset 216-218 for a close up
 xl16 <- 216
 xh16 <- 218
-xl16b <- 181
+
+xl16b <- 180
 xh16b <- 245
 
 #2017  159-226
 
-xl17b <- 159
-xh17b <- 226
+xl17b <- 155
+xh17b <- 230
 #low
-col1 <- rgb(51/255,51/255,51/255)
+col1 <- rgb(51/255,51/255,51/255,.8)
 
 #high
 col2 <- rgb(191/255,191/255,191/255)
 #sizes
 ptcx <- 9
-llw <- 7
+llw <- 15
 alw <- 5
 acol <- rgb(0,0,0,.5)
 blw <- 4
-jpeg(paste0(plotDI,"\\T_gc.jpg"), width=5000, height=3200, units="px",quality=100)
+mx <- 9
+lx <- 4
+lwt <- 11
+jpeg(paste0(plotDI,"\\T_gc.jpg"), width=6000, height=3400, units="px",quality=100)
 ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 				height=rep(lcm(lhl),9))
 #T 2016				
@@ -638,7 +644,10 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		TList2[[2]]$doy[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]	
 			+(TList2[[2]]$hour[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]/24),
 			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]+TList2[[2]]$T.se[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16],
-			code=0, lwd=alw, col=acol)			
+			code=0, lwd=alw, col=acol)		
+	axis(2, seq(ylr1,yhr1, by=.005), rep(" ", length(seq(ylr1,yhr1, by=.005))), lwd.ticks=lwt)
+	mtext(seq(ylr1,yhr1, by=.005), at=seq(ylr1,yhr1, by=.005), side=2, line=5, cex=mx, las=2)
+				
 	box(which="plot")
 
 #T 2016				
@@ -671,7 +680,8 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		Eday$doy[Eday$year==2017],
 		Eday$T.L.day[Eday$year==2017]+Eday$T.se[Eday$year==2017],
 		code=0, lwd=alw, col=acol)	
-	
+	axis(4, seq(ylr4,yhr4, by=.05), rep(" ", length(seq(ylr4,yhr4, by=.05))), lwd.ticks=lwt)
+	mtext(seq(ylr4,yhr4, by=.05), at=seq(ylr4,yhr4, by=.05), side=4, line=5, cex=mx, las=2)
 	box(which="plot")	
 	
 	
@@ -699,7 +709,11 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		gcList2[[2]]$doy[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]	
 			+(gcList2[[2]]$hour[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]/24),
 			gcList2[[2]]$gc[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]+gcList2[[2]]$gc.se[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16],
-			code=0, lwd=alw, col=acol)			
+			code=0, lwd=alw, col=acol)
+
+	axis(2, seq(ylr2,yhr2-10, by=10), rep(" ", length(seq(ylr2,yhr2-10, by=10))), lwd.ticks=lwt)
+	mtext(seq(ylr2,yhr2-10, by=10), at=seq(ylr2,yhr2-10, by=10), side=2, line=5, cex=mx, las=2)
+			
 	box(which="plot")
 #gc 2016				
 	par(mai=c(0,0,0,0))
@@ -730,7 +744,8 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		gsDave$doy[gsDave$year==2017],
 		gsDave$gc.mmol.s[gsDave$year==2017]+gsDave$se[gsDave$year==2017],
 		code=0, lwd=alw, col=acol)	
-	
+	axis(4, seq(ylr5,yhr5-10, by=10), rep(" ", length(seq(ylr5,yhr5-10, by=10))), lwd.ticks=lwt)
+	mtext(seq(ylr5,yhr5-10, by=10), at=seq(ylr5,yhr5-10, by=10), side=4, line=5, cex=mx, las=2)
 	box(which="plot")
 #D 2016				
 	par(mai=c(0,0,0,0))
@@ -744,9 +759,24 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	points(datAA$doy[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="ld"&datAA$year==2016]+
 			(datAA$hour[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="ld"&datAA$year==2016]/24),
 			datAA$D[datAA$doy>=xl16&datAA$doy<=xh16&datAA$site=="ld"&datAA$year==2016], type="l",lwd=llw,
-			col=col1)		
-	axis(1, seq(xl16,xh16, by=5), cex.axis=6)
-	axis(2, seq(0,3.5, by=.5), cex.axis=6, las=2)
+			col=col1)	
+	points(datPAR$doy[datPAR$doy>=xl16&datPAR$doy<=xh16&datPAR$site=="ld"&datPAR$year==2016]+
+		(datPAR$hour[datPAR$doy>=xl16&datPAR$doy<=xh16&datPAR$site=="ld"&datPAR$year==2016]/24),
+		datPAR$PAR.QSOS.Par[datPAR$doy>=xl16&datPAR$doy<=xh16&datPAR$site=="ld"&datPAR$year==2016]/1000,
+		type="l",lwd=llw,col=col1, lty=3)
+		
+	points(datPAR$doy[datPAR$doy>=xl16&datPAR$doy<=xh16&datPAR$site=="hd"&datPAR$year==2016]+
+		(datPAR$hour[datPAR$doy>=xl16&datPAR$doy<=xh16&datPAR$site=="hd"&datPAR$year==2016]/24),
+		datPAR$PAR.QSOS.Par[datPAR$doy>=xl16&datPAR$doy<=xh16&datPAR$site=="hd"&datPAR$year==2016]/1000,
+		type="l",lwd=llw,col=col2, lty=3)	
+	)
+
+			
+	axis(1, seq(xl16,xh16, by=1), rep(" ", length(seq(xl16,xh16, by=1))), lwd.ticks=lwt)
+	mtext(seq(xl16,xh16, by=1), at=seq(xl16,xh16, by=1), side=1, line=10, cex=mx)
+	
+	axis(2, seq(ylr3,yhr3-.5, by=.5), rep(" ", length(seq(ylr3,yhr3-.5, by=.5))), lwd.ticks=lwt)
+	mtext(seq(ylr3,yhr3-.5, by=.5), at=seq(ylr3,yhr3-.5, by=.5), side=2, line=5, cex=mx,las=2)	
 	box(which="plot")
 #D 2016			
 	par(mai=c(0,0,0,0))
@@ -756,6 +786,10 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		type="l", lwd=llw,col=col1)
 	points(maxD$doy[maxD$year==2016&maxD$site=="hd"],maxD$maxD[maxD$year==2016&maxD$site=="hd"],
 		type="l", lwd=llw,col=col2)	
+		
+	axis(1, seq(xl16b,xh16b, by=15), rep(" ", length(seq(xl16b,xh16b, by=15))), lwd.ticks=lwt)
+	mtext(seq(xl16b,xh16b, by=15), at=seq(xl16b,xh16b, by=15), side=1, line=10, cex=mx)	
+		
 	box(which="plot")
 
 
@@ -767,6 +801,10 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		type="l", lwd=llw,col=col1)
 	points(maxD$doy[maxD$year==2017&maxD$site=="hd"],maxD$maxD[maxD$year==2017&maxD$site=="hd"],
 		type="l", lwd=llw,col=col2)	
+	axis(4, seq(ylr3,yhr3-.5, by=.5), rep(" ", length(seq(ylr3,yhr3-.5, by=.5))), lwd.ticks=lwt)
+	mtext(seq(ylr3,yhr3-.5, by=.5), at=seq(ylr3,yhr3-.5, by=.5), side=4, line=5, cex=mx, las=2)	
+	axis(1, seq(xl17b+5,xh17b, by=15), rep(" ", length(seq(xl17b+5,xh17b, by=15))), lwd.ticks=lwt)
+	mtext(seq(xl17b+5,xh17b, by=15), at=seq(xl17b+5,xh17b, by=15), side=1, line=10, cex=mx)		
 	box(which="plot")	
 dev.off()				
 
