@@ -1455,8 +1455,59 @@ dev.off()
 ####  figure 6. precipitation weights                            ####
 #####################################################################
 
+wpr <- datC[datC$parms2=="wpr",]
+wpr$stand <- rep(c(1,2), times=6)
+wpr$wI <- rep(seq(1,6), each=2)
 
-
+xl <- 0
+xh <- 15.5
+yl <- 0
+yh <- 1
+#low
+col1 <- rgb(51/255,51/255,51/255)
+#high
+col2 <- rgb(191/255,191/255,191/255)
+lwt <- 3
+mx <- 3
+lx <- 4
+lwa <- 3
+xseq1 <- c(1,3.5,6,8.5,11,13.5)
+xseq2 <- c(2,4.5,7,9.5,12,14.5)
+xas <- c(1.5,4,6.5,9,11.5,14)
+lgx <- 3
+wd<-35
+hd<-25
+jpeg(paste0(plotDI,"\\precipitation.jpg"), width=2000, height=1000, units="px",quality=100)
+	ac<-layout(matrix(seq(1),ncol=1), width=rep(lcm(wd),1),height=rep(lcm(hd),1))
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n",xlim=c(xl,xh),ylim=c(yl,yh), axes=FALSE, 
+		xlab=" ", ylab=" ", yaxs="i",
+		xaxs="i")
+	
+	abline(h=1/6, lwd=5, col="grey60", lty=3)
+	for(i in 1:6){
+		polygon(c(xseq1[i]-.5,xseq1[i]-.5,xseq1[i]+.5,xseq1[i]+.5),
+			c(0, wpr$Mean[wpr$stand==1][i],wpr$Mean[wpr$stand==1][i],0),
+			border=NA, col=col1)
+		polygon(c(xseq2[i]-.5,xseq2[i]-.5,xseq2[i]+.5,xseq2[i]+.5),
+			c(0, wpr$Mean[wpr$stand==2][i],wpr$Mean[wpr$stand==2][i],0),
+			border=NA, col=col2)	
+	}
+	arrows(xseq1,wpr$X2.5.[wpr$stand==1],xseq1,wpr$X97.5.[wpr$stand==1], code=0, 
+			lwd=lwa)
+	arrows(xseq2,wpr$X2.5.[wpr$stand==2],xseq2,wpr$X97.5.[wpr$stand==2], code=0, 
+			lwd=lwa)
+	axis(2, seq(0,1, by=.1), rep(" ",length(seq(0,1, by=.1))), lwd.ticks=lwt)
+	mtext(seq(0,1, by=.1), at=seq(0,1, by=.1), cex=mx, side=2, line=2, las=2)
+	axis(1, c(-1,xas,20), rep(" ", length(c(-1,xas,20))), lwd.ticks=lwt)
+	mtext(c("1-3", "4-7", "8-14", "15-21",
+			"22-35", "36-60"), at=xas, cex=mx, side=1,line=2)
+	mtext(rep("days",6), at=xas, cex=mx,side=1,line=4)
+	legend(9, 1, c("low","high","uniform average"), col=c(col1,col2,"grey60"),
+		pch=c(15,15,NA), lwd=c(NA,NA,5), lty=c(NA,NA,3), bty="n", cex=lgx)
+	mtext("Importance weight", side=2, cex=lx,line=8)	
+	mtext("Lag period", side=1, cex=lx,line=8)
+dev.off()
 
 
 
