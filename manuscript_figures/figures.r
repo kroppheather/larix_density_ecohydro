@@ -81,8 +81,18 @@ datMD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\medDep
 
 #read in data for model goodness of fit
 datGC <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\gcdata.csv")
-datMG <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\mod_stats.csv")
+datMG <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\mod_stats.csv",row.names=1)
+datMGQ <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\mod_quants.csv",row.names=1)
+#read in root model goodness of fit
+datRootR <- read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\modrep.csv")
+datRootD <-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\root_bioDat.csv")
 
+dexps <- "\\[*[[:digit:]]*\\]"
+datMG$parms <- gsub(dexps,"", rownames(datMG))
+dexps2 <- "\\[*[[:digit:]]*\\,"
+datMG$parms2 <- gsub(dexps2,"", datMG$parms)
+
+datC <- cbind(datMG,datMGQ)
 
 
 #####################################################################
@@ -1343,5 +1353,114 @@ dev.off()
 
 
 ###############################End soil root figure    ########################################################################
+################################################################################################################################
+################################################################################################################################
+
+
+#####################################################################
+####  figure 6. goodness of fit figure                           ####
+#####################################################################
+
+
+datMGG <-datMG[datMG$parms=="rep.gs",] 
+
+fitG <- lm(datMGG$Mean~datGC$g.c)
+fitR <- lm(datRootR$rep.mean~datRootD$bio.mg.cm3)
+gi <- round(summary(fitG)$coefficients[1,1],2)
+gs <-round(summary(fitG)$coefficients[2,1],2)
+ri <- round(summary(fitR)$coefficients[1,1],2)
+rs <-round(summary(fitR)$coefficients[2,1],2)
+rg <- round(summary(fitG)$r.squared,3)
+rr <- round(summary(fitR)$r.squared,3)
+
+l1 <- 0
+h1 <- 70
+l2 <- 0
+h2 <- 12
+pcx <- 3
+mx <- 3
+lx <- 4
+ltw <- 3
+llw <- 8
+rtx <- 3
+lgx <- 3
+tx <- 4
+
+#setup plot layout
+wd<-22
+hd<-22
+jpeg(paste0(plotDI,"\\goodness_of_fit.jpg"), width=1800, height=1200, units="px",quality=100)
+ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
+	layout.show(ac)
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n",ylim=c(l1-1,h1),xlim=c(l1-1,h1), axes=FALSE, xlab=" ", ylab=" ", yaxs="i",
+		xaxs="i")
+	points(datGC$g.c,datMGG$Mean, pch=19,cex=pcx)
+	axis(1, seq(l1,h1-10, by=10), rep(" ", length(seq(l1,h1-10, by=10))),lwd.ticks=ltw)
+	mtext(seq(l1,h1-10, by=10), at=seq(l1,h1-10, by=10), side=1, line=3,cex=mx)
+	axis(2, seq(l1,h1-10, by=10), rep(" ", length(seq(l1,h1-10, by=10))),lwd.ticks=ltw)
+	mtext(seq(l1,h1-10, by=10), at=seq(l1,h1-10, by=10), side=2, line=3,cex=mx,las=2)
+	abline(fitG, lwd=llw,lty=3, col="grey70")
+	abline(0,1, lwd=llw,lty=1, col="grey70")
+	text(30,65, expression(paste(hat(italic(g[c])),
+						"= 6.74 + 0.7",italic(g[c]))),
+						cex=rtx)
+	text(30,58, expression(paste("R"^"2","= 0.673")),
+						cex=rtx)
+	mtext("Predicted canopy stomatal", side=2, cex=lx, line=12)
+	mtext(expression(paste("conductance(",hat(italic(g[c])),", mmol m"^"-2","s"^"-1",")"))
+			, side=2, cex=lx, line=7)
+	mtext("Observed canopy stomatal", side=1, cex=lx, line=7)
+	mtext(expression(paste("conductance(",italic(g[c]),", mmol m"^"-2","s"^"-1",")"))
+			, side=1, cex=lx, line=12)						
+	text(2,67, "a", cex=tx)
+	box(which="plot")
+	
+	
+#root biomass	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1), type="n",ylim=c(l2-.5,h2+.5),xlim=c(l2-.5,h2+.5), axes=FALSE, xlab=" ", ylab=" ", yaxs="i",
+		xaxs="i")
+	points(datRootD$bio.mg.cm3,datRootR$rep.mean,pch=19,cex=pcx)
+	axis(1, seq(l2,h2, by=3), rep(" ", length(seq(l2,h2, by=3))),lwd.ticks=ltw)
+	mtext(seq(l2,h2, by=3), at=seq(l2,h2, by=3), side=1, line=3,cex=mx)
+	axis(4, seq(l2,h2, by=3), rep(" ", length(seq(l2,h2, by=3))),lwd.ticks=ltw)
+	mtext(seq(l2,h2, by=3), at=seq(l2,h2, by=3), side=4, line=3,cex=mx,las=2)		
+	abline(fitR, lwd=llw,lty=3, col="grey70")
+	abline(0,1, lwd=llw,lty=1, col="grey70")
+	text(5,11.75, expression(paste(hat(italic(R[b])),
+						"= 0.76 + 0.45",italic(R[b]))),
+						cex=rtx)
+	text(5,10.5, expression(paste("R"^"2","= 0.464")),
+						cex=rtx)
+	legend(-0.5,10,c("1:1","model fit"),lwd=llw,lty=c(1,3),col="grey70",cex=lgx,bty="n")	
+	box(which="plot")
+		mtext("Observed root biomass", side=1, cex=lx, line=7)
+	mtext(expression(paste("(",italic(R[b]),",mg cm"^"-3",")"))
+			, side=1, cex=lx, line=12)	
+		mtext("Predicted root biomass", side=4, cex=lx, line=7)
+	mtext(expression(paste("(",hat(italic(R[b])),",mg cm"^"-3",")"))
+			, side=4, cex=lx, line=12)		
+		text(0,12, "b", cex=tx)
+dev.off()
+
+
+
+###############################End goodness of fit      ########################################################################
+################################################################################################################################
+################################################################################################################################
+
+
+#####################################################################
+####  figure 6. precipitation weights                            ####
+#####################################################################
+
+
+
+
+
+
+
+###############################End precipitation        ########################################################################
 ################################################################################################################################
 ################################################################################################################################
