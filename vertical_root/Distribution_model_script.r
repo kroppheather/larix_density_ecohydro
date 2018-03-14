@@ -136,4 +136,4 @@ initmodel<-bugs(data=Rdatalist,model.file="c:\\Users\\hkropp\\Documents\\GitHub\
 				debug=TRUE, codaPkg=TRUE)
 				
 				
-		
+	write.table(datR, "c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\root_bioDat.csv", sep=",", row.names=FALSE)	

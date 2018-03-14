@@ -79,6 +79,12 @@ datD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\Depth.c
 datE<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\rbio_SiteDay.csv")
 datMD<-read.csv("c:\\Users\\hkropp\\Google Drive\\root_analysis\\siteDay\\medDepth.csv")
 
+#read in data for model goodness of fit
+datGC <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\gcdata.csv")
+datMG <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\mod_stats.csv")
+
+
+
 #####################################################################
 ####  figure 2. Micromet figure                                  ####
 #####################################################################
@@ -816,7 +822,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 					expression(paste(italic(PAR)," low ")),
 					expression(paste(italic(PAR)," high "))),lty=c(1,1,3,3),lwd=llw,
 					col=c(col1,col2,col1,col2), cex=lgx,bty="n")
-	text(218.9,3.4,"g",cex=tx)
+	text(218.9,3.3,"g",cex=tx)
 	box(which="plot")
 #D 2016			
 	par(mai=c(0,0,0,0))
@@ -829,7 +835,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		
 	axis(1, seq(xl16b,xh16b, by=15), rep(" ", length(seq(xl16b,xh16b, by=15))), lwd.ticks=lwt)
 	mtext(seq(xl16b,xh16b, by=15), at=seq(xl16b,xh16b, by=15), side=1, line=10, cex=mx)	
-	
+	text(244,3.3,"h",cex=tx)
 	box(which="plot")
 
 
@@ -853,6 +859,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		legend(175,3.6,c(expression(paste(italic(D[max])," low" )),
 					expression(paste(italic(D[max])," high "))),lwd=llw,lty=5,
 					col=c(col1,col2), cex=lgx,bty="n")	
+	text(228,3.3,"i",cex=tx)				
 dev.off()				
 
 
