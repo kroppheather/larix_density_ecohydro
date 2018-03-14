@@ -571,7 +571,7 @@ colnames(maxD) <- c("doy","year","site","maxD")
 
 ######## make plots
 lwl<-50
-lhl<-32
+lhl<-40
 
 #increments of 0.005
 #T is in g/ m2*s
@@ -583,7 +583,7 @@ ylr2 <- 0
 yhr2 <-80
 #increments of 1
 ylr3 <- 0
-yhr3 <- 3
+yhr3 <- 3.5
 #increments of 0.05
 ylr4 <- 0
 yhr4 <- .25
@@ -616,9 +616,11 @@ alw <- 5
 acol <- rgb(0,0,0,.5)
 blw <- 4
 mx <- 9
-lx <- 4
+lx <- 11
 lwt <- 11
-jpeg(paste0(plotDI,"\\T_gc.jpg"), width=6000, height=3400, units="px",quality=100)
+lgx <- 12
+tx <- 15
+jpeg(paste0(plotDI,"\\T_gc.jpg"), width=7000, height=4000, units="px",quality=100)
 ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 				height=rep(lcm(lhl),9))
 #T 2016				
@@ -627,10 +629,10 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(TList2[[1]]$doy[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]
 			+(TList2[[1]]$hour[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]/24),
-			TList2[[1]]$T[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16], type="b", col=col1, cex=ptcx, pch=19)
+			TList2[[1]]$T[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16], type="b", col=col1, cex=ptcx, pch=15)
 	points(TList2[[2]]$doy[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]
 		+(TList2[[2]]$hour[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]/24),
-			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16], type="b", col=col2, cex=ptcx, pch=19)		
+			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16], type="b", col=col2, cex=ptcx, pch=15)		
 	arrows(TList2[[1]]$doy[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]	
 			+(TList2[[1]]$hour[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]/24),
 			TList2[[1]]$T[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16]-TList2[[1]]$T.se[TList2[[1]]$doy>=xl16&TList2[[1]]$doy<=xh16],
@@ -646,8 +648,14 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 			TList2[[2]]$T[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16]+TList2[[2]]$T.se[TList2[[2]]$doy>=xl16&TList2[[2]]$doy<=xh16],
 			code=0, lwd=alw, col=acol)		
 	axis(2, seq(ylr1,yhr1, by=.005), rep(" ", length(seq(ylr1,yhr1, by=.005))), lwd.ticks=lwt)
-	mtext(seq(ylr1,yhr1, by=.005), at=seq(ylr1,yhr1, by=.005), side=2, line=5, cex=mx, las=2)
-				
+	mtext(seq(ylr1,yhr1, by=.005)*1000, at=seq(ylr1,yhr1, by=.005), side=2, line=5, cex=mx, las=2)
+	mtext("Canopy ", side=2,cex=lx,line=70)
+	mtext("transpiration", side=2,cex=lx,line=50)
+	mtext(expression(paste("(",italic(T),", mg m"^"-2","s"^"-1",")")), side=2,cex=lx,line=30)				
+	legend(216.65,.015,c(expression(paste(italic(T)," low ")),
+					expression(paste(italic(T)," high "))),pch=15,
+					col=c(col1,col2), cex=lgx,bty="n")
+	text(218.9,0.014,"a",cex=tx)
 	box(which="plot")
 
 #T 2016				
@@ -663,7 +671,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		Eday$doy[Eday$year==2016],
 		Eday$T.L.day[Eday$year==2016]+Eday$T.se[Eday$year==2016],
 		code=0, lwd=alw, col=acol)	
-		
+	text(244,0.235,"b",cex=tx)
 	box(which="plot")
 	
 #T 2017				
@@ -682,8 +690,15 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		code=0, lwd=alw, col=acol)	
 	axis(4, seq(ylr4,yhr4, by=.05), rep(" ", length(seq(ylr4,yhr4, by=.05))), lwd.ticks=lwt)
 	mtext(seq(ylr4,yhr4, by=.05), at=seq(ylr4,yhr4, by=.05), side=4, line=5, cex=mx, las=2)
-	box(which="plot")	
+	mtext("Daily canopy ", side=4,cex=lx,line=40)
+	mtext("transpiration", side=4,cex=lx,line=60)
+	mtext(expression(paste("(",italic(T[day]),", L m"^"-2","day"^"-1",")")), side=4,cex=lx,line=80)
 	
+		legend(175,.26,c(expression(paste(italic(T[day])," low ")),
+					expression(paste(italic(T[day])," high"))),pch=19,
+					col=c(col1,col2), cex=lgx,bty="n")
+	box(which="plot")	
+	text(228,0.235,"c",cex=tx)
 	
 				
 #gc 2016				
@@ -692,10 +707,10 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(gcList2[[1]]$doy[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]
 		+(gcList2[[1]]$hour[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]/24),
-			gcList2[[1]]$gc[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16], type="b", col=col1, cex=ptcx, pch=19)
+			gcList2[[1]]$gc[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16], type="b", col=col1, cex=ptcx, pch=15)
 	points(gcList2[[2]]$doy[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]
 		+(gcList2[[2]]$hour[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16]/24),
-			gcList2[[2]]$gc[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16], type="b", col=col2, cex=ptcx, pch=19)		
+			gcList2[[2]]$gc[gcList2[[2]]$doy>=xl16&gcList2[[2]]$doy<=xh16], type="b", col=col2, cex=ptcx, pch=15)		
 		arrows(gcList2[[1]]$doy[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]	
 			+(gcList2[[1]]$hour[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]/24),
 			gcList2[[1]]$gc[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16]-gcList2[[1]]$gc.se[gcList2[[1]]$doy>=xl16&gcList2[[1]]$doy<=xh16],
@@ -713,7 +728,13 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 
 	axis(2, seq(ylr2,yhr2-10, by=10), rep(" ", length(seq(ylr2,yhr2-10, by=10))), lwd.ticks=lwt)
 	mtext(seq(ylr2,yhr2-10, by=10), at=seq(ylr2,yhr2-10, by=10), side=2, line=5, cex=mx, las=2)
-			
+		mtext("Canopy stomatal", side=2,cex=lx,line=65)
+	mtext("conductance", side=2,cex=lx,line=45)
+	mtext(expression(paste("(",italic(T[day]),", mmol m"^"-2","s"^"-1",")")), side=2,cex=lx,line=25)			
+	legend(216.65,80,c(expression(paste(italic(g[c])," low ")),
+					expression(paste(italic(g[c])," high "))),pch=15,
+					col=c(col1,col2), cex=lgx,bty="n")
+	text(218.9,76,"d",cex=tx)
 	box(which="plot")
 #gc 2016				
 	par(mai=c(0,0,0,0))
@@ -728,9 +749,8 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		gsDave$doy[gsDave$year==2016],
 		gsDave$gc.mmol.s[gsDave$year==2016]+gsDave$se[gsDave$year==2016],
 		code=0, lwd=alw, col=acol)	
-		
-		
 	box(which="plot")
+	text(244,76,"e",cex=tx)
 #gc 2017				
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-1,xh17b+2), ylim=c(ylr5,yhr5), 
@@ -746,6 +766,15 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		code=0, lwd=alw, col=acol)	
 	axis(4, seq(ylr5,yhr5-10, by=10), rep(" ", length(seq(ylr5,yhr5-10, by=10))), lwd.ticks=lwt)
 	mtext(seq(ylr5,yhr5-10, by=10), at=seq(ylr5,yhr5-10, by=10), side=4, line=5, cex=mx, las=2)
+	mtext("Daily average", side=4,cex=lx,line=40)
+	mtext("canopy stomatal", side=4,cex=lx,line=60)
+	mtext("conductance", side=4,cex=lx,line=80)
+	mtext(expression(paste("(",italic(g[c]),", mmol m"^"-2","day"^"-1",")")), side=4,cex=lx,line=100)
+	
+	legend(175,80,c(expression(paste(italic(g[c])," average low" )),
+					expression(paste(italic(g[c])," average high "))),pch=19,
+					col=c(col1,col2), cex=lgx,bty="n")	
+	text(228,76,"f",cex=tx)
 	box(which="plot")
 #D 2016				
 	par(mai=c(0,0,0,0))
@@ -777,19 +806,30 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	
 	axis(2, seq(ylr3,yhr3-.5, by=.5), rep(" ", length(seq(ylr3,yhr3-.5, by=.5))), lwd.ticks=lwt)
 	mtext(seq(ylr3,yhr3-.5, by=.5), at=seq(ylr3,yhr3-.5, by=.5), side=2, line=5, cex=mx,las=2)	
+	mtext("Photosynthetic", side=2,cex=lx,line=105)
+	mtext("active radiation", side=2,cex=lx,line=85)
+	mtext(expression(paste("(",italic(PAR),",mmol m"^"-2","s"^"-1",")")), side=2,cex=lx,line=65)
+	mtext("Vapor pressure", side=2,cex=lx,line=45)
+	mtext(expression(paste("deficit (" ,italic(D),", kPa)")), side=2,cex=lx,line=25)
+	legend(215.9,3.71,c(expression(paste(italic(D)," low ")),
+					expression(paste(italic(D)," high ")),
+					expression(paste(italic(PAR)," low ")),
+					expression(paste(italic(PAR)," high "))),lty=c(1,1,3,3),lwd=llw,
+					col=c(col1,col2,col1,col2), cex=lgx,bty="n")
+	text(218.9,3.4,"g",cex=tx)
 	box(which="plot")
 #D 2016			
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n", xlim=c(xl16b-1,xh16b+2), ylim=c(ylr3,yhr3), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(maxD$doy[maxD$year==2016&maxD$site=="ld"],maxD$maxD[maxD$year==2016&maxD$site=="ld"],
-		type="l", lwd=llw,col=col1)
+		type="l", lwd=llw,col=col1, lty=5)
 	points(maxD$doy[maxD$year==2016&maxD$site=="hd"],maxD$maxD[maxD$year==2016&maxD$site=="hd"],
-		type="l", lwd=llw,col=col2)	
+		type="l", lwd=llw,col=col2, lty=5)	
 		
 	axis(1, seq(xl16b,xh16b, by=15), rep(" ", length(seq(xl16b,xh16b, by=15))), lwd.ticks=lwt)
 	mtext(seq(xl16b,xh16b, by=15), at=seq(xl16b,xh16b, by=15), side=1, line=10, cex=mx)	
-		
+	
 	box(which="plot")
 
 
@@ -798,14 +838,21 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-1,xh17b+2), ylim=c(ylr3,yhr3), 
 		xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
 	points(maxD$doy[maxD$year==2017&maxD$site=="ld"],maxD$maxD[maxD$year==2017&maxD$site=="ld"],
-		type="l", lwd=llw,col=col1)
+		type="l", lwd=llw,col=col1, lty=5)
 	points(maxD$doy[maxD$year==2017&maxD$site=="hd"],maxD$maxD[maxD$year==2017&maxD$site=="hd"],
-		type="l", lwd=llw,col=col2)	
+		type="l", lwd=llw,col=col2, lty=5)	
 	axis(4, seq(ylr3,yhr3-.5, by=.5), rep(" ", length(seq(ylr3,yhr3-.5, by=.5))), lwd.ticks=lwt)
 	mtext(seq(ylr3,yhr3-.5, by=.5), at=seq(ylr3,yhr3-.5, by=.5), side=4, line=5, cex=mx, las=2)	
 	axis(1, seq(xl17b+5,xh17b, by=15), rep(" ", length(seq(xl17b+5,xh17b, by=15))), lwd.ticks=lwt)
 	mtext(seq(xl17b+5,xh17b, by=15), at=seq(xl17b+5,xh17b, by=15), side=1, line=10, cex=mx)		
 	box(which="plot")	
+	mtext("Day of year", side=1,cex=lx,outer=TRUE, line = -6 )
+	mtext("Daily maximum", side=4,cex=lx,line=40)
+	mtext("vapor pressure", side=4,cex=lx,line=60)
+	mtext(expression(paste("deficit (",italic(D[max]),", kPa)")), side=4,cex=lx,line=80)
+		legend(175,3.6,c(expression(paste(italic(D[max])," low" )),
+					expression(paste(italic(D[max])," high "))),lwd=llw,lty=5,
+					col=c(col1,col2), cex=lgx,bty="n")	
 dev.off()				
 
 
