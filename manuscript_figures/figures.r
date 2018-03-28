@@ -95,6 +95,12 @@ datMG$parms2 <- gsub(dexps2,"", datMG$parms)
 datC <- cbind(datMG,datMGQ)
 
 
+
+##### read in sapwood thickness or sensor correciton
+datSWAl <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\sap_thick.csv")
+#density allometry
+datAllom <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\larix_allom.csv")
+
 #####################################################################
 ####  figure 2. Micromet figure                                  ####
 #####################################################################
@@ -1524,3 +1530,177 @@ dev.off()
 ###############################End precipitation        ########################################################################
 ################################################################################################################################
 ################################################################################################################################
+
+#output table of regression results
+drparms <- datC[datC$parms2=="a"|datC$parms2=="b"|datC$parms2=="d",]
+
+
+write.table(drparms, paste0(plotDI,"\\regression_coefficient.csv"),sep=",")
+
+
+#####################################################################
+####  appendix. allometry                                        ####
+#####################################################################
+#dbh vs sapwood
+#leaf area vs dbh
+
+#################################################################
+####calculate sapwood thicknes                            #######
+#################################################################
+
+#fit a linear regression for sap thickness
+#low
+lmSWL <- lm(datSWAl$SWT[datSWAl$stand=="LDF2"]~datSWAl$DBH[datSWAl$stand=="LDF2"])
+summary(lmSWL)
+#high
+lmSWH <- lm(datSWAl$SWT[datSWAl$stand=="DAV"]~datSWAl$DBH[datSWAl$stand=="DAV"])
+summary(lmSWH)
+#fit a linear regression for bark thickness
+#low
+lmBL <- lm(datSWAl$Bark[datSWAl$stand=="LDF2"]~datSWAl$DBH[datSWAl$stand=="LDF2"])
+summary(lmBL)
+#high
+lmBH <- lm(datSWAl$Bark[datSWAl$stand=="DAV"]~datSWAl$DBH[datSWAl$stand=="DAV"])
+summary(lmBH)
+
+#for sapwood thickness, ldf2 just gets the stand mean since not significant
+#datTreeDF $SWT <- ifelse(datTreeDF$stand=="hd", coefficients(lmSWH)[1]+(coefficients(lmSWH)[2]*datTreeDF$DBHt),
+#				mean(datSW$SWT[datSW$stand=="LDF2"]))
+
+#datTreeDF $Bark <- ifelse(datTreeDF$stand=="hd", coefficients(lmBH)[1]+(coefficients(lmBH)[2]*datTreeDF$DBHt),
+#				coefficients(lmBL)[1]+(coefficients(lmBL)[2]*datTreeDF$DBHt))
+
+
+#leaf allometry function 
+leaf.bio<-function(DBH,a.leaf,b.leaf){a.leaf*(DBH^b.leaf)}
+#fit nonlinear function
+nlsLow <- nls(leaf~a.leaf*(DBH^b.leaf), data=list(DBH=datAllom$dbh[datAllom$density=="Low"],
+				leaf=datAllom$foliage[datAllom$density=="Low"]),
+				start=list(a.leaf=40.5, b.leaf=1.41))
+nlsHigh <- nls(leaf~a.leaf*(DBH^b.leaf), data=list(DBH=datAllom$dbh[datAllom$density=="High"],
+				leaf=datAllom$foliage[datAllom$density=="High"]),
+				start=list(a.leaf=40.5, b.leaf=1.41))
+				
+
+
+########sapwood thickness plot####################
+hd <- 20
+wd <- 20
+
+
+px <- 6
+llw <- 5
+mx <- 4
+lx <- 5
+ltw <- 4
+tx <- 5
+dl1 <- 0
+dh1 <- 30
+yl1 <- 0
+yh1 <- 3
+yl2 <- 0
+yh2 <- 2
+#g
+yl3 <- 0
+yh3 <- 5000				
+jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, units="px")
+	layout(matrix(seq(1,6),ncol=2,byrow=TRUE),width=rep(lcm(wd),6),height=rep(lcm(hd),6))
+#ld swt	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl1,yh1),axes=FALSE,xlab=" ", ylab=" ",
+			xaxs="i",yaxs="i")
+	points(datSWAl$DBH[datSWAl$stand=="LDF2"],datSWAl$SWT[datSWAl$stand=="LDF2"], pch=19,cex=px)
+	abline(h=mean(datSWAl$SWT[datSWAl$stand=="LDF2"]), lwd=llw, lty=3)
+	text(15, 2.5, paste("sw =", round(mean(datSWAl$SWT[datSWAl$stand=="LDF2"]),2)), cex=tx)
+	axis(2, seq(yl1,yh1,by=.5),rep(" ",length(seq(yl1,yh1,by=.5))), lwd.ticks=ltw)
+	mtext(seq(yl1,yh1,by=.5), at=seq(yl1,yh1,by=.5),side=2,line=4,cex=mx,las=2)
+	mtext("Sapwood thickness", side=2,line=25,cex=lx)
+	mtext("(sw, cm)", side=2,line=15,cex=lx)
+	box(which="plot")
+#hd swt	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl1,yh1),axes=FALSE,xlab=" ", ylab=" ",
+			xaxs="i",yaxs="i")
+	points(datSWAl$DBH[datSWAl$stand=="DAV"],datSWAl$SWT[datSWAl$stand=="DAV"], pch=19,cex=px)
+	
+	text(15, 2.5, paste("sw =", round(coefficients(lmSWH)[1],2),"+ dbh",round(coefficients(lmSWH)[2],2)), cex=tx)
+	abline(lmSWH, lwd=llw)
+	axis(4, seq(yl1,yh1,by=.5),rep(" ",length(seq(yl1,yh1,by=.5))), lwd.ticks=ltw)
+	mtext(seq(yl1,yh1,by=.5), at=seq(yl1,yh1,by=.5),side=4,line=4,cex=mx,las=2)
+	mtext("Sapwood thickness", side=4,line=20,cex=lx)
+	mtext("(sw, cm)", side=4,line=30,cex=lx)
+	box(which="plot")	
+
+
+#ld bwt 
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl2,yh2),axes=FALSE,xlab=" ", ylab=" ",
+			xaxs="i",yaxs="i")
+	points(datSWAl$DBH[datSWAl$stand=="LDF2"],datSWAl$Bark[datSWAl$stand=="LDF2"], pch=19,cex=px)
+	abline(lmBL, lwd=llw)
+	text(15, 2.5, paste("bw =", round(coefficients(lmBL)[1],2),"+ dbh",round(coefficients(lmBL)[2],2)), cex=tx)
+	axis(2, seq(yl2,yh2-.5,by=.5),rep(" ",length(seq(yl2,yh2-.5,by=.5))), lwd.ticks=ltw)
+	mtext(seq(yl2,yh2-.5,by=.5), at=seq(yl2,yh2-.5,by=.5),side=2,line=4,cex=mx,las=2)
+		mtext("Bark thickness", side=2,line=25,cex=lx)
+	mtext("(bw, cm)", side=2,line=15,cex=lx)
+	box(which="plot")
+#hd bwt 
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl2,yh2),axes=FALSE,xlab=" ", ylab=" ",
+			xaxs="i",yaxs="i")
+	points(datSWAl$DBH[datSWAl$stand=="DAV"],datSWAl$Bark[datSWAl$stand=="DAV"], pch=19,cex=px)
+	text(15, 2.5, paste("bw =", round(coefficients(lmBH)[1],2),"+ dbh",round(coefficients(lmBH)[2],2)), cex=tx)
+	
+	abline(lmBH, lwd=llw)
+	axis(4, seq(yl2,yh2-.5,by=.5),rep(" ",length(seq(yl2,yh2-.5,by=.5))), lwd.ticks=ltw)
+	mtext(seq(yl2,yh2-.5,by=.5), at=seq(yl2,yh2-.5,by=.5),side=4,line=4,cex=mx,las=2)
+	mtext("Bark thickness", side=4,line=20,cex=lx)
+	mtext("(bw, cm)", side=4,line=30,cex=lx)
+	box(which="plot")
+
+#ld leaf
+par(mai=c(0,0,0,0))	
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl3,yh3),axes=FALSE,xlab=" ", ylab=" ",
+			xaxs="i",yaxs="i")
+	
+	points(datAllom$dbh[datAllom$density=="Low"],datAllom$foliage[datAllom$density=="Low"],
+			pch=19,cex=px)
+	points(seq(0,30, by=.1), leaf.bio(seq(0,30, by=.1), summary(nlsLow)$coefficients[1,1],
+				summary(nlsLow)$coefficients[2,1]), type="l", lwd=llw)			
+	text(15,4000, expression(paste("lm = 150.50"^"1.00dbh",)), cex=tx)
+	
+	axis(2, seq(yl3,yh3-500,by=500),rep(" ",length(seq(yl3,yh3-500,by=500))), lwd.ticks=ltw)
+	mtext(seq(yl3,yh3-500,by=500)/1000, at=seq(yl3,yh3-500,by=500),side=2,line=4,cex=mx,las=2)
+	mtext("Canopy leaf", side=2,line=25,cex=lx)
+	mtext("mass (lm, kg)", side=2,line=15,cex=lx)
+	mtext("Diameter at breast height (cm)", side=1, outer=TRUE, cex=lx, line=-5)
+	
+	axis(1, seq(dl1,dh1-5, by=5), rep(" ", length(seq(dl1,dh1-5, by=5))), lwd.ticks=ltw)
+	mtext(seq(dl1,dh1-5, by=5), at=seq(dl1,dh1-5, by=5), side=1,line=5,cex=mx)
+	box(which="plot")
+	
+#hd leaf	
+	par(mai=c(0,0,0,0))
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl3,yh3),axes=FALSE,xlab=" ", ylab=" ",
+			xaxs="i",yaxs="i")
+	points(datAllom$dbh[datAllom$density=="High"],datAllom$foliage[datAllom$density=="High"],
+			pch=19,cex=px)
+	points(seq(0,30, by=.1), leaf.bio(seq(0,30, by=.1), summary(nlsHigh)$coefficients[1,1],
+				summary(nlsHigh)$coefficients[2,1]), type="l", lwd=llw)
+	axis(4, seq(yl3,yh3-500,by=500),rep(" ",length(seq(yl3,yh3-500,by=500))), lwd.ticks=ltw)
+	mtext(seq(yl3,yh3-500,by=500)/1000, at=seq(yl3,yh3-500,by=500),side=4,line=4,cex=mx,las=2)		
+	mtext("Canopy leaf", side=4,line=20,cex=lx)
+	mtext("mass (lm, kg)", side=4,line=30,cex=lx)
+	axis(1, seq(dl1,dh1-5, by=5), rep(" ", length(seq(dl1,dh1-5, by=5))), lwd.ticks=ltw)
+	mtext(seq(dl1,dh1-5, by=5), at=seq(dl1,dh1-5, by=5), side=1,line=5,cex=mx)
+	text(15,4000, expression(paste("lm = 7.57"^"1.73dbh",)), cex=tx)
+	
+	box(which="plot")
+			
+dev.off()				
+
+
+
+
+#past precip vs soil temperature and thaw depth 
+
