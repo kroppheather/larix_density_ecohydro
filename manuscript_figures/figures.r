@@ -100,7 +100,8 @@ datC <- cbind(datMG,datMGQ)
 datSWAl <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\sap_thick.csv")
 #density allometry
 datAllom <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\larix_allom.csv")
-
+#stand day
+datStandD<-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\standDay.csv")
 #####################################################################
 ####  figure 2. Micromet figure                                  ####
 #####################################################################
@@ -1704,3 +1705,36 @@ dev.off()
 
 #past precip vs soil temperature and thaw depth 
 
+###############################End allometry           ########################################################################
+################################################################################################################################
+################################################################################################################################
+
+
+#####################################################################
+####  appendix. correlations                                     ####
+#####################################################################
+
+#show soil temp: T.Dcm2, TD, and precip from mod.out
+pastpr <- datC[datC$parms2=="pastpr",]
+pastpr$Days <- rep(seq(1,60),each=2)
+pastpr$stand <- rep(seq(1,2), times=60)
+
+standDayAll <- join(pastpr, datStandD, by=c("Days","stand"), type="right")
+
+
+#make a plot of the correlations
+jpeg(file=paste0(plotDI,"\\correlationAppendix.jpg"), width=1500, height=1000, units="px")
+par(mfrow=c(1,2), mai=c(2,2,2,2))
+plot(standDayAll$Mean,standDayAll$TD, pch=19, cex=2, xlab="Past precipitation (mm)", ylab="Thaw depth (cm)",
+			cex.lab=2, axes=FALSE)
+	axis(2, seq(-20,80, by=20),cex.axis=2, las=2)
+	axis(1, seq(-10,30,by=5), cex.axis=2)
+text(20,20,paste("r =",round(cor(standDayAll$Mean,standDayAll$TD),2)), cex=2)
+plot(standDayAll$Mean,standDayAll$T.Dcm2, pch=19, cex=2, xlab="Past precipitation (mm)", ylab="Organic soil temperature (C)",
+			cex.lab=2, axes=FALSE)
+			
+	axis(2, seq(-10,8, by=2),cex.axis=2, las=2)
+	axis(1, seq(-10,30,by=5), cex.axis=2)	
+text(20,1,paste("r =",round(cor(standDayAll$Mean,standDayAll$T.Dcm2),2)), cex=2)	
+
+dev.off()
