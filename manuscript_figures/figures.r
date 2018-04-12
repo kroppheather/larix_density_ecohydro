@@ -45,7 +45,7 @@ datSW <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\vwc.GS3.c
 datSW2 <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\vwc.5TM.csv")
 
 datStemp2 <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\tempS.5TM.csv")
-
+datStemp <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\soil\\tempS.GS3.csv")
 #canopy rh and temperature
 datRH <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\RH.VP4.csv")
 datTC <- read.csv("c:\\Users\\hkropp\\Google Drive\\viperSensor\\met\\TempC.VP4.csv")
@@ -124,7 +124,9 @@ datSsh2 <- aggregate(datStemp2$tempS.5TM,
 				datStemp2$sensorZ),FUN="mean",na.action=na.omit)
 colnames(datSsh2) <- c("doy","year","site","depthD","T.sD")
 
-
+datTs50 <- datStemp[datStemp$sensorZ==50,]
+datTs50d <- aggregate(datTs50$tempS.GS3,by=list(datTs50$doy,datTs50$year,datTs50$site), FUN="mean",na.action=na.omit)
+colnames(datTs50d) <- c("doy","year","site","Ts50")
 #182 20 cm hd
 #160 10cm hd
 # 161 18 cm ld
@@ -322,14 +324,18 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				,lwd=lw,col=col1,lty=lty1, type="l")
 			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16],
 				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16]*TS.scale
-				,lwd=lw,col=col2,lty=lty2, type="l")		
+				,lwd=lw,col=col2,lty=lty2, type="l")	
+			
 		axis(2, TDseq, rep(" ",length(TDseq)), lwd.ticks=tw)
 		mtext(TDseq, at=TDseq, cex=mx, line=5, side=2, las=2)	
 	mtext("Permafrost thaw", 	cex=lx, line=32,side=2)
 	mtext(expression(paste("depth (",italic(TD),", cm )")), 	cex=lx, line=18,side=2)	
 		axis(1, x16seq, rep(" ",length(x16seq)), lwd.ticks=tw)
 		mtext(x16seq, at=x16seq, cex=mx, line=7, side=1)	
-		
+				points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="ld"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="ld"]*TS.scale,
+				lwd=lw,col=col1,lty=lty3,type="l")
+			points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="hd"]*TS.scale,
+				lwd=lw,col=col2,lty=lty4,type="l")			
 	box(which="plot")
 	text(244,78.5,"e",cex=tx)
 #TD TS 2017
@@ -345,7 +351,10 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17],
 				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17]*TS.scale
 				,lwd=lw,col=col2,lty=lty2, type="l")	
-	
+			points(datTs50d$doy[datTs50d$year==2017&datTs50d$site=="ld"],datTs50d$Ts50[datTs50d$year==2017&datTs50d$site=="ld"]*TS.scale,
+				lwd=lw,col=col1,lty=lty3,type="l")
+			points(datTs50d$doy[datTs50d$year==2017&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2017&datTs50d$site=="hd"]*TS.scale,
+				lwd=lw,col=col2,lty=lty4,type="l")		
 		axis(4, TSseqA, rep(" ",length(TSseqA)), lwd.ticks=tw)
 		mtext(TSseqL, at=TSseqA, cex=mx, line=5, side=4, las=2)
 		mtext("Soil temperature", 	cex=lx, line=28,side=4)
@@ -355,9 +364,13 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 	box(which="plot")	
 	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-8)
 	legend(151,84, c(expression(paste("low", italic(TD))),expression(paste("high", italic(TD))),
-						expression(paste("low", italic(T[s]))),expression(paste("high", italic(T[s])))),
+						expression(paste("organic low", italic(T[s]))),expression(paste("organic high", italic(T[s])))
+						),
 						lty=c(1,1,lty1,lty2),lwd=c(lw,lw,lw,lw), pch=c(NA,NA,NA,NA),
 						col=c(col1,col2,col1,col2),bty="n",cex=lgx)
+						
+	legend(179,84,	c(expression(paste("deep low", italic(T[s]))),expression(paste("deep high", italic(T[s])))),
+			lty=c(lty3,lty4),lwd=c(lw,lw),pch=c(NA,NA),col=c(col1,col2),bty="n",cex=lgx)
 	text(224,78.5,"f",cex=tx)					
 dev.off()
 
