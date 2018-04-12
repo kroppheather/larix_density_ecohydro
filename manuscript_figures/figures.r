@@ -369,7 +369,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 						lty=c(1,1,lty1,lty2),lwd=c(lw,lw,lw,lw), pch=c(NA,NA,NA,NA),
 						col=c(col1,col2,col1,col2),bty="n",cex=lgx)
 						
-	legend(179,84,	c(expression(paste("deep low", italic(T[s]))),expression(paste("deep high", italic(T[s])))),
+	legend(179,84,	c(expression(paste("50cm low", italic(T[s]))),expression(paste("50cm high", italic(T[s])))),
 			lty=c(lty3,lty4),lwd=c(lw,lw),pch=c(NA,NA),col=c(col1,col2),bty="n",cex=lgx)
 	text(224,78.5,"f",cex=tx)					
 dev.off()
