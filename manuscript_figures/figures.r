@@ -1456,7 +1456,7 @@ ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 	mtext("Observed canopy stomatal", side=1, cex=lx, line=7)
 	mtext(expression(paste("conductance(",italic(g[c]),", mmol m"^"-2","s"^"-1",")"))
 			, side=1, cex=lx, line=12)						
-	text(2,67, "a", cex=tx)
+	text(2,67, "(a)", cex=tx)
 	box(which="plot")
 	
 	
@@ -1484,7 +1484,7 @@ ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 		mtext("Predicted root biomass", side=4, cex=lx, line=7)
 	mtext(expression(paste("(",hat(italic(R[b])),",mg cm"^"-3",")"))
 			, side=4, cex=lx, line=12)		
-		text(0,12, "b", cex=tx)
+		text(0,12, "(b)", cex=tx)
 dev.off()
 
 
