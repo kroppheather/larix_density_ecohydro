@@ -1015,7 +1015,7 @@ points(datR$bio.mg.cm3[datR$site=="h"&datR$period==1],datR$depth.midpoint[datR$s
 		
 box(which="plot")
 text(5,90,"early July", cex=txcx)
-text(10.25,3.5, "a",cex=txcx)
+text(10.1,4.7, "(a)",cex=txcx)
 axis(2,seq(100,0, by=-10), lab=rep(" ",length(seq(100,0, by=-10))), las=2, cex.axis=2, lwd.ticks=3)
 mtext(seq(100,0, by=-10), at=seq(100,0, by=-10), line=2, side=2, cex=ltcx, las=2)
 
@@ -1046,7 +1046,7 @@ points(datR$bio.mg.cm3[datR$site=="h"&datR$period==2],datR$depth.midpoint[datR$s
 
 box(which="plot")
 text(5,90,"mid July", cex=txcx)
-text(10.25,3.5, "b",cex=txcx)
+text(10.1,4.7, "(b)",cex=txcx)
 #End July
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
@@ -1067,7 +1067,7 @@ points(datR$bio.mg.cm3[datR$site=="h"&datR$period==3],datR$depth.midpoint[datR$s
 
 box(which="plot")
 text(5,90,"end July", cex=txcx)
-text(10.25,3.5, "c",cex=txcx)
+text(10.1,4.7, "(c)",cex=txcx)
 #Mid August
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuH,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
@@ -1087,7 +1087,7 @@ points(datR$bio.mg.cm3[datR$site=="h"&datR$period==4],datR$depth.midpoint[datR$s
 
 box(which="plot")
 text(5,90,"mid August", cex=txcx)
-text(10.25,3.5, "d",cex=txcx)
+text(10.1,4.7, "(d)",cex=txcx)
 #####start low density
 #start by doing all plots across the same depth range
 par(mai=c(0,0,0,0))
@@ -1118,7 +1118,7 @@ mtext(seq(100,10, by=-10), at=seq(100,10, by=-10), line=2, side=2, cex=ltcx, las
 mtext("Depth (cm)", outer=TRUE, side=2, line=-5, cex=mcx)
 axis(1,seq(0,9, by=3), lab=rep(" ",length(seq(0,9, by=3))), las=2, cex.axis=2, lwd.ticks=3)
 mtext(seq(0,9, by=3), at=seq(0,9, by=3), line=2.5, side=1, cex=ltcx)
-text(10.25,3.5, "e",cex=txcx)
+text(10.1,4.7, "(e)",cex=txcx)
 #empty plot mid july
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
@@ -1126,7 +1126,7 @@ text(5,90,"mid July", cex=txcx)
 axis(1,seq(0,9, by=3), lab=rep(" ",length(seq(0,9, by=3))), las=2, cex.axis=2, lwd.ticks=3)
 mtext(seq(0,9, by=3), at=seq(0,9, by=3), line=2.5, side=1, cex=ltcx)
 box(which="plot")
-text(10.25,3.5, "f",cex=txcx)	
+text(10.1,4.7, "(f)",cex=txcx)	
 #End of July
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
@@ -1148,7 +1148,7 @@ box(which="plot")
 text(5,90,"end July", cex=txcx)
 axis(1,seq(0,9, by=3), lab=rep(" ",length(seq(0,9, by=3))), las=2, cex.axis=2, lwd.ticks=3)
 mtext(seq(0,9, by=3), at=seq(0,9, by=3), line=2.5, side=1, cex=ltcx)
-text(10.25,3.5, "g",cex=txcx)
+text(10.1,4.7, "(g)",cex=txcx)
 #Mid August
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n", xlim=c(0,xH),ylim=c(yuL,0), xlab=" ", ylab=" ", axes=FALSE,yaxs="i",xaxs="i")
@@ -1171,7 +1171,7 @@ text(5,90,"mid August", cex=txcx)
 axis(1,seq(0,9, by=3), lab=rep(" ",length(seq(0,9, by=3))), las=2, cex.axis=2, lwd.ticks=3)
 mtext(seq(0,9, by=3), at=seq(0,9, by=3), line=2.5, side=1, cex=ltcx)
 mtext(expression("Root Biomass (mg cm"^-3~")"), side=1, outer=TRUE, line=-1, cex=mcx)
-text(10.25,3.5, "h",cex=txcx)
+text(10.1,4.7, "(h)",cex=txcx)
 dev.off()
 ###############################End vertical root figure ########################################################################
 ################################################################################################################################
