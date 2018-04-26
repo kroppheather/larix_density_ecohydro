@@ -138,7 +138,7 @@ datSoilW$SW <- ifelse(datSoilW$doy<182&datSoilW$year==2017&datSoilW$site=="hd"&d
 			ifelse(datSoilW$doy<160&datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8,NA,datSoilW$SW))))
 
 lwl<-50
-lhl<-32
+lhl<-35
 
 #increments of 5
 ylr1 <- 0
@@ -196,7 +196,7 @@ pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
 
-jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3200, units="px",quality=100)
+jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3400, units="px",quality=100)
 ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				height=rep(lcm(lhl),6))
 
@@ -222,7 +222,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			
 	mtext("Air temperature", 	cex=lx, line=32,side=2)
 	mtext(expression(paste("(",italic(T[a]),",",degree,"C )")), 	cex=lx, line=18,side=2)
-	text(244,28.5,"a",cex=tx)
+	text(242,28,"(a)",cex=tx)
 	box(which="plot")			
 	
 #Tair P 2017
@@ -250,7 +250,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 						lty=c(1,1,NA),lwd=c(lw,lw,NA), pch=c(NA,NA,15), col=c(col1,col2,precipc),bty="n",cex=lgx)
 	mtext("Precipitation", 	cex=lx, line=28,side=4)
 	mtext(expression(paste("(",italic(P),", mm )")), 	cex=lx, line=42,side=4)
-	text(224,28.5,"b",cex=tx)	
+	text(222.5,28,"(b)",cex=tx)	
 #M D 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -277,7 +277,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 	mtext("Vapor pressure", 	cex=lx, line=32,side=2)
 	mtext( expression(paste("deficit(",italic(D),", kPa )")), 	cex=lx, line=18,side=2)		
 	box(which="plot")	
-	text(244,3.3,"c",cex=tx)
+	text(242,3.3,"(c)",cex=tx)
 #M D 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -310,7 +310,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 	legend(184,3.7, c(expression(paste("high", italic(D))),expression(paste("high 10cm ", italic(M))),
 						expression(paste("high 20cm ", italic(M)))),
 						lty=c(1,lty2,lty4),lwd=c(lw,lw,lw),  col=c(col2,col2,col2),bty="n",cex=lgx)	
-	text(224,3.3,"d",cex=tx)	
+	text(222.5,3.3,"(d)",cex=tx)	
 #TD TS 2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -337,7 +337,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="hd"]*TS.scale,
 				lwd=lw,col=col2,lty=lty4,type="l")			
 	box(which="plot")
-	text(244,78.5,"e",cex=tx)
+	text(242,78,"(e)",cex=tx)
 #TD TS 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -362,7 +362,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		axis(1, x17seq, rep(" ",length(x17seq)), lwd.ticks=tw)
 		mtext(x17seq, at=x17seq, cex=mx, line=7, side=1)	
 	box(which="plot")	
-	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-8)
+	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-7)
 	legend(151,84, c(expression(paste("low", italic(TD))),expression(paste("high", italic(TD))),
 						expression(paste("organic low", italic(T[s]))),expression(paste("organic high", italic(T[s])))
 						),
@@ -371,7 +371,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 						
 	legend(179,84,	c(expression(paste("50cm low", italic(T[s]))),expression(paste("50cm high", italic(T[s])))),
 			lty=c(lty3,lty4),lwd=c(lw,lw),pch=c(NA,NA),col=c(col1,col2),bty="n",cex=lgx)
-	text(224,78.5,"f",cex=tx)					
+	text(222.5,78,"(f)",cex=tx)					
 dev.off()
 
 
