@@ -1180,7 +1180,7 @@ dev.off()
 
 
 #####################################################################
-####  figure 5. Soil type root profile                           ####
+####  figure 6. Soil type root profile                           ####
 #####################################################################
 
 
@@ -1350,7 +1350,7 @@ legend(3,0,c("high density","low density"), fill=c(hcol,lcol),bty="n", cex=lgcx)
 mtext("Soil layer type", side=2, cex=mcx, line=13)
 mtext(expression(paste("Root biomass mg cm"^"-3")), side=1, cex=mcx, line=8)
 text(layR$r.d+layR$se+.5,layR$pseq-.5,layR$sL,cex=txcx)
-text(7.6,5.8,"a",cex=tx)
+text(7.4,5.6,"(a)",cex=tx)
 #plot thickness
 par(mai=c(0,0,0,0))
 plot(c(0,1),c(0,1), type="n",ylim=c(20,0),xlim=c(0,2), axes=FALSE, xlab=" ", ylab=" ", yaxs="i",
@@ -1390,7 +1390,7 @@ plot(c(0,1),c(0,1), type="n",ylim=c(20,0),xlim=c(0,2), axes=FALSE, xlab=" ", yla
 	
 mtext("Soil layer depth (cm)", side=4, cex=mcx, line=10)
 mtext("Stand", side=1, cex=mcx, line=8)
-text(1.9,19,"b",cex=tx)
+text(1.85,18.5,"(b)",cex=tx)
 legend(.92,12,c("green moss", "brown moss", "fibric organic"), fill=c(mgcol, mbcol,ocol), bty="n", cex=lgcx)
 dev.off()
 
