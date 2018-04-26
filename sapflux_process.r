@@ -25,7 +25,7 @@ library(caTools)
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
 plotcheck <- 0
-tableout <- 1
+tableout <- 0
 
 
 #################################################################
@@ -765,7 +765,7 @@ if(tableout==1){
 					LSrat.n=c(length(canopySummLt$S.Lrat),length(canopySummHt$S.Lrat)),
 					LSratM =c(mean(canopySummLt$S.LratM),mean(canopySummHt$S.LratM)),
 					LSratM.sd =c(sd(canopySummLt$S.LratM),sd(canopySummHt$S.LratM)),
-					LSratM.n=c(length(canopySummLt$S.LratM),length(canopySummHt$S.LratM)),)
+					LSratM.n=c(length(canopySummLt$S.LratM),length(canopySummHt$S.LratM)))
 					
 	write.table(treeMetric,paste0(tableP,"\\treeSummary.csv"),sep=",", row.names=FALSE)
 }
