@@ -554,6 +554,19 @@ Eday$T.n <- EdayLl$x
 Eday$T.se <- Eday$T.sd/sqrt(Eday$T.n)
 
 
+#compare Eday where there are the most days together in 2016
+Edaysub1 <- Eday[Eday$doy<=225&Eday$year==2016,]
+aggregate(Edaysub1$T.L.day, by=list(Edaysub1$site),FUN="mean")
+aggregate(Edaysub1$T.L.day, by=list(Edaysub1$site),FUN="min")
+aggregate(Edaysub1$T.L.day, by=list(Edaysub1$site),FUN="max")
+
+aggregate(Edaysub1$T.L.day, by=list(Edaysub1$site),FUN="sd")$x/aggregate(Edaysub1$T.L.day, by=list(Edaysub1$site),FUN="length")$x
+Edaysub2 <- Eday[Eday$doy<=175&Eday$year==2017,]
+aggregate(Edaysub2$T.L.day, by=list(Edaysub2$site),FUN="mean")
+aggregate(Edaysub2$T.L.day, by=list(Edaysub2$site),FUN="min")
+aggregate(Edaysub2$T.L.day, by=list(Edaysub2$site),FUN="max")
+aggregate(Edaysub2$T.L.day, by=list(Edaysub2$site),FUN="sd")$x/aggregate(Edaysub2$T.L.day, by=list(Edaysub2$site),FUN="length")$x
+
 #################################################################
 ####calculate daily gc                                    #######
 #################################################################
@@ -606,8 +619,9 @@ gsDave <- na.omit(gsDave)
 maxD <- aggregate(datAA$D, by=list(datAA$doy, datAA$year,datAA$site),FUN="max")
 colnames(maxD) <- c("doy","year","site","maxD")
 
-
-
+gsSub1 <- gsDave[gsDave$doy<=225&gsDave$year==2016,]
+aggregate(gsSub1$gc.mmol.s,by=list(gsSub1$stand),FUN="mean")
+aggregate(gsSub1$gc.mmol.s,by=list(gsSub1$stand),FUN="sd")$x/aggregate(gsSub1$gc.mmol.s,by=list(gsSub1$stand),FUN="length")$x
 ######## make plots
 lwl<-55
 lhl<-45
