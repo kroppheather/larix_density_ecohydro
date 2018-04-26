@@ -709,7 +709,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	legend(216.65,.016,c(expression(paste(italic(T)," low ")),
 					expression(paste(italic(T)," high "))),pch=15,
 					col=c(col1,col2), cex=lgx,bty="n")
-	text(218.9,0.014,"a",cex=tx)
+	text(218.8,0.01375,"(a)",cex=tx)
 	box(which="plot", lwd=plw)
 
 #T 2016				
@@ -725,7 +725,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		Eday$doy[Eday$year==2016],
 		Eday$T.L.day[Eday$year==2016]+Eday$T.se[Eday$year==2016],
 		code=0, lwd=alw, col=acol)	
-	text(244,0.235,"b",cex=tx, lwd=plw)
+	text(242,0.23,"(b)",cex=tx, lwd=plw)
 	box(which="plot", lwd=plw)
 	
 #T 2017				
@@ -752,7 +752,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 					expression(paste(italic(T[day])," high"))),pch=19,
 					col=c(col1,col2), cex=lgx,bty="n")
 	box(which="plot", lwd=plw)	
-	text(228,0.235,"c",cex=tx)
+	text(226,0.23,"(c)",cex=tx)
 	
 				
 #gc 2016				
@@ -784,11 +784,11 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	mtext(seq(ylr2,yhr2-10, by=10), at=seq(ylr2,yhr2-10, by=10), side=2, line=5, cex=mx, las=2)
 		mtext("Canopy stomatal", side=2,cex=lx,line=75)
 	mtext("conductance", side=2,cex=lx,line=50)
-	mtext(expression(paste("(",italic(T[day]),", mmol m"^"-2","s"^"-1",")")), side=2,cex=lx,line=25)			
+	mtext(expression(paste("(",italic(g[c]),", mmol m"^"-2","s"^"-1",")")), side=2,cex=lx,line=25)			
 	legend(216.65,84,c(expression(paste(italic(g[c])," low ")),
 					expression(paste(italic(g[c])," high "))),pch=15,
 					col=c(col1,col2), cex=lgx,bty="n")
-	text(218.9,75,"d",cex=tx)
+	text(218.8,73,"(d)",cex=tx)
 	box(which="plot", lwd=plw)
 #gc 2016				
 	par(mai=c(0,0,0,0))
@@ -804,7 +804,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		gsDave$gc.mmol.s[gsDave$year==2016]+gsDave$se[gsDave$year==2016],
 		code=0, lwd=alw, col=acol)	
 	box(which="plot", lwd=plw)
-	text(244,75,"e",cex=tx)
+	text(242,73,"(e)",cex=tx)
 #gc 2017				
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n", xlim=c(xl17b-1,xh17b+2), ylim=c(ylr5,yhr5), 
@@ -828,7 +828,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 	legend(170,84,c(expression(paste(italic(g[c])," average low" )),
 					expression(paste(italic(g[c])," average high "))),pch=19,
 					col=c(col1,col2), cex=lgx,bty="n")	
-	text(228,75,"f",cex=tx)
+	text(226,73,"(f)",cex=tx)
 	box(which="plot", lwd=plw)
 #D 2016				
 	par(mai=c(0,0,0,0))
@@ -873,7 +873,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 					col=c(col1,col2,col1,col2), cex=lgx,bty="n")
 
 					
-	text(218.9,3.3,"g",cex=tx)
+	text(218.8,3.2,"(g)",cex=tx)
 	box(which="plot", lwd=plw)
 #D 2016			
 	par(mai=c(0,0,0,0))
@@ -886,7 +886,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		
 	axis(1, seq(xl16b,xh16b, by=15), rep(" ", length(seq(xl16b,xh16b, by=15))), lwd.ticks=lwt)
 	mtext(seq(xl16b,xh16b, by=15), at=seq(xl16b,xh16b, by=15), side=1, line=12, cex=mx)	
-	text(244,3.3,"h",cex=tx)
+	text(242,3.2,"(h)",cex=tx)
 	box(which="plot", lwd=plw)
 
 
@@ -910,7 +910,7 @@ ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 		legend(170,3.7,c(expression(paste(italic(D[max])," low" )),
 					expression(paste(italic(D[max])," high "))),lwd=llw,lty=5,
 					col=c(col1,col2), cex=lgx,bty="n")	
-	text(228,3.3,"i",cex=tx)				
+	text(226,3.2,"(i)",cex=tx)				
 dev.off()				
 
 
