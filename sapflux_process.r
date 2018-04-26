@@ -25,7 +25,7 @@ library(caTools)
 ## set to 0 to skip plots if they have already been generated  ##
 #################################################################
 plotcheck <- 0
-tableout <- 0
+tableout <- 1
 
 
 #################################################################
@@ -747,6 +747,9 @@ if(tableout==1){
 	canopySummHt <- datSH17[datSH17$Aspect=="N",]
 	canopySummLt$S.Lrat <- canopySummLt$leafm2/canopySummLt$sapA
 	canopySummHt$S.Lrat <- canopySummHt$leafm2/canopySummHt$sapA
+	canopySummLt$S.LratM <- canopySummLt$leafm2/(canopySummLt$sapA*(1/100)*(1/100))
+	canopySummHt$S.LratM <- canopySummHt$leafm2/(canopySummHt$sapA*(1/100)*(1/100))
+	
 	#leaf SLA relationships cm2/g: lowSLA, highSLA, mean(datSLA$SLA[datSLA$stand=="ld"])
 	treeMetric <- data.frame(site=c("LD","HD"),SLA.mean.cm.g=c(lowSLA,highSLA), SLA.sd = c(sd(datSLA$SLA[datSLA$stand=="ld"]),
 					sd(datSLA$SLA[datSLA$stand=="hd"])), SLA.n =c(length(datSLA$SLA[datSLA$stand=="ld"]),
@@ -759,7 +762,10 @@ if(tableout==1){
 					sapA.n=c(length(canopySummLt$sapA),length(canopySummHt$sapA)),
 					LSrat =c(mean(canopySummLt$S.Lrat),mean(canopySummHt$S.Lrat)),
 					LSrat.sd =c(sd(canopySummLt$S.Lrat),sd(canopySummHt$S.Lrat)),
-					LSrat.n=c(length(canopySummLt$S.Lrat),length(canopySummHt$S.Lrat)))
+					LSrat.n=c(length(canopySummLt$S.Lrat),length(canopySummHt$S.Lrat)),
+					LSratM =c(mean(canopySummLt$S.LratM),mean(canopySummHt$S.LratM)),
+					LSratM.sd =c(sd(canopySummLt$S.LratM),sd(canopySummHt$S.LratM)),
+					LSratM.n=c(length(canopySummLt$S.LratM),length(canopySummHt$S.LratM)),)
 					
 	write.table(treeMetric,paste0(tableP,"\\treeSummary.csv"),sep=",", row.names=FALSE)
 }
