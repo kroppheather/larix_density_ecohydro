@@ -1456,7 +1456,7 @@ ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 	mtext("Observed canopy stomatal", side=1, cex=lx, line=7)
 	mtext(expression(paste("conductance(",italic(g[c]),", mmol m"^"-2","s"^"-1",")"))
 			, side=1, cex=lx, line=12)						
-	text(2,67, "(a)", cex=tx)
+	text(3,66.5, "(a)", cex=tx)
 	box(which="plot")
 	
 	
@@ -1484,7 +1484,7 @@ ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 		mtext("Predicted root biomass", side=4, cex=lx, line=7)
 	mtext(expression(paste("(",hat(italic(R[b])),",mg cm"^"-3",")"))
 			, side=4, cex=lx, line=12)		
-		text(0,12, "(b)", cex=tx)
+		text(.3,11.9, "(b)", cex=tx)
 dev.off()
 
 
@@ -1644,6 +1644,7 @@ jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, uni
 	mtext(seq(yl1,yh1,by=.5), at=seq(yl1,yh1,by=.5),side=2,line=4,cex=mx,las=2)
 	mtext("Sapwood thickness", side=2,line=25,cex=lx)
 	mtext("(sw, cm)", side=2,line=15,cex=lx)
+	mtext("low density",side=3,line=5,cex=lx)
 	box(which="plot")
 #hd swt	
 	par(mai=c(0,0,0,0))
@@ -1657,6 +1658,7 @@ jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, uni
 	mtext(seq(yl1,yh1,by=.5), at=seq(yl1,yh1,by=.5),side=4,line=4,cex=mx,las=2)
 	mtext("Sapwood thickness", side=4,line=20,cex=lx)
 	mtext("(sw, cm)", side=4,line=30,cex=lx)
+	mtext("high density",side=3,line=5,cex=lx)
 	box(which="plot")	
 
 
@@ -1666,7 +1668,7 @@ jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, uni
 			xaxs="i",yaxs="i")
 	points(datSWAl$DBH[datSWAl$stand=="LDF2"],datSWAl$Bark[datSWAl$stand=="LDF2"], pch=19,cex=px)
 	abline(lmBL, lwd=llw)
-	text(15, 2.5, paste("bw =", round(coefficients(lmBL)[1],2),"+ dbh",round(coefficients(lmBL)[2],2)), cex=tx)
+	text(15, 1.5, paste("bw =", round(coefficients(lmBL)[1],2),"+ dbh",round(coefficients(lmBL)[2],2)), cex=tx)
 	axis(2, seq(yl2,yh2-.5,by=.5),rep(" ",length(seq(yl2,yh2-.5,by=.5))), lwd.ticks=ltw)
 	mtext(seq(yl2,yh2-.5,by=.5), at=seq(yl2,yh2-.5,by=.5),side=2,line=4,cex=mx,las=2)
 		mtext("Bark thickness", side=2,line=25,cex=lx)
@@ -1677,7 +1679,7 @@ jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, uni
 	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl2,yh2),axes=FALSE,xlab=" ", ylab=" ",
 			xaxs="i",yaxs="i")
 	points(datSWAl$DBH[datSWAl$stand=="DAV"],datSWAl$Bark[datSWAl$stand=="DAV"], pch=19,cex=px)
-	text(15, 2.5, paste("bw =", round(coefficients(lmBH)[1],2),"+ dbh",round(coefficients(lmBH)[2],2)), cex=tx)
+	text(15, 1.5, paste("bw =", round(coefficients(lmBH)[1],2),"+ dbh",round(coefficients(lmBH)[2],2)), cex=tx)
 	
 	abline(lmBH, lwd=llw)
 	axis(4, seq(yl2,yh2-.5,by=.5),rep(" ",length(seq(yl2,yh2-.5,by=.5))), lwd.ticks=ltw)
@@ -1695,13 +1697,13 @@ par(mai=c(0,0,0,0))
 			pch=19,cex=px)
 	points(seq(0,30, by=.1), leaf.bio(seq(0,30, by=.1), summary(nlsLow)$coefficients[1,1],
 				summary(nlsLow)$coefficients[2,1]), type="l", lwd=llw)			
-	text(15,4000, expression(paste("lm = 150.50"^"1.00dbh",)), cex=tx)
+	text(15,4000, expression(paste("lm = 150.50*dbh"^"1.00",)), cex=tx)
 	
 	axis(2, seq(yl3,yh3-500,by=500),rep(" ",length(seq(yl3,yh3-500,by=500))), lwd.ticks=ltw)
 	mtext(seq(yl3,yh3-500,by=500)/1000, at=seq(yl3,yh3-500,by=500),side=2,line=4,cex=mx,las=2)
 	mtext("Canopy leaf", side=2,line=25,cex=lx)
 	mtext("mass (lm, kg)", side=2,line=15,cex=lx)
-	mtext("Diameter at breast height (cm)", side=1, outer=TRUE, cex=lx, line=-5)
+	mtext("Diameter at breast height (dbh, cm)", side=1, outer=TRUE, cex=lx, line=-5)
 	
 	axis(1, seq(dl1,dh1-5, by=5), rep(" ", length(seq(dl1,dh1-5, by=5))), lwd.ticks=ltw)
 	mtext(seq(dl1,dh1-5, by=5), at=seq(dl1,dh1-5, by=5), side=1,line=5,cex=mx)
@@ -1721,7 +1723,7 @@ par(mai=c(0,0,0,0))
 	mtext("mass (lm, kg)", side=4,line=30,cex=lx)
 	axis(1, seq(dl1,dh1-5, by=5), rep(" ", length(seq(dl1,dh1-5, by=5))), lwd.ticks=ltw)
 	mtext(seq(dl1,dh1-5, by=5), at=seq(dl1,dh1-5, by=5), side=1,line=5,cex=mx)
-	text(15,4000, expression(paste("lm = 7.57"^"1.73dbh",)), cex=tx)
+	text(15,4000, expression(paste("lm = 7.57dbh"^"1.73",)), cex=tx)
 	
 	box(which="plot")
 			
