@@ -157,8 +157,8 @@ xh17 <- 226
 col1 <- rgb(51/255,51/255,51/255)
 
 #high
-col2 <- rgb(191/255,191/255,191/255)
-precipc <- rgb(100/255,100/255,100/255)
+col2 <- rgb(205/255,79/255,57/255)
+precipc <- rgb(65/255,105/255,225/255)
 lty1 <- 3
 lty2 <- 3
 lty3 <- 4
@@ -661,7 +661,10 @@ xh17b <- 230
 col1 <- rgb(51/255,51/255,51/255,.8)
 
 #high
-col2 <- rgb(191/255,191/255,191/255)
+col2 <- rgb(205/255,79/255,57/255)
+
+
+
 #sizes
 ptcx <- 17
 llw <- 25
@@ -979,10 +982,12 @@ yuH<-100
 yuL<-100
 xH<-11
 medSeq<-seq(0,11.5,length.out=50)
-rootpoly <- rgb(80/255,80/255,80/255,.8)
+rootpoly <- rgb(139/255,90/255,43/255,.8)
 meanlw <- 4.5
 ptcx <- 3
-icepoly <- rgb(200/255,200/255,200/255,.2)
+icepoly <- rgb(65/255,105/255,225/255,.1)
+
+
 lgcx <-3
 txcx <- 5
 mcx <- 3.5
@@ -1108,7 +1113,7 @@ points(datR$bio.mg.cm3[datR$site=="l"&datR$period==1],datR$depth.midpoint[datR$s
 polygon(c(.5,10.5,10.5,.5),c(35,35,85,85), border=NA, col="white")		
 text(5,40,"low density", cex=txcx)		
 legend(.5,40,c("observed biomass","mean biomass","95% mean CI","median rooting depth",
-				"95% CI median depth", "average thaw depth"), pch=c(19,NA,15,NA,15,22),lty=c(NA,meanlw ,NA,3,NA,NA),
+				"95% CI median depth", "average thaw depth"), pch=c(19,NA,15,NA,15,22),lty=c(NA,1 ,NA,3,NA,NA),
 				lwd=c(NA,2,NA,2,NA,NA),col=c("black","black",rootpoly,
 					"black","grey75",icepoly),pt.bg=c(NA,NA,NA,NA,NA,icepoly),bty="n",cex=lgcx)
 box(which="plot")
@@ -1314,11 +1319,11 @@ mcx <- 4
 ltcx <- 3
 #order is moss, organic, mineral
 #start with hd in each layer
-lcol <- "grey50"
-hcol <- "grey75"
+lcol <- rgb(51/255,51/255,51/255)
+hcol <- rgb(205/255,79/255,57/255)
 layR$pcol<-rep(c(hcol,lcol), each=3)
-mgcol <- "grey85"
-mbcol <- "grey50"
+mgcol <- rgb(13/255,186/255,134/255)
+mbcol <- rgb(139/255,90/255,43/255)
 ocol <- "grey30"
 
 lda <- 3
@@ -1509,7 +1514,8 @@ yh <- 1
 #low
 col1 <- rgb(51/255,51/255,51/255)
 #high
-col2 <- rgb(191/255,191/255,191/255)
+col2 <- rgb(205/255,79/255,57/255)
+
 lwt <- 3
 mx <- 4
 lx <- 5
