@@ -196,7 +196,7 @@ pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
 
-jpeg(paste0(plotDI,"\\micro_met.jpg"), width=3700, height=3400, units="px",quality=100)
+tiff(paste0(plotDI,"\\figure_2.tiff"), width=3700, height=3400, units="px")
 ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				height=rep(lcm(lhl),6))
 
@@ -677,7 +677,7 @@ lwt <- 12
 lgx <- 15
 tx <- 21
 plw <- 5
-jpeg(paste0(plotDI,"\\T_gc.jpg"), width=7500, height=5000, units="px",quality=100)
+tiff(paste0(plotDI,"\\figure_3.tiff"), width=7500, height=5000, units="px")
 ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 				height=rep(lcm(lhl),9))
 #T 2016				
@@ -966,7 +966,7 @@ for(i in 1:7){
 lw<-12
 lh<-15
 
-jpeg(paste0(plotDI,"\\vertical_root.jpg"), width=1600, height=1050, units="px",quality=100)
+tiff(paste0(plotDI,"\\figure_4.tiff"), width=1600, height=1050, units="px")
 ab<-layout(matrix(seq(1,8), ncol=4, byrow=TRUE), width=c(lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw)),
 				height=c(lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh)))
 				
@@ -1331,7 +1331,7 @@ lda <- 3
 wd<-18
 hd<-18
 tx <- 4
-jpeg(paste0(plotDI,"\\root_type.jpg"), width=1600, height=1050, units="px",quality=100)
+tiff(paste0(plotDI,"\\figure_6.tiff"), width=1600, height=1050, units="px")
 ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 layout.show(ac)
 
@@ -1406,7 +1406,7 @@ dev.off()
 
 
 #####################################################################
-####  figure 6. goodness of fit figure                           ####
+####  figure 5. goodness of fit figure                           ####
 #####################################################################
 
 
@@ -1437,7 +1437,7 @@ tx <- 4
 #setup plot layout
 wd<-22
 hd<-22
-jpeg(paste0(plotDI,"\\goodness_of_fit.jpg"), width=1800, height=1200, units="px",quality=100)
+tiff(paste0(plotDI,"\\figure_5.tiff"), width=1800, height=1200, units="px")
 ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 	layout.show(ac)
 	par(mai=c(0,0,0,0))
@@ -1500,7 +1500,7 @@ dev.off()
 
 
 #####################################################################
-####  figure 6. precipitation weights                            ####
+####  figure 7. precipitation weights                            ####
 #####################################################################
 
 wpr <- datC[datC$parms2=="wpr",]
@@ -1526,7 +1526,7 @@ xas <- c(1.5,4,6.5,9,11.5,14)
 lgx <- 4
 wd<-35
 hd<-25
-jpeg(paste0(plotDI,"\\precipitation.jpg"), width=2000, height=1100, units="px",quality=100)
+tiff(paste0(plotDI,"\\figure_7.tiff"), width=2000, height=1100, units="px")
 	ac<-layout(matrix(seq(1),ncol=1), width=rep(lcm(wd),1),height=rep(lcm(hd),1))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n",xlim=c(xl,xh),ylim=c(yl,yh), axes=FALSE, 
