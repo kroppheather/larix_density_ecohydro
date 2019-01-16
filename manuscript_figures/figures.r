@@ -25,7 +25,7 @@ source("c:\\Users\\hkropp\\Documents\\GitHub\\larix_density_ecohydro\\sapflux_pr
 #plyr, lubridate,caTools
 
 #set the plotting directory
-plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\manuscript_figures"
+plotDI <- "c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\manuscript_figures_revision"
 #################################################################
 ####read in thaw depth data                               #######
 #################################################################
@@ -102,6 +102,7 @@ datSWAl <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual
 datAllom <- read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\individual_data\\larix_allom.csv")
 #stand day
 datStandD<-read.csv("c:\\Users\\hkropp\\Google Drive\\Viper_Ecohydro\\gc_model\\run42\\out\\standDay.csv")
+
 #####################################################################
 ####  figure 2. Micromet figure                                  ####
 #####################################################################
@@ -145,46 +146,34 @@ ylr1 <- 0
 yhr1 <- 30
 #increments .5
 ylr2 <- 0
-yhr2 <- 3.5
-#increments of 10
-ylr3 <- 0
-yhr3 <- 83
+yhr2 <- 2
+
 xl16 <- 181
 xh16 <- 245
 xl17 <- 152
 xh17 <- 226
 #low
-col1 <- rgb(51/255,51/255,51/255)
+col1 <- rgb(51/255,51/255,51/255,.85)
 
 #high
-col2 <- rgb(205/255,79/255,57/255)
-precipc <- rgb(65/255,105/255,225/255)
+col2 <- rgb(205/255,79/255,57/255,.85)
+precipc <- rgb(65/255,105/255,225/255,.35)
 lty1 <- 3
 lty2 <- 3
 lty3 <- 4
 lty4 <- 4
 prec.scale <- yhr1/40
-#increments 0.05
-SWmax <- 0.5
-SW.scale <- yhr2/SWmax
-#increments of 3
-TSmax <- 15
-TS.scale <- yhr3/TSmax
+
 
 mx <- 6
 lx <- 8
 lgx <- 10
-tx <- 14
+tx <- 10
 
 tseq <- seq(0,yhr1, by=5)
 prseqL <- seq(0,40, by=10)
 prseqA <- prseqL*prec.scale
 Dseq <- seq(0,yhr2-0.5, by=.5)
-SWseqL <- seq(0,.45,by=.05)
-SWseqA <- SWseqL*SW.scale
-TDseq <- seq(0,yhr3-13,by=10)
-TSseqL <- seq(0,TSmax-3,by=3)
-TSseqA <- TS.scale*TSseqL
 tw <- 8
 lw <- 12
 
@@ -196,9 +185,9 @@ pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
 
-tiff(paste0(plotDI,"\\figure_2.tiff"), width=3700, height=3400, units="px")
-ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
-				height=rep(lcm(lhl),6))
+tiff(paste0(plotDI,"\\figure_2.tiff"), width=3900, height=2500, units="px")
+ab<-layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(lwl),4),
+				height=rep(lcm(lhl),4))
 
 #Tair P 2016
 	par(mai=c(0,0,0,0))
@@ -258,26 +247,15 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				datTA$D[datTA$site=="ld"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", lwd=lw, col=col1)
 			points(datTA$doy[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16],
 				datTA$D[datTA$site=="hd"&datTA$year==2016&datTA$doy>xl16&datTA$doy<xh16], type="l", lwd=lw, col=col2)
-			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl16&datSoilW$doy<xh16],
-				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
-				,type="l",lwd=lw,col=col1,lty=lty1)
-			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl16&datSoilW$doy<xh16],
-				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
-				,type="l",lwd=lw,col=col2,lty=lty2)
-				
-			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl16&datSoilW$doy<xh16],
-				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
-				,type="l",lwd=lw,col=col1,lty=lty3)
-			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16],
-				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16]*SW.scale
-				,type="l",lwd=lw,col=col2,lty=lty4)	
+			
 		axis(2, Dseq, rep(" ",length(Dseq)), lwd.ticks=tw)
 		mtext(Dseq, at=Dseq, cex=mx, line=5, side=2, las=2)	
-
+		axis(1, x16seq, rep(" ",length(x16seq)), lwd.ticks=tw)
+		mtext(x16seq, at=x16seq, cex=mx, line=7, side=1)	
 	mtext("Vapor pressure", 	cex=lx, line=32,side=2)
 	mtext( expression(paste("deficit(",italic(D),", kPa )")), 	cex=lx, line=18,side=2)		
 	box(which="plot")	
-	text(242,3.3,"(c)",cex=tx)
+	text(242,1.89,"(c)",cex=tx)
 #M D 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -286,58 +264,223 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 			points(datTA$doy[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17],
 				datTA$D[datTA$site=="hd"&datTA$year==2017&datTA$doy>xl17&datTA$doy<xh17], type="l", lwd=lw, col=col2)
 				
+			
+	box(which="plot")
+	
+	legend(149,2, c(expression(paste("low", italic(D))),expression(paste("high", italic(D)))),
+						,lwd=c(lw,lw),  col=c(col1,col2),bty="n",cex=lgx)
+	
+
+	text(222.5,1.89,"(d)",cex=tx)	
+
+		axis(1, x17seq, rep(" ",length(x17seq)), lwd.ticks=tw)
+		mtext(x17seq, at=x17seq, cex=mx, line=7, side=1)	
+	
+	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-3)
+				
+dev.off()
+
+#####################################################################
+####  figure 4. Belowground Micromet figure                      ####
+#####################################################################
+#soil moisture data
+datSoilW <- aggregate(datSW2$vwc.5TM, by=list(datSW2$doy,datSW2$year,datSW2$sensorZ,datSW2$site),FUN="mean") 
+colnames(datSoilW) <- c("doy","year","depth","site","SW")
+
+datSsh2 <- aggregate(datStemp2$tempS.5TM,
+		by=list(datStemp2$doy,
+				datStemp2$year,
+				datStemp2$site,
+				datStemp2$sensorZ),FUN="mean",na.action=na.omit)
+colnames(datSsh2) <- c("doy","year","site","depthD","T.sD")
+
+datTs50 <- datStemp[datStemp$sensorZ==50,]
+datTs50d <- aggregate(datTs50$tempS.GS3,by=list(datTs50$doy,datTs50$year,datTs50$site), FUN="mean",na.action=na.omit)
+colnames(datTs50d) <- c("doy","year","site","Ts50")
+#182 20 cm hd
+#160 10cm hd
+# 161 18 cm ld
+#148 8 cm ld
+
+datSoilW$SW <- ifelse(datSoilW$doy<182&datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20, NA,
+			ifelse(datSoilW$doy<160&datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10,NA,
+			ifelse(datSoilW$doy<161&datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18,NA,
+			ifelse(datSoilW$doy<160&datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8,NA,datSoilW$SW))))
+
+lwl<-50
+lhl<-35
+
+#increments of 5
+ylr1 <- 0
+yhr1 <- 12
+#increments .5
+ylr2 <- 0
+yhr2 <- .45
+#increments of 10
+ylr3 <- 0
+yhr3 <- 85
+xl16 <- 181
+xh16 <- 245
+xl17 <- 152
+xh17 <- 226
+#low
+col1 <- rgb(51/255,51/255,51/255,.85)
+
+#high
+col2 <- rgb(205/255,79/255,57/255,.85)
+
+lty1 <- 1
+lty2 <- 1
+lty3 <- 3
+lty4 <- 3
+
+
+mx <- 6
+lx <- 8
+lgx <- 10
+tx <- 14
+
+
+SWseqL <- seq(0,yhr2-0.05,by=.05)
+
+TDseq <- seq(0,yhr3-13,by=10)
+TSseqL <- seq(0,yhr1,by=3)
+
+tw <- 8
+lw <- 12
+
+x16seq <- seq(185,245, by=10)
+x17seq <- seq(160,220, by=10)
+#subset precip
+pr2016 <- datAirP[datAirP$year==2016&datAirP$doy>=xl16&datAirP$doy<xh16,]
+pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
+
+
+
+tiff(paste0(plotDI,"\\figure_4.tiff"), width=3900, height=3400, units="px")
+ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
+				height=rep(lcm(lhl),6))
+
+#Tsoil 2016
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr1,yhr1), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+		
+		points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl16&datSsh2$doy<xh16],
+				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl16&datSsh2$doy<xh16]
+				,lwd=lw,col=col1,lty=lty1, type="l")
+			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16],
+				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16]
+				,lwd=lw,col=col2,lty=lty2, type="l")	
+		
+					points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="ld"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="ld"],
+				lwd=lw,col=col1,lty=lty3,type="l")
+			points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="hd"],
+				lwd=lw,col=col2,lty=lty4,type="l")	
+				
+
+	axis(2, TSseqL, rep(" ",length(TSseqL)), lwd.ticks=tw)
+		mtext(TSseqL, at=TSseqL, cex=mx, line=5, side=2, las=2)
+				
+	mtext("Soil temperature", 	cex=lx, line=36,side=2)
+	mtext(expression(paste("(",italic(T[s]),",",degree,"C )")), 	cex=lx, line=20,side=2)
+	text(242,11,"(a)",cex=tx)
+	box(which="plot")			
+	
+#Tsoil 2017
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr1,yhr1), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			
+			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl17&datSsh2$doy<xh17],
+				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl17&datSsh2$doy<xh17]
+				,lwd=lw,col=col1,lty=lty1, type="l")
+			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17],
+				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17]
+				,lwd=lw,col=col2,lty=lty2, type="l")	
+			points(datTs50d$doy[datTs50d$year==2017&datTs50d$site=="ld"],datTs50d$Ts50[datTs50d$year==2017&datTs50d$site=="ld"],
+				lwd=lw,col=col1,lty=lty3,type="l")
+			points(datTs50d$doy[datTs50d$year==2017&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2017&datTs50d$site=="hd"],
+				lwd=lw,col=col2,lty=lty4,type="l")		
+		
+
+	legend(151,12.2, c(
+						expression(paste("organic low", italic(T[s]))),expression(paste("organic high", italic(T[s]))),
+						expression(paste("50cm low", italic(T[s]))),expression(paste("50cm high", italic(T[s])))
+						),
+						lty=c(lty1,lty2,lty3,lty4),lwd=c(lw,lw,lw,lw), 
+						col=c(col1,col2,col1,col2),bty="n",cex=lgx)
+						
+
+	text(222.5,11,"(b)",cex=tx)	
+	box(which="plot")
+#M  2016
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl16&datSoilW$doy<xh16]
+				,type="l",lwd=lw,col=col1,lty=lty1)
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl16&datSoilW$doy<xh16]
+				,type="l",lwd=lw,col=col2,lty=lty2)
+				
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl16&datSoilW$doy<xh16]
+				,type="l",lwd=lw,col=col1,lty=lty3)
+			points(datSoilW$doy[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16],
+				datSoilW$SW[datSoilW$year==2016&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl16&datSoilW$doy<xh16]
+				,type="l",lwd=lw,col=col2,lty=lty4)	
+	
+		axis(2, SWseqL, rep(" ",length(SWseqL)), lwd.ticks=tw)
+		mtext(SWseqL, at=SWseqL, cex=mx, line=5, side=2, las=2)	
+	mtext("Soil moisture", 	cex=lx, line=36,side=2)
+	mtext( expression(paste("(",italic(VWC),", m"^"3"~"m"^"-3"~")")), 	cex=lx, line=20,side=2)		
+	box(which="plot")	
+	text(242,.41,"(c)",cex=tx)
+#M  2017
+	par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr2,yhr2), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+			
 			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl17&datSoilW$doy<xh17],
-				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==8&datSoilW$doy>=xl17&datSoilW$doy<xh17]
 				,type="l",lwd=lw,col=col1,lty=lty1)
 			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl17&datSoilW$doy<xh17],
-				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==10&datSoilW$doy>=xl17&datSoilW$doy<xh17]
 				,type="l",lwd=lw,col=col2,lty=lty2)	
 			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl17&datSoilW$doy<xh17],
-				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="ld"&datSoilW$depth==18&datSoilW$doy>=xl17&datSoilW$doy<xh17]
 				,type="l",lwd=lw,col=col1,lty=lty3)
 			points(datSoilW$doy[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17],
-				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17]*SW.scale
+				datSoilW$SW[datSoilW$year==2017&datSoilW$site=="hd"&datSoilW$depth==20&datSoilW$doy>=xl17&datSoilW$doy<xh17]
 				,type="l",lwd=lw,col=col2,lty=lty4)					
-		axis(4, SWseqA, rep(" ",length(SWseqA)), lwd.ticks=tw)
-		mtext(SWseqL, at=SWseqA, cex=mx, line=5, side=4, las=2)			
+		
 	box(which="plot")
-	mtext("Soil moisture", 	cex=lx, line=28,side=4)
-	mtext(expression(paste("(",italic(M),", m"^"3"~"m"^"-3"~")")), 	cex=lx, line=42,side=4)
-	legend(149,3.7, c(expression(paste("low", italic(D))),expression(paste("low 8cm ", italic(M))),
+
+	legend(149,.13, c(expression(paste("low 8cm ", italic(M))),
 						expression(paste("low 18cm ", italic(M)))),
-						lty=c(1,lty1,lty3),lwd=c(lw,lw,lw),  col=c(col1,col1,col1),bty="n",cex=lgx)
+						lty=c(lty1,lty3),lwd=c(lw,lw),  col=c(col1,col1),bty="n",cex=lgx)
 	
-	legend(184,3.7, c(expression(paste("high", italic(D))),expression(paste("high 10cm ", italic(M))),
+	legend(184,.13, c(expression(paste("high 10cm ", italic(M))),
 						expression(paste("high 20cm ", italic(M)))),
-						lty=c(1,lty2,lty4),lwd=c(lw,lw,lw),  col=c(col2,col2,col2),bty="n",cex=lgx)	
-	text(222.5,3.3,"(d)",cex=tx)	
-#TD TS 2016
+						lty=c(lty2,lty4),lwd=c(lw,lw),  col=c(col2,col2),bty="n",cex=lgx)	
+	text(222.5,.41,"(d)",cex=tx)	
+#TD  2016
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl16-1,xh16+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
+				
 			points(TDall$doy[TDall$site=="ld"&TDall$year==2016],
 				TDall$TDday[TDall$site=="ld"&TDall$year==2016], type="l", lwd=lw, col=col1)
 			points(TDall$doy[TDall$site=="hd"&TDall$year==2016],
 				TDall$TDday[TDall$site=="hd"&TDall$year==2016], type="l", lwd=lw, col=col2)
-				
-			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl16&datSsh2$doy<xh16],
-				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl16&datSsh2$doy<xh16]*TS.scale
-				,lwd=lw,col=col1,lty=lty1, type="l")
-			points(datSsh2$doy[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16],
-				datSsh2$T.sD[datSsh2$year==2016&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl16&datSsh2$doy<xh16]*TS.scale
-				,lwd=lw,col=col2,lty=lty2, type="l")	
 			
 		axis(2, TDseq, rep(" ",length(TDseq)), lwd.ticks=tw)
 		mtext(TDseq, at=TDseq, cex=mx, line=5, side=2, las=2)	
-	mtext("Permafrost thaw", 	cex=lx, line=32,side=2)
-	mtext(expression(paste("depth (",italic(TD),", cm )")), 	cex=lx, line=18,side=2)	
+	mtext("Permafrost thaw", 	cex=lx, line=36,side=2)
+	mtext(expression(paste("depth (",italic(TD),", cm )")), 	cex=lx, line=20,side=2)	
 		axis(1, x16seq, rep(" ",length(x16seq)), lwd.ticks=tw)
 		mtext(x16seq, at=x16seq, cex=mx, line=7, side=1)	
-				points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="ld"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="ld"]*TS.scale,
-				lwd=lw,col=col1,lty=lty3,type="l")
-			points(datTs50d$doy[datTs50d$year==2016&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2016&datTs50d$site=="hd"]*TS.scale,
-				lwd=lw,col=col2,lty=lty4,type="l")			
+	
 	box(which="plot")
-	text(242,78,"(e)",cex=tx)
+	text(242,79,"(e)",cex=tx)
 #TD TS 2017
 	par(mai=c(0,0,0,0))
 		plot(c(0,1),c(0,1), type="n", xlim=c(xl17-1,xh17+1), ylim=c(ylr3,yhr3), xlab=" ", ylab=" ", xaxs="i",yaxs="i", axes=FALSE)
@@ -345,37 +488,20 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				TDall$TDday[TDall$site=="ld"&TDall$year==2017], type="l", lwd=lw, col=col1)
 			points(TDall$doy[TDall$site=="hd"&TDall$year==2017],
 				TDall$TDday[TDall$site=="hd"&TDall$year==2017], type="l", lwd=lw, col=col2)
-			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl17&datSsh2$doy<xh17],
-				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="ld"&datSsh2$depth==8&datSsh2$doy>=xl17&datSsh2$doy<xh17]*TS.scale
-				,lwd=lw,col=col1,lty=lty1, type="l")
-			points(datSsh2$doy[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17],
-				datSsh2$T.sD[datSsh2$year==2017&datSsh2$site=="hd"&datSsh2$depth==10&datSsh2$doy>=xl17&datSsh2$doy<xh17]*TS.scale
-				,lwd=lw,col=col2,lty=lty2, type="l")	
-			points(datTs50d$doy[datTs50d$year==2017&datTs50d$site=="ld"],datTs50d$Ts50[datTs50d$year==2017&datTs50d$site=="ld"]*TS.scale,
-				lwd=lw,col=col1,lty=lty3,type="l")
-			points(datTs50d$doy[datTs50d$year==2017&datTs50d$site=="hd"],datTs50d$Ts50[datTs50d$year==2017&datTs50d$site=="hd"]*TS.scale,
-				lwd=lw,col=col2,lty=lty4,type="l")		
-		axis(4, TSseqA, rep(" ",length(TSseqA)), lwd.ticks=tw)
-		mtext(TSseqL, at=TSseqA, cex=mx, line=5, side=4, las=2)
-		mtext("Soil temperature", 	cex=lx, line=28,side=4)
-		mtext(expression(paste("( ",italic(T[s]),",", degree,"C )")), 	cex=lx, line=42,side=4)
+
+		
 		axis(1, x17seq, rep(" ",length(x17seq)), lwd.ticks=tw)
 		mtext(x17seq, at=x17seq, cex=mx, line=7, side=1)	
 	box(which="plot")	
-	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-7)
-	legend(151,84, c(expression(paste("low", italic(TD))),expression(paste("high", italic(TD))),
-						expression(paste("organic low", italic(T[s]))),expression(paste("organic high", italic(T[s])))
+	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-6)
+	legend(151,84, c(expression(paste("low", italic(TD))),expression(paste("high", italic(TD)))
 						),
-						lty=c(1,1,lty1,lty2),lwd=c(lw,lw,lw,lw), pch=c(NA,NA,NA,NA),
-						col=c(col1,col2,col1,col2),bty="n",cex=lgx)
+						lty=c(1,1),lwd=c(lw,lw), 
+						col=c(col1,col2),bty="n",cex=lgx)
 						
-	legend(179,84,	c(expression(paste("50cm low", italic(T[s]))),expression(paste("50cm high", italic(T[s])))),
-			lty=c(lty3,lty4),lwd=c(lw,lw),pch=c(NA,NA),col=c(col1,col2),bty="n",cex=lgx)
-	text(222.5,78,"(f)",cex=tx)					
+
+	text(222.5,79,"(f)",cex=tx)					
 dev.off()
-
-
-
 
 ###############################End micromet             ########################################################################
 ################################################################################################################################
@@ -658,10 +784,10 @@ xh16b <- 245
 xl17b <- 155
 xh17b <- 230
 #low
-col1 <- rgb(51/255,51/255,51/255,.8)
+col1 <- rgb(51/255,51/255,51/255,.85)
 
 #high
-col2 <- rgb(205/255,79/255,57/255)
+col2 <- rgb(205/255,79/255,57/255,.85)
 
 
 
@@ -930,7 +1056,7 @@ dev.off()
 
 	
 #####################################################################
-####  figure 4. Vertical root profile                            ####
+####  figure 5. Vertical root profile                            ####
 #####################################################################
 
 #organize datE
@@ -966,7 +1092,7 @@ for(i in 1:7){
 lw<-12
 lh<-15
 
-tiff(paste0(plotDI,"\\figure_4.tiff"), width=1600, height=1050, units="px")
+tiff(paste0(plotDI,"\\figure_5.tiff"), width=1600, height=1050, units="px")
 ab<-layout(matrix(seq(1,8), ncol=4, byrow=TRUE), width=c(lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw)),
 				height=c(lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh)))
 				
@@ -1319,8 +1445,8 @@ mcx <- 4
 ltcx <- 3
 #order is moss, organic, mineral
 #start with hd in each layer
-lcol <- rgb(51/255,51/255,51/255)
-hcol <- rgb(205/255,79/255,57/255)
+lcol <- rgb(51/255,51/255,51/255,.85)
+hcol <- rgb(205/255,79/255,57/255,.85)
 layR$pcol<-rep(c(hcol,lcol), each=3)
 mgcol <- rgb(13/255,186/255,134/255)
 mbcol <- rgb(139/255,90/255,43/255)
@@ -1352,7 +1478,7 @@ mtext(seq(0,7, by=1), at=seq(0,7, by=1), line=2.5,side=1,cex=ltcx)
 
 box(which="plot")
 legend(3,0,c("high density","low density"), fill=c(hcol,lcol),bty="n", cex=lgcx)
-mtext("Soil layer type", side=2, cex=mcx, line=13)
+mtext("Substrate layer type", side=2, cex=mcx, line=13)
 mtext(expression(paste("Root biomass mg cm"^"-3")), side=1, cex=mcx, line=8)
 text(layR$r.d+layR$se+.5,layR$pseq-.5,layR$sL,cex=txcx)
 text(7.4,5.6,"(a)",cex=tx)
@@ -1393,7 +1519,7 @@ plot(c(0,1),c(0,1), type="n",ylim=c(20,0),xlim=c(0,2), axes=FALSE, xlab=" ", yla
 	axis(1, c(.5,1.5), c(" ", " "), lwd.ticks=3)
 	mtext( c("high density", "low density"), at=c(.5,1.5), line=2.5,side=1,cex=ltcx)
 	
-mtext("Soil layer depth (cm)", side=4, cex=mcx, line=10)
+mtext("Substrate layer depth (cm)", side=4, cex=mcx, line=10)
 mtext("Stand", side=1, cex=mcx, line=8)
 text(1.85,18.5,"(b)",cex=tx)
 legend(.92,12,c("green moss", "brown moss", "fibric organic"), fill=c(mgcol, mbcol,ocol), bty="n", cex=lgcx)
@@ -1406,7 +1532,7 @@ dev.off()
 
 
 #####################################################################
-####  figure 5. goodness of fit figure                           ####
+####  figure 7. goodness of fit figure                           ####
 #####################################################################
 
 
@@ -1437,7 +1563,7 @@ tx <- 4
 #setup plot layout
 wd<-22
 hd<-22
-tiff(paste0(plotDI,"\\figure_5.tiff"), width=1800, height=1200, units="px")
+tiff(paste0(plotDI,"\\figure_7.tiff"), width=1800, height=1200, units="px")
 ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 	layout.show(ac)
 	par(mai=c(0,0,0,0))
@@ -1500,7 +1626,7 @@ dev.off()
 
 
 #####################################################################
-####  figure 7. precipitation weights                            ####
+####  figure 8. precipitation weights                            ####
 #####################################################################
 
 wpr <- datC[datC$parms2=="wpr",]
@@ -1512,9 +1638,9 @@ xh <- 15.5
 yl <- 0
 yh <- 1
 #low
-col1 <- rgb(51/255,51/255,51/255)
+col1 <- rgb(51/255,51/255,51/255,.85)
 #high
-col2 <- rgb(205/255,79/255,57/255)
+col2 <- rgb(205/255,79/255,57/255,.85)
 
 lwt <- 3
 mx <- 4
@@ -1526,7 +1652,7 @@ xas <- c(1.5,4,6.5,9,11.5,14)
 lgx <- 4
 wd<-35
 hd<-25
-tiff(paste0(plotDI,"\\figure_7.tiff"), width=2000, height=1100, units="px")
+tiff(paste0(plotDI,"\\figure_8.tiff"), width=2000, height=1100, units="px")
 	ac<-layout(matrix(seq(1),ncol=1), width=rep(lcm(wd),1),height=rep(lcm(hd),1))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n",xlim=c(xl,xh),ylim=c(yl,yh), axes=FALSE, 
@@ -1534,6 +1660,8 @@ tiff(paste0(plotDI,"\\figure_7.tiff"), width=2000, height=1100, units="px")
 		xaxs="i")
 	
 	abline(h=1/6, lwd=5, col="grey60", lty=3)
+	arrows(c(.5),c(1/6),c(2.5),c(1/6),lwd=10, col="white",code=0)
+	arrows(c(8),c(1/6),c(10),c(1/6),lwd=10, col="white",code=0)
 	for(i in 1:6){
 		polygon(c(xseq1[i]-.5,xseq1[i]-.5,xseq1[i]+.5,xseq1[i]+.5),
 			c(0, wpr$Mean[wpr$stand==1][i],wpr$Mean[wpr$stand==1][i],0),
@@ -1654,11 +1782,11 @@ jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, uni
 	box(which="plot")
 #hd swt	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl1,yh1),axes=FALSE,xlab=" ", ylab=" ",
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,15), ylim=c(yl1,yh1),axes=FALSE,xlab=" ", ylab=" ",
 			xaxs="i",yaxs="i")
 	points(datSWAl$DBH[datSWAl$stand=="DAV"],datSWAl$SWT[datSWAl$stand=="DAV"], pch=19,cex=px)
 	
-	text(15, 2.5, paste("sw =", round(coefficients(lmSWH)[1],2),"+ dbh",round(coefficients(lmSWH)[2],2)), cex=tx)
+	text(7, 2.5, paste("sw =", round(coefficients(lmSWH)[1],2),"+ dbh",round(coefficients(lmSWH)[2],2)), cex=tx)
 	abline(lmSWH, lwd=llw)
 	axis(4, seq(yl1,yh1,by=.5),rep(" ",length(seq(yl1,yh1,by=.5))), lwd.ticks=ltw)
 	mtext(seq(yl1,yh1,by=.5), at=seq(yl1,yh1,by=.5),side=4,line=4,cex=mx,las=2)
@@ -1682,10 +1810,10 @@ jpeg(file=paste0(plotDI,"\\allometryAppendix.jpg"), width=2000, height=2000, uni
 	box(which="plot")
 #hd bwt 
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl2,yh2),axes=FALSE,xlab=" ", ylab=" ",
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,15), ylim=c(yl2,yh2),axes=FALSE,xlab=" ", ylab=" ",
 			xaxs="i",yaxs="i")
 	points(datSWAl$DBH[datSWAl$stand=="DAV"],datSWAl$Bark[datSWAl$stand=="DAV"], pch=19,cex=px)
-	text(15, 1.5, paste("bw =", round(coefficients(lmBH)[1],2),"+ dbh",round(coefficients(lmBH)[2],2)), cex=tx)
+	text(7, 1.5, paste("bw =", round(coefficients(lmBH)[1],2),"+ dbh",round(coefficients(lmBH)[2],2)), cex=tx)
 	
 	abline(lmBH, lwd=llw)
 	axis(4, seq(yl2,yh2-.5,by=.5),rep(" ",length(seq(yl2,yh2-.5,by=.5))), lwd.ticks=ltw)
@@ -1717,7 +1845,7 @@ par(mai=c(0,0,0,0))
 	
 #hd leaf	
 	par(mai=c(0,0,0,0))
-	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,dh1), ylim=c(yl3,yh3),axes=FALSE,xlab=" ", ylab=" ",
+	plot(c(0,1),c(0,1),type="n", xlim=c(dl1,15), ylim=c(yl3,yh3),axes=FALSE,xlab=" ", ylab=" ",
 			xaxs="i",yaxs="i")
 	points(datAllom$dbh[datAllom$density=="High"],datAllom$foliage[datAllom$density=="High"],
 			pch=19,cex=px)
@@ -1727,9 +1855,9 @@ par(mai=c(0,0,0,0))
 	mtext(seq(yl3,yh3-500,by=500)/1000, at=seq(yl3,yh3-500,by=500),side=4,line=4,cex=mx,las=2)		
 	mtext("Canopy leaf", side=4,line=20,cex=lx)
 	mtext("mass (lm, kg)", side=4,line=30,cex=lx)
-	axis(1, seq(dl1,dh1-5, by=5), rep(" ", length(seq(dl1,dh1-5, by=5))), lwd.ticks=ltw)
-	mtext(seq(dl1,dh1-5, by=5), at=seq(dl1,dh1-5, by=5), side=1,line=5,cex=mx)
-	text(15,4000, expression(paste("lm = 7.57dbh"^"1.73",)), cex=tx)
+	axis(1, seq(dl1,15, by=5), rep(" ", length(seq(dl1,15, by=5))), lwd.ticks=ltw)
+	mtext(seq(dl1,15, by=5), at=seq(dl1,15, by=5), side=1,line=5,cex=mx)
+	text(7,4000, expression(paste("lm = 7.57dbh"^"1.73",)), cex=tx)
 	
 	box(which="plot")
 			
