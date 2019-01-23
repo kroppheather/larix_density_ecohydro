@@ -267,7 +267,7 @@ ab<-layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(lwl),4),
 			
 	box(which="plot")
 	
-	legend(149,2, c(expression(paste("low", italic(D))),expression(paste("high", italic(D)))),
+	legend(149,2, c("low","high"),
 						,lwd=c(lw,lw),  col=c(col1,col2),bty="n",cex=lgx)
 	
 
@@ -403,9 +403,9 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		
 
 	legend(151,12.2, c(
-						expression(paste("organic low", italic(T[s]))),expression(paste("organic high", italic(T[s]))),
-						expression(paste("50cm low", italic(T[s]))),expression(paste("50cm high", italic(T[s])))
-						),
+						"organic low","organic high",
+						"50cm low","50cm high")
+						,
 						lty=c(lty1,lty2,lty3,lty4),lwd=c(lw,lw,lw,lw), 
 						col=c(col1,col2,col1,col2),bty="n",cex=lgx)
 						
@@ -455,12 +455,12 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		
 	box(which="plot")
 
-	legend(149,.13, c(expression(paste("low 8cm ", italic(M))),
-						expression(paste("low 18cm ", italic(M)))),
+	legend(149,.13, c("low 8cm ",
+						"low 18cm "),
 						lty=c(lty1,lty3),lwd=c(lw,lw),  col=c(col1,col1),bty="n",cex=lgx)
 	
-	legend(184,.13, c(expression(paste("high 10cm ", italic(M))),
-						expression(paste("high 20cm ", italic(M)))),
+	legend(184,.13, c("high 10cm ",
+						"high 20cm "),
 						lty=c(lty2,lty4),lwd=c(lw,lw),  col=c(col2,col2),bty="n",cex=lgx)	
 	text(222.5,.41,"(d)",cex=tx)	
 #TD  2016
@@ -494,7 +494,7 @@ ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 		mtext(x17seq, at=x17seq, cex=mx, line=7, side=1)	
 	box(which="plot")	
 	mtext("Day of year", cex=lx, side=1,outer=TRUE,line=-6)
-	legend(151,84, c(expression(paste("low", italic(TD))),expression(paste("high", italic(TD)))
+	legend(151,84, c("low","high"
 						),
 						lty=c(1,1),lwd=c(lw,lw), 
 						col=c(col1,col2),bty="n",cex=lgx)
@@ -1457,7 +1457,7 @@ lda <- 3
 wd<-18
 hd<-18
 tx <- 4
-tiff(paste0(plotDI,"\\figure_6.tiff"), width=1600, height=1050, units="px")
+tiff(paste0(plotDI,"\\figure_7.tiff"), width=1600, height=1050, units="px")
 ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 layout.show(ac)
 
@@ -1477,7 +1477,7 @@ mtext(seq(0,7, by=1), at=seq(0,7, by=1), line=2.5,side=1,cex=ltcx)
 
 
 box(which="plot")
-legend(3,0,c("high density","low density"), fill=c(hcol,lcol),bty="n", cex=lgcx)
+legend(3,0,c("high","low"), fill=c(hcol,lcol),bty="n", cex=lgcx)
 mtext("Substrate layer type", side=2, cex=mcx, line=13)
 mtext(expression(paste("Root biomass mg cm"^"-3")), side=1, cex=mcx, line=8)
 text(layR$r.d+layR$se+.5,layR$pseq-.5,layR$sL,cex=txcx)
