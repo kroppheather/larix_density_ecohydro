@@ -185,7 +185,7 @@ pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
 
-tiff(paste0(plotDI,"\\figure_2.tiff"), width=3900, height=2500, units="px")
+tiff(paste0(plotDI,"\\figure_2.tiff"), width=3900, height=2500, units="px", compression="lzw")
 ab<-layout(matrix(seq(1,4), ncol=2, byrow=TRUE), width=rep(lcm(lwl),4),
 				height=rep(lcm(lhl),4))
 
@@ -357,7 +357,7 @@ pr2017 <- datAirP[datAirP$year==2017&datAirP$doy>=xl17&datAirP$doy<xh17,]
 
 
 
-tiff(paste0(plotDI,"\\figure_4.tiff"), width=3900, height=3400, units="px")
+tiff(paste0(plotDI,"\\figure_4.tiff"), width=3900, height=3400, units="px", compression="lzw")
 ab<-layout(matrix(seq(1,6), ncol=2, byrow=TRUE), width=rep(lcm(lwl),6),
 				height=rep(lcm(lhl),6))
 
@@ -803,7 +803,7 @@ lwt <- 12
 lgx <- 15
 tx <- 21
 plw <- 5
-tiff(paste0(plotDI,"\\figure_3.tiff"), width=7500, height=5000, units="px")
+tiff(paste0(plotDI,"\\figure_3.tiff"), width=7500, height=5000, units="px", compression="lzw")
 ab<-layout(matrix(seq(1,9), ncol=3, byrow=TRUE), width=rep(lcm(lwl),9),
 				height=rep(lcm(lhl),9))
 #T 2016				
@@ -1092,7 +1092,7 @@ for(i in 1:7){
 lw<-12
 lh<-15
 
-tiff(paste0(plotDI,"\\figure_5.tiff"), width=1600, height=1050, units="px")
+tiff(paste0(plotDI,"\\figure_5.tiff"), width=1600, height=1050, units="px", compression="lzw")
 ab<-layout(matrix(seq(1,8), ncol=4, byrow=TRUE), width=c(lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw),lcm(lw)),
 				height=c(lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh),lcm(lh)))
 				
@@ -1457,7 +1457,7 @@ lda <- 3
 wd<-18
 hd<-18
 tx <- 4
-tiff(paste0(plotDI,"\\figure_7.tiff"), width=1600, height=1050, units="px")
+tiff(paste0(plotDI,"\\figure_7.tiff"), width=1600, height=1050, units="px", compression="lzw")
 ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 layout.show(ac)
 
@@ -1532,7 +1532,7 @@ dev.off()
 
 
 #####################################################################
-####  figure 7. goodness of fit figure                           ####
+####  figure 6. goodness of fit figure                           ####
 #####################################################################
 
 
@@ -1563,7 +1563,7 @@ tx <- 4
 #setup plot layout
 wd<-22
 hd<-22
-tiff(paste0(plotDI,"\\figure_7.tiff"), width=1800, height=1200, units="px")
+tiff(paste0(plotDI,"\\figure_6.tiff"), width=1800, height=1200, units="px", compression="lzw")
 ac<-layout(matrix(seq(1,2),ncol=2), width=rep(lcm(wd),2),height=rep(lcm(hd),2))
 	layout.show(ac)
 	par(mai=c(0,0,0,0))
@@ -1652,7 +1652,7 @@ xas <- c(1.5,4,6.5,9,11.5,14)
 lgx <- 4
 wd<-35
 hd<-25
-tiff(paste0(plotDI,"\\figure_8.tiff"), width=2000, height=1100, units="px")
+tiff(paste0(plotDI,"\\figure_8.tiff"), width=2000, height=1100, units="px", compression="lzw")
 	ac<-layout(matrix(seq(1),ncol=1), width=rep(lcm(wd),1),height=rep(lcm(hd),1))
 	par(mai=c(0,0,0,0))
 	plot(c(0,1),c(0,1), type="n",xlim=c(xl,xh),ylim=c(yl,yh), axes=FALSE, 
